@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='css/profile.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="bg">
+    <br>
+    <br>
+    <br>
+    <br>
+    <h1 class="title" style="color: white; font-size:60px;">Plataforma de Monitoreo SHM</h1>
+</div>
+{% endblock %}

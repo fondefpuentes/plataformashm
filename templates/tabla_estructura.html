@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="bg">
+    <div class="container-fluid px-5 py-5">
+        <h1 class="title">
+            {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
+        </h1>
+        <h4 class="subtitle">
+            {% if estado_monitoreo %}
+                Estado de monitoreo: {{estado_monitoreo.estado}} - {{estado_monitoreo.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}
+            {% endif %}
+        </h4>
+        {% include 'botones_tabla_estructura.html' %}
+        <div class="row py-3">
+            <div class="col-md-6">
+                {% include 'tabla_ubicacion_estructura.html'%}
+            </div>
+            <div class="col-md-6">
+                {% include 'tabla_detalles_estructura.html'%}
+            </div>
+        </div>
+        <div class="row">
+            <br>
+            <br>
+            <br>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                {% include 'imagenes_estructura.html' %}
+            </div>
+            <div class="col-md-6">
+                <div id="map">
+                </div>           
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customjs %}
+    <script src="{{ url_for('static', filename='js/tabla_estructura.js')}}"></script>
+    <script>
+        showBridgeOnMap({{datos_puente.coord_x}},{{datos_puente.coord_y}});
+    </script>
+{% endblock %}

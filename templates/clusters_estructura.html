@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="bg">
+    <div class="container px-5 py-5">
+        <h1 class="title py-3">Clusters de {{nombre_y_tipo_activo.tipo_activo}} {{nombre_y_tipo_activo.nombre_puente}}</h1>
+        <div class="row py-3 table-responsive">
+            <table class="table table-striped table-hover clickable-row sortable">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th></th>                     
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in clusters %}
+                        <tr>
+                            <td>{{i.id}}</td>
+                            <td>{{i.nombre}}</td>
+                            <td>
+                                <form action="{{url_for('views_api.sensores_cluster',id_cluster = i.id)}}" method="GET">
+                                    <button class="btn btn-secondary btn-sm" type="submit" id="sensores_cluster" value="{{i.id}}">Sensores</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

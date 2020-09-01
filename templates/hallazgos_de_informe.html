@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='css/zonas_puente.css') }}" rel="stylesheet">
+    <style>
+        .modal{
+            z-index:1100;
+        }
+        .modal-content{
+            margin: 0 auto;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="bg">
+    <div class="container px-5 py-5">
+        <h1 class="title py-3">Hallazgos en informe N° {{id_informe}}</h1>
+        <div class="row">
+            <div class="col-md-2">
+                <form action="{{url_for('views_api.agregar_hallazgo',id_informe = id_informe)}}", method="GET">
+                    <button class="btn btn-secondary btn-sm">Añadir Hallazgo</button>
+                </form> 
+            </div>
+        </div>
+        <div class="row py-3 table-responsive">
+            <table class="table table-striped table-hover clickable-row sortable">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Detalle del hallazgo</th>
+                        <th>Fecha</th>
+                        <th>Zona de estructura</th>
+                        <th></th>                   
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in hallazgos %}
+                    <tr>
+                        <td>{{i['hallazgo'].detalle_hallazgo}}</td>
+                        <td>{{i['hallazgo'].fecha.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                        <td>{{i['hallazgo'].descripcion}}</td>
+                        <td>
+                            {% if i['material_apoyo'] %}
+                                {% include 'modal_hallazgos.html' %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+{% endblock %}

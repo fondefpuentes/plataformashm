@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block customcss%}
+    {{  super() }}
+    <link href="{{ url_for('static', filename='css/zonas_puente.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="bg">
+        <div class="container px-5 py-5">
+            <h1 class="title py-3">Zonas de {{nombre_y_tipo_activo.tipo_activo}} {{nombre_y_tipo_activo.nombre_puente}}</h1>
+            <div class="row py-3 table-responsive">
+                {% include 'tabla_zonas_puente.html' %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,40 @@
+<!-- templates/base.html -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Plataforma de Monitoreo SHM</title>
+	
+	{% block csslibraries%}
+		{% include 'css_libraries.html' %}
+	{% endblock %}
+
+	{% block customcss %}
+		<link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">	
+	{% endblock %}
+</head>       
+
+<body>	
+	{% include 'navbar.html' %}
+	{% block content %}
+	{% endblock %}
+</body>
+
+{% block jslibraries%}
+	<script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/leaflet.markercluster.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/leaflet.markercluster-src.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/fontawesome.min.js')}}"></script>
+{% endblock %}
+
+{% block customjs%}
+	<script src="{{ url_for('static', filename='js/base.js') }}"></script>
+{% endblock %}
+
+</html>

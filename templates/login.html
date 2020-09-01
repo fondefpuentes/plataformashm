@@ -1,0 +1,46 @@
+<!-- templates/login.html -->
+
+{% extends "base.html" %}
+
+{% block customcss %}
+    {{ super() }}
+	<link href="{{ url_for('static', filename='css/profile.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="loginbox">
+        <div class="box">
+            <h3 class="title">
+                Acceder
+            </h3>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="notification is-danger">
+                        {{ messages[0] }}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <form method="POST" action="/login">
+                <div class="field">
+                    <div class="control">
+                        <input class="input is-large" type="email" name="email" placeholder="Correo" autofocus="">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <input class="input is-large" type="password" name="password" placeholder="Contraseña">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="checkbox">
+                        <input type="checkbox"> Mantener la sesión iniciada
+                    </label>
+                </div>
+                <button class="button is-block is-info is-large is-fullwidth">
+                    Iniciar sesión
+                </button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
