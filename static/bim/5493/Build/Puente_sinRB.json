@@ -1,0 +1,16 @@
+{
+"companyName": "DIICC UdeC",
+"productName": "IFC VIewer",
+"productVersion": "0.1",
+"dataUrl": "Puente_sinRB.data.unityweb",
+"wasmCodeUrl": "Puente_sinRB.wasm.code.unityweb",
+"wasmFrameworkUrl": "Puente_sinRB.wasm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Light",
+"backgroundColor": "#FFFFFF",
+"cacheControl": {"default": "must-revalidate"},
+"developmentBuild": false,
+"multithreading": false,
+"unityVersion": "2019.3.0f6"
+}
