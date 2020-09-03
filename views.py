@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, flash, request, redirect, url_for, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 from models import *
 from flask_login import login_user, login_required, current_user, logout_user
 import sys
@@ -1100,3 +1100,52 @@ def tiempo_real(id):
         'datos_puente':estructura
     }
     return render_template('tiemporeal.html', **context)
+
+
+###################### INTEGRACIÓN ALMACENAMIENTO HISTÓRICO ########################
+
+@views_api.route('/hconsultal/<int:id>')
+def hconsulta(id):
+    #Detalles generales de la estructura
+    estructura = Estructura.query.filter_by(id=id).first()
+    estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
+    #Revisa si el schema del puente existe, de no ser así, es por que no está siendo monitoreada
+    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
+    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
+    esta_monitoreada = True
+    if(check_schema is None):
+        esta_monitoreada = False
+    #Consulta por rutas de imágenes y BIM asociados
+    imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
+    bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
+    context = {
+        'datos_puente':estructura,
+        'estado_monitoreo':estado_monitoreo,
+        'esta_monitoreada':esta_monitoreada,
+        'imagenes_estructura':imagenes_estructura,
+        'bim_estructura' : bim_estructura
+    }
+    return render_template('hconsulta.html', **context)
+
+@views_api.route('/hdescarga/<int:id>')
+def hdescarga(id):
+    #Detalles generales de la estructura
+    estructura = Estructura.query.filter_by(id=id).first()
+    estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
+    #Revisa si el schema del puente existe, de no ser así, es por que no está siendo monitoreada
+    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
+    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
+    esta_monitoreada = True
+    if(check_schema is None):
+        esta_monitoreada = False
+    #Consulta por rutas de imágenes y BIM asociados
+    imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
+    bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
+    context = {
+        'datos_puente':estructura,
+        'estado_monitoreo':estado_monitoreo,
+        'esta_monitoreada':esta_monitoreada,
+        'imagenes_estructura':imagenes_estructura,
+        'bim_estructura' : bim_estructura
+    }
+    return render_template('hdescarga.html', **context)

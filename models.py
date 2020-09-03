@@ -47,7 +47,7 @@ class Estructura(db.Model):
     mat_vigas = db.Column(db.String(100))
     coord_x = db.Column(db.Float)
     coord_y = db.Column(db.Float)
-    dashboard = db.Column(db.String(500))
+    #dashboard = db.Column(db.String(500))
 
 class TipoSensor(db.Model):
     __tablename__ = 'tipos_de_sensor'
