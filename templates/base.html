@@ -25,12 +25,13 @@
 </body>
 
 {% block jslibraries%}
-	<script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/moment.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/leaflet.markercluster.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/leaflet.markercluster-src.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/fontawesome.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='font-awesome/js/all.js')}}"></script>
 {% endblock %}
 
 {% block customjs%}

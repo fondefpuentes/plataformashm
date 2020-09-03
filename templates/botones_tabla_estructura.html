@@ -25,6 +25,12 @@
                 <form action="{{url_for('views_api.tiempo_real', id=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Monitoreo Tiempo Real</button>
                 </form>
+                <form action="{{url_for('views_api.hconsulta', id=datos_puente.id)}}">
+                    <button class="btn btn-secondary btn-sm">Consultas</button>
+                </form>
+                <form action="{{url_for('views_api.hdescarga', id=datos_puente.id)}}">
+                    <button class="btn btn-secondary btn-sm">Descargas</button>
+                </form>
         {% endif %}
     {% else %}
         {% if current_user.permisos == 'Administrador' %}
