@@ -1104,7 +1104,7 @@ def tiempo_real(id):
 
 ###################### INTEGRACIÓN ALMACENAMIENTO HISTÓRICO ########################
 
-@views_api.route('/hconsultal/<int:id>')
+@views_api.route('/hconsulta/<int:id>')
 def hconsulta(id):
     #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
