@@ -7,11 +7,14 @@
     {{ super() }}
 	<link href="{{ url_for('static', filename='css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet">
 	<link href="{{ url_for('static', filename='font-awesome/css/all.css') }}" rel="stylesheet">	
+	<link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
 {% endblock %}
 
 
 {% block content %}
-<div class="mt-5 d-flex justify-content-center  ">
+
+<div class="container-fluid px-5 py-5">
+
 	<h1 class="title">
 	    {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
 	</h1>
@@ -20,57 +23,55 @@
 	        Estado de monitoreo: {{estado_monitoreo.estado}} - {{estado_monitoreo.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}
 	    {% endif %}
 	</h4>
-</div>
-<div class="mt-2 mb-3 d-flex justify-content-center  ">	
+
 
 	{% include 'botones_tabla_estructura.html' %}
-</div>
 
-<div class="mt-3 mb-3 d-flex justify-content-center  ">
+	<div class="mt-3 mb-3 d-flex justify-content-center  ">
 
-	<div class="panel panel-default">
-	  <div class="panel-heading">
-	    <h1 class="panel-title">Rango de horarios</h1>
-	  </div>
-	  <div class="panel-body">
-		<table class="table table-bordered">
-		  <thead>
-		    <tr>
-		      <th scope="col">Años</th>
-		      <th scope="col">Bloque 1</th>
-		      <th scope="col">Bloque 2</th>
-		      <th scope="col">Bloque 3</th>
-		      <th scope="col">Bloque 4</th>
-		    </tr>
-		  </thead>
-		  <tbody>
-		    <tr>
-		      <th scope="row">
-		      	2020
-		      </th>
-		      <td>[7:00 - 9:00]</td>
-		      <td>[12:00 - 15:00]</td>
-		      <td>[23:00 -2:00]</td>
-		      <td>[3:00 - 6:00]</td>
-		    </tr>
-		    <tr>
-		      <th scope="row">
-		      	2021
-		      </th>
-		      <td>Desconocido</td>
-		      <td>Desconocido</td>
-		      <td>Desconocido</td>
-		      <td>Desconocido</td>
-		    </tr>
-		  </tbody>
-		</table>
-	  </div>
+		<div class="panel panel-default">
+		  <div class="panel-heading">
+		    <h1 class="panel-title">Rango de horarios</h1>
+		  </div>
+		  <div class="panel-body">
+			<table class="table table-bordered">
+			  <thead>
+			    <tr>
+			      <th scope="col">Años</th>
+			      <th scope="col">Bloque 1</th>
+			      <th scope="col">Bloque 2</th>
+			      <th scope="col">Bloque 3</th>
+			      <th scope="col">Bloque 4</th>
+			    </tr>
+			  </thead>
+			  <tbody>
+			    <tr>
+			      <th scope="row">
+			      	2020
+			      </th>
+			      <td>[7:00 - 9:00]</td>
+			      <td>[12:00 - 15:00]</td>
+			      <td>[23:00 -2:00]</td>
+			      <td>[3:00 - 6:00]</td>
+			    </tr>
+			    <tr>
+			      <th scope="row">
+			      	2021
+			      </th>
+			      <td>Desconocido</td>
+			      <td>Desconocido</td>
+			      <td>Desconocido</td>
+			      <td>Desconocido</td>
+			    </tr>
+			  </tbody>
+			</table>
+		  </div>
+		</div>
 	</div>
 </div>
 
 
-
-En desarrollo...
+	En desarrollo...
 
 
 {% endblock %}
