@@ -964,9 +964,11 @@ def agregar_hallazgo(id_informe):
 
 
 #Rutas que permiten acceder a recursos estáticos de la plataforma (Archivos BIM, Imágenes e Informes)
-@views_api.route('/static/bim/<string:filename>')
-def show_3d_bim(filename):
-    return send_file('./static/bim/'+filename)
+#Rutas que permiten acceder a recursos estáticos de la plataforma (Archivos BIM, Imágenes e Informes)
+@views_api.route('/static/bim/<int:id_puente>')
+def show_3d_bim(id_puente):
+        return redirect(url_for('static', filename='bim/'+str(id_puente)+'/index.html'))
+        # return render_template('static/bim/'+str(idpuente)+'/index.html')
 
 @views_api.route('/static/images/<string:filename>')
 def show_image(filename):

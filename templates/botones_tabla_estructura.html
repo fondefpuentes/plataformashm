@@ -16,7 +16,7 @@
                 <form action="{{url_for('views_api.clusters_estructura', id_puente=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Clusters</button>
                 </form>
-                <form action="{{url_for('views_api.show_3d_bim',filename = bim_estructura.ruta_acceso_archivo)}}">
+                <form action="{{url_for('views_api.show_3d_bim',id_puente=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Visualización 3D</button>
                 </form>
                 <form action="{{url_for('views_api.informes_monitoreo_estructura', id_puente=datos_puente.id)}}">
