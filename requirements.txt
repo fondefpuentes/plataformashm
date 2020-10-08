@@ -11,3 +11,5 @@ psycopg2
 gunicorn
 Flask-JSGlue
 Werkzeug==0.16.0
+flask-mail
+PyJWT

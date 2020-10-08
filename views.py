@@ -1151,3 +1151,29 @@ def hdescarga(id):
         'bim_estructura' : bim_estructura
     }
     return render_template('hdescarga.html', **context)
+
+
+@views_api.route('/usuarios', methods=['GET'])
+@login_required
+def administrar_usuarios():
+    if(current_user.permisos == "Administrador"):
+        usuarios = Usuario.query.all()
+        context = {'usuarios':usuarios}
+        return render_template('usuarios.html', **context)
+    else:
+        pass
+
+@views_api.route('/password_reset_verified/<token>', methods=['GET','POST'])
+def reset_verified(token):
+    user = Usuario.verify_reset_token(token)
+    print(user)
+    if not user:
+        return redirect(url_for('views_api.login'))
+    password = request.form.get('password')
+    if password:
+        print(password)
+        print(generate_password_hash(password))
+        user.contrasena = generate_password_hash(password)
+        db.session.commit()
+        return redirect(url_for('views_api.login'))
+    return render_template('reset_verified.html')
