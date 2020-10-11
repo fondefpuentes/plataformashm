@@ -1,6 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash
 import jwt
 import os
 from time import time
@@ -16,6 +15,7 @@ class Usuario(UserMixin, db.Model):
     apellido = db.Column(db.String(20))
     contrasena = db.Column(db.String(200))
     permisos = db.Column(db.String(20))
+    # validado = db.Column(db.Boolean)
 
     def verify_email(email):
         user = Usuario.query.filter_by(id=email).first()

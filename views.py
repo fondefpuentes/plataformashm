@@ -109,7 +109,7 @@ def login():
             remember = True if request.form.get('remember') else False
             user = Usuario.query.filter_by(id=mail).first()
             if not user or not check_password_hash(user.contrasena, password):
-                flash('Please check your login details and try again.')
+                flash('Contraseña o nombre de usuario no existe.')
                 return redirect(url_for('views_api.login'))
             login_user(user,remember=remember)
             return redirect(url_for('views_api.profile'))
@@ -129,15 +129,19 @@ def signup():
             last_name = request.form.get('lastname')
             mail = request.form.get('mail')
             password = request.form.get('password')
-            permisos = request.form.get('permisos')
             user = Usuario.query.filter_by(id=mail).first()
             if user:
-                flash('Email address already exists')
+                flash('Dirección de correo electrónico ya está registrada.')
                 return redirect(url_for('views_api.signup'))
-            new_user = Usuario(id=mail,nombre=first_name,apellido=last_name,contrasena=generate_password_hash(password),permisos=permisos)
+            elif len(password) < 8:
+                flash('Contraseña debe ser al menos 8 caracteres.')
+                return redirect(url_for('views_api.signup'))
+            
+            new_user = Usuario(id=mail,nombre=first_name,apellido=last_name,contrasena=generate_password_hash(password),permisos="Visita")
             db.session.add(new_user)
             db.session.commit()
             return redirect(url_for('views_api.login'))
+           
 
 #Cerrar sesión
 @views_api.route('/logout')
@@ -1161,7 +1165,7 @@ def administrar_usuarios():
         context = {'usuarios':usuarios}
         return render_template('usuarios.html', **context)
     else:
-        pass
+        return redirect(url_for('views_api.usuario_no_autorizado'))
 
 @views_api.route('/password_reset_verified/<token>', methods=['GET','POST'])
 def reset_verified(token):
@@ -1177,3 +1181,24 @@ def reset_verified(token):
         db.session.commit()
         return redirect(url_for('views_api.login'))
     return render_template('reset_verified.html')
+
+@views_api.route('/editar_permisos', methods=['POST'])
+def cambiar_permisos():
+    if request.method == "POST":
+        if(current_user.permisos == "Administrador"):
+            user = Usuario.query.filter_by(id=request.form.get('userid')).first()
+            user.permisos = request.form.get('permisos')
+            db.session.commit()
+            return redirect(url_for('views_api.administrar_usuarios'))
+        else:
+            return redirect(url_for('views_api.usuario_no_autorizado'))
+
+@views_api.route('/eliminar_usuario', methods=['POST'])
+def eliminar_usuario():
+    if request.method == "POST":
+        if(current_user.permisos == "Administrador"):
+            user = Usuario.query.filter_by(id=request.form.get('userid')).delete()
+            db.session.commit()
+            return redirect(url_for('views_api.administrar_usuarios'))
+        else:
+            return redirect(url_for('views_api.usuario_no_autorizado'))
