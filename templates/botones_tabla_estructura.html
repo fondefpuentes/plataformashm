@@ -1,13 +1,13 @@
 <div class="btn-toolbar py-3">
     {% if esta_monitoreada %}
-            <form action="{{url_for('views_api.zonas_de_estructura', id=datos_puente.id)}}">
+            <!--form action="{{url_for('views_api.zonas_de_estructura', id=datos_puente.id)}}">
                 <button class="btn btn-secondary btn-sm">Zonas</button>
             </form>
             <form action="{{url_for('views_api.sensores_de_estructura', id=datos_puente.id)}}">
                 <button class="btn btn-secondary btn-sm">Lista de Sensores</button>
-            </form>
+            </form-->
         {% if current_user.permisos != 'Visita' %}
-                <form action="{{url_for('views_api.historial_monitoreo_estructura', id=datos_puente.id)}}">
+                <!--form action="{{url_for('views_api.historial_monitoreo_estructura', id=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Historial de monitoreo</button>
                 </form>
                 <form action="{{url_for('views_api.daqs_de_estructura', id_puente=datos_puente.id)}}">
@@ -15,13 +15,13 @@
                 </form>
                 <form action="{{url_for('views_api.clusters_estructura', id_puente=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Clusters</button>
-                </form>
+                </form-->
                 <form action="{{url_for('views_api.show_3d_bim',id_puente=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Visualización 3D</button>
                 </form>
-                <form action="{{url_for('views_api.informes_monitoreo_estructura', id_puente=datos_puente.id)}}">
+                <!--form action="{{url_for('views_api.informes_monitoreo_estructura', id_puente=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Informes de monitoreo</button>
-                </form>
+                </form-->
                 <form action="{{url_for('views_api.tiempo_real', id=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Monitoreo Tiempo Real</button>
                 </form>
