@@ -10,6 +10,9 @@ import json
 import os
 from datetime import datetime
 import unidecode
+import boto3
+import aws_functions
+import pytz
 
 views_api = Blueprint('views_api',__name__)
 
@@ -1108,55 +1111,6 @@ def tiempo_real(id):
     return render_template('tiemporeal.html', **context)
 
 
-###################### INTEGRACIÓN ALMACENAMIENTO HISTÓRICO ########################
-
-@views_api.route('/hconsulta/<int:id>')
-def hconsulta(id):
-    #Detalles generales de la estructura
-    estructura = Estructura.query.filter_by(id=id).first()
-    estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser así, es por que no está siendo monitoreada
-    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
-    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
-    esta_monitoreada = True
-    if(check_schema is None):
-        esta_monitoreada = False
-    #Consulta por rutas de imágenes y BIM asociados
-    imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
-    bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
-    context = {
-        'datos_puente':estructura,
-        'estado_monitoreo':estado_monitoreo,
-        'esta_monitoreada':esta_monitoreada,
-        'imagenes_estructura':imagenes_estructura,
-        'bim_estructura' : bim_estructura
-    }
-    return render_template('hconsulta.html', **context)
-
-@views_api.route('/hdescarga/<int:id>')
-def hdescarga(id):
-    #Detalles generales de la estructura
-    estructura = Estructura.query.filter_by(id=id).first()
-    estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser así, es por que no está siendo monitoreada
-    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
-    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
-    esta_monitoreada = True
-    if(check_schema is None):
-        esta_monitoreada = False
-    #Consulta por rutas de imágenes y BIM asociados
-    imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
-    bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
-    context = {
-        'datos_puente':estructura,
-        'estado_monitoreo':estado_monitoreo,
-        'esta_monitoreada':esta_monitoreada,
-        'imagenes_estructura':imagenes_estructura,
-        'bim_estructura' : bim_estructura
-    }
-    return render_template('hdescarga.html', **context)
-
-
 @views_api.route('/usuarios', methods=['GET'])
 @login_required
 def administrar_usuarios():
@@ -1202,3 +1156,233 @@ def eliminar_usuario():
             return redirect(url_for('views_api.administrar_usuarios'))
         else:
             return redirect(url_for('views_api.usuario_no_autorizado'))
+
+###################### INTEGRACIÓN ALMACENAMIENTO HISTÓRICO ########################
+
+@views_api.route('/hconsulta/<int:id>', methods=["POST","GET"])
+def hconsulta(id):
+    #Detalles generales de la estructura
+    estructura = Estructura.query.filter_by(id=id).first()
+    estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
+    #Revisa si el schema del puente existe, de no ser así, es por que no está siendo monitoreada
+    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
+    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
+    esta_monitoreada = True
+    if(check_schema is None):
+        esta_monitoreada = False
+    #Consulta por rutas de imágenes y BIM asociados
+    imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
+    bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
+    context = {
+        'datos_puente':estructura,
+        'estado_monitoreo':estado_monitoreo,
+        'esta_monitoreada':esta_monitoreada,
+        'imagenes_estructura':imagenes_estructura,
+        'bim_estructura' : bim_estructura
+    }
+
+    params = {
+    'region' : 'sa-east-1',
+    'database' : 'historical-db',
+    'bucket' : 'shm-historical-temp',
+    'path'  : 'consultas/test',
+    'user_id': current_user.id
+    }
+
+    info_consultas = aws_functions.get_consultas(params)
+ 
+
+    if request.method == "POST":
+        destino_consulta = request.form["destino_consulta"]
+        rango_consulta = request.form["rango_consulta"]
+        fecha_inicial = request.form["fecha_inicial"]
+        hora_inicial = request.form["hora_inicial"]
+        fecha_final = request.form["fecha_final"]
+        hora_final = request.form["hora_final"]
+        lista_sensores = request.form.getlist("sensor_list")
+        consultas_ejes = request.form.getlist("consultas_ejes")
+        consultas_sensor = request.form.getlist("consultas_sensor")
+        ####Conversion tiempo local a UTC####
+        local_timezone = pytz.timezone ("America/Santiago")
+        naive = datetime.strptime(fecha_inicial + " " + hora_inicial, "%Y-%m-%d %H:%M")
+        local_dt_i = local_timezone.localize(naive, is_dst=None)
+        naive = datetime.strptime(fecha_final + " " + hora_final, "%Y-%m-%d %H:%M")
+        local_dt_f = local_timezone.localize(naive, is_dst=None)
+
+        utc_dt_i = local_dt_i.astimezone(pytz.utc)
+        utc_dt_f = local_dt_f.astimezone(pytz.utc)
+        #####################################
+        values = {
+            'destino_consulta' : destino_consulta,
+            'rango_consulta' : rango_consulta,
+            'fecha_inicial' : utc_dt_i.strftime("%Y-%m-%d"),
+            'hora_inicial'  : utc_dt_i.strftime("%H:%M"),
+            'fecha_final': utc_dt_f.strftime("%Y-%m-%d"),
+            'hora_final'  : utc_dt_f.strftime("%H:%M"),
+            'lista_sensores'  : lista_sensores,
+            'consultas_ejes' : consultas_ejes,
+            'consultas_sensor'  : consultas_sensor
+        }
+        athena_status = aws_functions.query_athena(params,values)
+        if(athena_status == True):
+            flash("¡Solicitud recibida!","success")
+        else:
+            flash("Error","error")
+        return redirect(url_for("views_api.hconsulta",id=id))
+   
+    return render_template('hconsulta.html', **context, info_consultas = info_consultas)
+
+@views_api.route('/hdetalles/<int:id>/<string:filename>')
+def hdetalles(id,filename):
+    #Detalles generales de la estructura
+    estructura = Estructura.query.filter_by(id=id).first()
+    estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
+    #Revisa si el schema del puente existe, de no ser así, es por que no está siendo monitoreada
+    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
+    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
+    esta_monitoreada = True
+    if(check_schema is None):
+        esta_monitoreada = False
+    #Consulta por rutas de imágenes y BIM asociados
+    imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
+    bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
+    context = {
+        'datos_puente':estructura,
+        'estado_monitoreo':estado_monitoreo,
+        'esta_monitoreada':esta_monitoreada,
+        'imagenes_estructura':imagenes_estructura,
+        'bim_estructura' : bim_estructura
+    }
+
+    params = {
+    'region' : 'sa-east-1',
+    'database' : 'historical-db',
+    'bucket' : 'shm-historical-temp',
+    'path'  : 'consultas/test',
+    'user_id': current_user.id
+    }
+        
+    header_consulta , detalle_consulta, metadata_consulta = aws_functions.detalle_consultas(params,filename)
+
+   
+    return render_template('hdetalles.html', **context, header= header_consulta, detalle = detalle_consulta, metadata = metadata_consulta)
+ 
+
+@views_api.route('/hdescarga/<int:id>', methods=["POST","GET"])
+def hdescarga(id):
+#Detalles generales de la estructura
+    estructura = Estructura.query.filter_by(id=id).first()
+    estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
+    #Revisa si el schema del puente existe, de no ser así, es por que no está siendo monitoreada
+    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
+    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
+    esta_monitoreada = True
+    if(check_schema is None):
+        esta_monitoreada = False
+    #Consulta por rutas de imágenes y BIM asociados
+    imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
+    bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
+    context = {
+        'datos_puente':estructura,
+        'estado_monitoreo':estado_monitoreo,
+        'esta_monitoreada':esta_monitoreada,
+        'imagenes_estructura':imagenes_estructura,
+        'bim_estructura' : bim_estructura
+    }
+
+    params = {
+    'region' : 'sa-east-1',
+    'database' : 'historical-db',
+    'bucket' : 'shm-historical-temp',
+    'path'  : 'descargas/test',
+    'path_athena' : 'athena/test',
+    'user_id': current_user.id
+    }
+
+    info_consultas = aws_functions.get_consultas(params)
+ 
+
+    if request.method == "POST":
+        destino_consulta = request.form["destino_consulta"]
+        rango_consulta = request.form["rango_consulta"]
+        fecha_inicial = request.form["fecha_inicial"]
+        hora_inicial = request.form["hora_inicial"]
+        fecha_final = request.form["fecha_final"]
+        hora_final = request.form["hora_final"]
+        lista_sensores = request.form.getlist("sensor_list")
+        consultas_ejes = request.form.getlist("consultas_ejes")
+        ####Conversion tiempo local a UTC####
+        local_timezone = pytz.timezone ("America/Santiago")
+        naive = datetime.strptime(fecha_inicial + " " + hora_inicial, "%Y-%m-%d %H:%M")
+        local_dt_i = local_timezone.localize(naive, is_dst=None)
+        naive = datetime.strptime(fecha_final + " " + hora_final, "%Y-%m-%d %H:%M")
+        local_dt_f = local_timezone.localize(naive, is_dst=None)
+
+        utc_dt_i = local_dt_i.astimezone(pytz.utc)
+        utc_dt_f = local_dt_f.astimezone(pytz.utc)
+        #####################################
+        values = {
+            'destino_consulta' : destino_consulta,
+            'rango_consulta' : rango_consulta,
+            'fecha_inicial' : utc_dt_i.strftime("%Y-%m-%d"),
+            'hora_inicial'  : utc_dt_i.strftime("%H:%M"),
+            'fecha_final': utc_dt_f.strftime("%Y-%m-%d"),
+            'hora_final'  : utc_dt_f.strftime("%H:%M"),
+            'lista_sensores'  : lista_sensores,
+            'consultas_ejes' : consultas_ejes
+        }
+        athena_status = aws_functions.download_query_athena(params,values)
+        if(athena_status == True):
+            flash("¡Solicitud recibida!","success")
+        else:
+            flash("Error","error")
+        return redirect(url_for("views_api.hdescarga",id=id))
+
+    return render_template('hdescarga.html', **context, info_consultas = info_consultas)
+
+@views_api.route('/hdetallesdescarga/<int:id>/<string:filename>')
+def hdetallesdescarga(id,filename):
+    #Detalles generales de la estructura
+    estructura = Estructura.query.filter_by(id=id).first()
+    estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
+    #Revisa si el schema del puente existe, de no ser así, es por que no está siendo monitoreada
+    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
+    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
+    esta_monitoreada = True
+    if(check_schema is None):
+        esta_monitoreada = False
+    #Consulta por rutas de imágenes y BIM asociados
+    imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
+    bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
+    context = {
+        'datos_puente':estructura,
+        'estado_monitoreo':estado_monitoreo,
+        'esta_monitoreada':esta_monitoreada,
+        'imagenes_estructura':imagenes_estructura,
+        'bim_estructura' : bim_estructura
+    }
+
+    params = {
+    'region' : 'sa-east-1',
+    'database' : 'historical-db',
+    'bucket' : 'shm-historical-temp',
+    'path'  : 'descargas/test',
+    'user_id': current_user.id
+    }
+
+    metadata_consulta = aws_functions.detalle_descarga(params,filename)
+
+    return render_template('hdetallesdescarga.html', **context, metadata = metadata_consulta)
+
+@views_api.route('/descargar/<string:file_name>')
+def hgetdescarga(file_name):
+    params = {
+    'region' : 'sa-east-1',
+    'database' : 'historical-db',
+    'bucket' : 'shm-historical-temp',
+    'path'  : 'descargas/test',
+    'user_id': current_user.id
+    }
+
+    url = aws_functions.get_attachment_url(params,file_name)
+    return redirect(url, code=302)
