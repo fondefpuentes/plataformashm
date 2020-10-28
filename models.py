@@ -1,5 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+import jwt
+import os
+from time import time
+from flask import current_app
 
 db = SQLAlchemy()
 
@@ -11,6 +15,28 @@ class Usuario(UserMixin, db.Model):
     apellido = db.Column(db.String(20))
     contrasena = db.Column(db.String(200))
     permisos = db.Column(db.String(20))
+    # validado = db.Column(db.Boolean)
+
+    def verify_email(email):
+        user = Usuario.query.filter_by(id=email).first()
+        return user
+
+    def verify_reset_token(token):
+        try:
+            username = jwt.decode(token, key=current_app.config['SECRET_KEY'])['reset_password']
+            # print(username)
+        except Exception as e:
+            # print(e)
+            return
+        return Usuario.query.filter_by(id=username).first()
+
+    def get_reset_token(self, expires=500):
+        print(self.id)
+        print(time() + expires)
+        print(current_app.config['SECRET_KEY'])
+        x = jwt.encode({'reset_password': self.id, 'exp': time() + expires}, key=current_app.config['SECRET_KEY'])
+        print(x)
+        return x
 
 class TipoZona(db.Model):
     __tablename__ = 'tipos_de_zona'

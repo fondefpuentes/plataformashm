@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block customcss %}
+    {{ super() }}
+	<link href="{{ url_for('static', filename='css/profile.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="loginbox">
+        <div class="box">
+            <h3 class="title">
+                Reestablecer contraseña
+            </h3>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="notification is-danger">
+                        {{ messages[0] }}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <p>
+                Pror favor ingrese su nueva contraseña.
+            </p>
+            <form method="post">
+                <input type="password" name="password" id="password" required class="form-control">
+                <br>
+                <button type="submit" class="btn btn-primary w-50">
+                    Guardar contraseña
+                </button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -109,7 +109,7 @@ def login():
             remember = True if request.form.get('remember') else False
             user = Usuario.query.filter_by(id=mail).first()
             if not user or not check_password_hash(user.contrasena, password):
-                flash('Please check your login details and try again.')
+                flash('Contraseña o nombre de usuario no existe.')
                 return redirect(url_for('views_api.login'))
             login_user(user,remember=remember)
             return redirect(url_for('views_api.profile'))
@@ -129,15 +129,19 @@ def signup():
             last_name = request.form.get('lastname')
             mail = request.form.get('mail')
             password = request.form.get('password')
-            permisos = request.form.get('permisos')
             user = Usuario.query.filter_by(id=mail).first()
             if user:
-                flash('Email address already exists')
+                flash('Dirección de correo electrónico ya está registrada.')
                 return redirect(url_for('views_api.signup'))
-            new_user = Usuario(id=mail,nombre=first_name,apellido=last_name,contrasena=generate_password_hash(password),permisos=permisos)
+            elif len(password) < 8:
+                flash('Contraseña debe ser al menos 8 caracteres.')
+                return redirect(url_for('views_api.signup'))
+            
+            new_user = Usuario(id=mail,nombre=first_name,apellido=last_name,contrasena=generate_password_hash(password),permisos="Visita")
             db.session.add(new_user)
             db.session.commit()
             return redirect(url_for('views_api.login'))
+           
 
 #Cerrar sesión
 @views_api.route('/logout')
@@ -964,9 +968,11 @@ def agregar_hallazgo(id_informe):
 
 
 #Rutas que permiten acceder a recursos estáticos de la plataforma (Archivos BIM, Imágenes e Informes)
-@views_api.route('/static/bim/<string:filename>')
-def show_3d_bim(filename):
-    return send_file('./static/bim/'+filename)
+#Rutas que permiten acceder a recursos estáticos de la plataforma (Archivos BIM, Imágenes e Informes)
+@views_api.route('/static/bim/<int:id_puente>')
+def show_3d_bim(id_puente):
+        return redirect(url_for('static', filename='bim/'+str(id_puente)+'/index.html'))
+        # return render_template('static/bim/'+str(idpuente)+'/index.html')
 
 @views_api.route('/static/images/<string:filename>')
 def show_image(filename):
@@ -1149,3 +1155,50 @@ def hdescarga(id):
         'bim_estructura' : bim_estructura
     }
     return render_template('hdescarga.html', **context)
+
+
+@views_api.route('/usuarios', methods=['GET'])
+@login_required
+def administrar_usuarios():
+    if(current_user.permisos == "Administrador"):
+        usuarios = Usuario.query.all()
+        context = {'usuarios':usuarios}
+        return render_template('usuarios.html', **context)
+    else:
+        return redirect(url_for('views_api.usuario_no_autorizado'))
+
+@views_api.route('/password_reset_verified/<token>', methods=['GET','POST'])
+def reset_verified(token):
+    user = Usuario.verify_reset_token(token)
+    print(user)
+    if not user:
+        return redirect(url_for('views_api.login'))
+    password = request.form.get('password')
+    if password:
+        print(password)
+        print(generate_password_hash(password))
+        user.contrasena = generate_password_hash(password)
+        db.session.commit()
+        return redirect(url_for('views_api.login'))
+    return render_template('reset_verified.html')
+
+@views_api.route('/editar_permisos', methods=['POST'])
+def cambiar_permisos():
+    if request.method == "POST":
+        if(current_user.permisos == "Administrador"):
+            user = Usuario.query.filter_by(id=request.form.get('userid')).first()
+            user.permisos = request.form.get('permisos')
+            db.session.commit()
+            return redirect(url_for('views_api.administrar_usuarios'))
+        else:
+            return redirect(url_for('views_api.usuario_no_autorizado'))
+
+@views_api.route('/eliminar_usuario', methods=['POST'])
+def eliminar_usuario():
+    if request.method == "POST":
+        if(current_user.permisos == "Administrador"):
+            user = Usuario.query.filter_by(id=request.form.get('userid')).delete()
+            db.session.commit()
+            return redirect(url_for('views_api.administrar_usuarios'))
+        else:
+            return redirect(url_for('views_api.usuario_no_autorizado'))
