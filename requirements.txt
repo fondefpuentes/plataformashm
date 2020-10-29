@@ -13,3 +13,6 @@ Flask-JSGlue
 Werkzeug==0.16.0
 flask-mail
 PyJWT
+boto3
+pytz
+pandas==1.1.2
