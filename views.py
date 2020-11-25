@@ -12,6 +12,7 @@ from datetime import datetime
 import unidecode
 import boto3
 import aws_functions
+import swagger
 import pytz
 
 views_api = Blueprint('views_api',__name__)
@@ -1189,6 +1190,12 @@ def hconsulta(id):
     'user_id': current_user.id
     }
 
+    ip_instance = Estructura.query.get(id).ip_instancia
+    if(ip_instance is None):
+        return redirect(url_for('views_api.informacion_estructura',id = id))
+
+    info_sensores, info_ejes = swagger.get_sensor_axis(ip_instance)
+
     info_consultas = aws_functions.get_consultas(params)
  
 
@@ -1202,6 +1209,15 @@ def hconsulta(id):
         lista_sensores = request.form.getlist("sensor_list")
         consultas_ejes = request.form.getlist("consultas_ejes")
         consultas_sensor = request.form.getlist("consultas_sensor")
+
+        id_sensores = []
+
+        for i in lista_sensores:
+            for j in info_sensores:
+                if j["name"] == i:
+                    id_sensores.append(j["uuid"])
+
+        print(id_sensores)
         ####Conversion tiempo local a UTC####
         local_timezone = pytz.timezone ("America/Santiago")
         naive = datetime.strptime(fecha_inicial + " " + hora_inicial, "%Y-%m-%d %H:%M")
@@ -1220,6 +1236,7 @@ def hconsulta(id):
             'fecha_final': utc_dt_f.strftime("%Y-%m-%d"),
             'hora_final'  : utc_dt_f.strftime("%H:%M"),
             'lista_sensores'  : lista_sensores,
+            'id_sensores'  : id_sensores,
             'consultas_ejes' : consultas_ejes,
             'consultas_sensor'  : consultas_sensor
         }
@@ -1230,7 +1247,7 @@ def hconsulta(id):
             flash("Error","error")
         return redirect(url_for("views_api.hconsulta",id=id))
    
-    return render_template('hconsulta.html', **context, info_consultas = info_consultas)
+    return render_template('hconsulta.html', **context, info_consultas = info_consultas, info_sensores = info_sensores, info_ejes = info_ejes)
 
 @views_api.route('/hdetalles/<int:id>/<string:filename>')
 def hdetalles(id,filename):
@@ -1299,6 +1316,12 @@ def hdescarga(id):
     'user_id': current_user.id
     }
 
+    ip_instance = Estructura.query.get(id).ip_instancia
+    if(ip_instance is None):
+        return redirect(url_for('views_api.informacion_estructura',id = id))
+
+    info_sensores, info_ejes = swagger.get_sensor_axis(ip_instance)
+
     info_consultas = aws_functions.get_consultas(params)
  
 
@@ -1311,6 +1334,14 @@ def hdescarga(id):
         hora_final = request.form["hora_final"]
         lista_sensores = request.form.getlist("sensor_list")
         consultas_ejes = request.form.getlist("consultas_ejes")
+
+        id_sensores = []
+
+        for i in lista_sensores:
+            for j in info_sensores:
+                if j["name"] == i:
+                    id_sensores.append(j["uuid"])
+
         ####Conversion tiempo local a UTC####
         local_timezone = pytz.timezone ("America/Santiago")
         naive = datetime.strptime(fecha_inicial + " " + hora_inicial, "%Y-%m-%d %H:%M")
@@ -1329,6 +1360,7 @@ def hdescarga(id):
             'fecha_final': utc_dt_f.strftime("%Y-%m-%d"),
             'hora_final'  : utc_dt_f.strftime("%H:%M"),
             'lista_sensores'  : lista_sensores,
+            'id_sensores'  : id_sensores,
             'consultas_ejes' : consultas_ejes
         }
         athena_status = aws_functions.download_query_athena(params,values)
@@ -1338,7 +1370,7 @@ def hdescarga(id):
             flash("Error","error")
         return redirect(url_for("views_api.hdescarga",id=id))
 
-    return render_template('hdescarga.html', **context, info_consultas = info_consultas)
+    return render_template('hdescarga.html', **context, info_consultas = info_consultas, info_sensores = info_sensores, info_ejes = info_ejes)
 
 @views_api.route('/hdetallesdescarga/<int:id>/<string:filename>')
 def hdetallesdescarga(id,filename):
