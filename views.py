@@ -87,11 +87,116 @@ def usuario_no_autorizado():
 def crear_monitoreo(id_puente):
     if(current_user.permisos == 'Administrador'):
         puente_a_monitorear = Estructura.query.get(id_puente)
-        nombre = puente_a_monitorear.nombre.replace(" ","_")
+        ip_request = puente_a_monitorear.ip_instancia
+  
+        if(ip_request == None):
+          return redirect(url_for('views_api.informacion_estructura',id = id_puente))
+  
+        #obtencion API KEY de TB    
+        api_key_url = requests.post(
+        ip_request + '/api/auth/login',
+        data='{"username":"tenant@thingsboard.org", "password":"tenant"}', headers={'Content-Type': 'application/json','Accept': 'application/json'})
+        json_response = api_key_url.json()
+  
+        #Generacion de API_KEY para autentificacion en Swagger
+        x_auth = 'Bearer ' + json_response['token']
+  
+        #obtencion tipos de sensor desde BD
+        t_sensor = TipoSensor.query.all()
+        t_s_dict = {}
+        for i in t_sensor:
+          t_s_dict[i.nombre] = i.id
+  
+        #obtencion tipos de zona desde DB
+        t_zona = TipoZona.query.all()
+        t_z_dict = {}
+        for i in t_zona:
+          t_z_dict[i.nombre_zona] = i.id
+  
+        #Peticion a Swagger de ASSETS 
+        response = requests.get ( ip_request + '/api/tenant/assets?pageSize=40&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth})
+        json_assets = response.json()
+        zonas_dict = {}
+  
+        #Peticion a Swagger de DEVICES
+        response = requests.get( ip_request + '/api/tenant/deviceInfos?pageSize=20&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth},)
+        json_devices = response.json()
+        sensores_dict = {}
+        daq_dict = {}
+  
+        #insercion de nuevas zonas a BD
         try:
-            new_schema = db.engine.execute('CREATE SCHEMA IF NOT EXISTS '+nombre)
-        except (Exception) as error:
-            db.session.rollback()
+          for i in json_assets['data']:
+            if(i['type'] == "Zona"):
+              nueva_zona = ZonaEstructura(id_estructura=id_puente,tipo_zona=t_z_dict[i['label']],descripcion=i['name'])
+              db.session.add(nueva_zona)
+              db.session.flush()
+              zonas_dict[i['name']] = nueva_zona.id
+          db.session.commit()
+  
+          #insercion DAQs 
+
+          for i in json_devices['data']:
+            if(i['type'] == "daq"):
+              #obtencion atributos del DAQ
+              attr_request = requests.get(ip_request + '/api/plugins/telemetry/DEVICE/' + str(i['id']['id'])+'/values/attributes',headers={'Accept' : 'application/json','X-Authorization': x_auth})
+              attr_response = attr_request.json()
+              chns = 0
+              zona = ""
+        
+              for attr in attr_response:
+                if(attr['key'] == "Canales"):
+                  chns = attr['value']
+                if(attr['key'] == "Zona"):
+                  zona = attr['value']
+        
+              nuevo_daq = DAQ(nro_canales=chns)
+              db.session.add(nuevo_daq)
+              db.session.flush()
+              zona_daq = DAQPorZona(id_daq=nuevo_daq.id, id_zona=zonas_dict[zona], id_estructura=id_puente)
+              db.session.add(zona_daq)
+              caract = DescripcionDAQ(id_daq=nuevo_daq.id, caracteristicas=i['name'])
+              db.session.add(caract)
+              estado_nuevo_daq = EstadoDAQ(id_daq=nuevo_daq.id, fecha_estado=datetime.now(), detalles='Conectado')
+              db.session.add(estado_nuevo_daq)
+              canales = []
+              for i in range(1,int(nuevo_daq.nro_canales)+1):
+                x = Canal(id_daq=nuevo_daq.id, numero_canal=i)
+                canales.append(x)
+              db.session.bulk_save_objects(canales)                
+              db.session.commit()
+  
+          #insercion sensores 
+          for i in json_devices['data']:
+            if(i['type'] != "daq"):
+              #obtencion atributos del sensor
+              attr_request = requests.get(ip_request + '/api/plugins/telemetry/DEVICE/' + str(i['id']['id'])+'/values/attributes',headers={'Accept' : 'application/json','X-Authorization': x_auth})
+              attr_response = attr_request.json()
+              zona = ""
+        
+              for attr in attr_response:
+                if(attr['key'] == "Zona"):
+                  zona = attr['value']
+            
+              nuevo_sensor = Sensor(tipo_sensor = t_s_dict[i['type']],frecuencia = 120,uuid_device = i['id']['id'])
+              nueva_instalacion_sensor = InstalacionSensor(fecha_instalacion=datetime.now())
+              db.session.add(nueva_instalacion_sensor)
+              db.session.add(nuevo_sensor)
+              db.session.flush()
+              nuevo_sensor_instalado = SensorInstalado(id_instalacion=nueva_instalacion_sensor.id, id_sensor=nuevo_sensor.id, id_zona=zonas_dict[zona], id_estructura=id_puente, es_activo=True)
+              db.session.add(nuevo_sensor_instalado)
+              db.session.flush()
+              nueva_descripcion = DescripcionSensor(id_sensor_instalado = nuevo_sensor_instalado.id,descripcion = i['name'])
+              db.session.add(nueva_descripcion)
+              db.session.flush()   
+          
+          puente_a_monitorear.en_monitoreo = True
+          db.session.add(puente_a_monitorear)
+          db.session.commit()
+          
+        except:
+          db.session.rollback()
+          raise
         finally:
             #De no haber errores, redirige a la vista resumen del puente
             return redirect(url_for('views_api.informacion_estructura', id=id_puente))
@@ -1159,19 +1264,18 @@ def eliminar_usuario():
             return redirect(url_for('views_api.usuario_no_autorizado'))
 
 ###################### INTEGRACI√ìN ALMACENAMIENTO HIST√ìRICO ########################
-
 @views_api.route('/hconsulta/<int:id>', methods=["POST","GET"])
 def hconsulta(id):
     #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser as√≠, es por que no est√° siendo monitoreada
+    #Revisa si el schema del puente existe, de no ser asÌ, es por que no est· siendo monitoreada
     nombre_del_schema = estructura.nombre.lower().replace(" ","_")
     check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
     esta_monitoreada = True
     if(check_schema is None):
         esta_monitoreada = False
-    #Consulta por rutas de im√°genes y BIM asociados
+    #Consulta por rutas de im·genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1242,7 +1346,7 @@ def hconsulta(id):
         }
         athena_status = aws_functions.query_athena(params,values)
         if(athena_status == True):
-            flash("¬°Solicitud recibida!","success")
+            flash("Solicitud recibida","success")
         else:
             flash("Error","error")
         return redirect(url_for("views_api.hconsulta",id=id))
@@ -1254,13 +1358,13 @@ def hdetalles(id,filename):
     #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser as√≠, es por que no est√° siendo monitoreada
+    #Revisa si el schema del puente existe, de no ser asÌ, es por que no est· siendo monitoreada
     nombre_del_schema = estructura.nombre.lower().replace(" ","_")
     check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
     esta_monitoreada = True
     if(check_schema is None):
         esta_monitoreada = False
-    #Consulta por rutas de im√°genes y BIM asociados
+    #Consulta por rutas de im·genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1290,13 +1394,13 @@ def hdescarga(id):
 #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser as√≠, es por que no est√° siendo monitoreada
+    #Revisa si el schema del puente existe, de no ser asÌ, es por que no est· siendo monitoreada
     nombre_del_schema = estructura.nombre.lower().replace(" ","_")
     check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
     esta_monitoreada = True
     if(check_schema is None):
         esta_monitoreada = False
-    #Consulta por rutas de im√°genes y BIM asociados
+    #Consulta por rutas de im·genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1365,7 +1469,7 @@ def hdescarga(id):
         }
         athena_status = aws_functions.download_query_athena(params,values)
         if(athena_status == True):
-            flash("¬°Solicitud recibida!","success")
+            flash("Solicitud recibida","success")
         else:
             flash("Error","error")
         return redirect(url_for("views_api.hdescarga",id=id))
@@ -1377,13 +1481,13 @@ def hdetallesdescarga(id,filename):
     #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser as√≠, es por que no est√° siendo monitoreada
+    #Revisa si el schema del puente existe, de no ser asÌ, es por que no est· siendo monitoreada
     nombre_del_schema = estructura.nombre.lower().replace(" ","_")
     check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
     esta_monitoreada = True
     if(check_schema is None):
         esta_monitoreada = False
-    #Consulta por rutas de im√°genes y BIM asociados
+    #Consulta por rutas de im·genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
