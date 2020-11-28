@@ -9,9 +9,9 @@ from flask_login import LoginManager
 from flask_mail import Mail, Message
 import os
 import dash
+
 import dash_core_components as dcc
 import dash_html_components as html
-
 import templates.datos_recientes as datosrecientes
 import DatosRecientes.dataframe as datos
 from dash.dependencies import Input, Output,State
@@ -37,6 +37,7 @@ app.config.update(
 
 
 #plotly_app = dash.Dash(__name__, server=app, url_base_pathname="/dash/", external_stylesheets=[dbc.themes.BOOTSTRAP])
+
 plotly_app = dash.Dash(__name__, server=app, url_base_pathname="/dash/")
 plotly_app.layout = datosrecientes.datos_recientes_layout
 
@@ -49,6 +50,8 @@ def my_dash_app():
 def datos_recientes():
     context = {}
     return render_template('template_datos_recientes.html',**context)
+
+
 
 
 @plotly_app.callback(Output('indicador-multi','style'),
