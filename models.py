@@ -47,7 +47,7 @@ class TipoZona(db.Model):
 class ZonaEstructura(db.Model):
     __tablename__ = 'zonas_estructura'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'), primary_key=True)
     tipo_zona = db.Column(db.Integer, db.ForeignKey('inventario_puentes.tipos_de_zona.id'))
     material = db.Column(db.String(20))

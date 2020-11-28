@@ -15,7 +15,7 @@ from datetime import timedelta as td
 from kaleido.scopes.plotly import PlotlyScope
 
 # Contiene las credenciales para realizar la conección con postgresql en AWS
-
+print('conectando a db')
 coneccion = psycopg2.connect(user="postgres",
                                   password="puentes123",
                                   host="54.207.253.104",
@@ -24,6 +24,7 @@ coneccion = psycopg2.connect(user="postgres",
 esquema = ['public.','inventario_puentes.','llacolen.']
 
 def traductor_nombre(sensor):
+    print('query traductor_nombre')
     return pd.read_sql_query("SELECT name FROM public.device WHERE id = '"+str(sensor)+"'",coneccion)['name'][0]
 
 #Funcion para crear el dataframe a utilizar en el grafico OHLC, ademas el valor de la columna avg se utiliza para para el histograma
@@ -43,6 +44,7 @@ def datos_ace(fecha_inicio,freq,sensor,eje):
     "GROUP BY fecha "
     "ORDER BY fecha ASC LIMIT "+str(periodo)+";")
 
+    print('query datos_ace')
     new_df = pd.read_sql_query(query,coneccion)
     return new_df
     
@@ -262,6 +264,8 @@ def nombres_sensores(tipo_sensor):
     query = ("SELECT DISTINCT name as nombre_sensor, id "
           "FROM public.device "
           "WHERE (type = '"+str(tipo_sensor)+"') and (name like '%AC%');")
+
+    print('query nombres_sensores')
     df = pd.read_sql_query(query,coneccion)
     df = df.sort_values(by='nombre_sensor', ascending=True)
     df_dict = df.set_index('nombre_sensor').T.to_dict('records')[0]
@@ -289,6 +293,7 @@ def tipos_sensores():
     query = ("SELECT DISTINCT type as tipo_sensor "
             "FROM public.device;")
 
+    print('query tipos sensores')
     df = pd.read_sql_query(query,coneccion)
     tipos = df['tipo_sensor'].tolist()
     tipos.sort(reverse=False)
@@ -315,6 +320,7 @@ def fecha_inicial(tipo_sensor,eje):
           "WHERE t.dbl_v is NOT NULL and dic.key = '"+str(eje)+"' and d.type = '"+str(tipo_sensor)+"' "
           "ORDER BY t.ts ASC LIMIT 1;")
 
+    print('query fecha_inicial')
     df = pd.read_sql_query(query,coneccion)
 
     return df['timestamp'][0]
@@ -341,6 +347,7 @@ def fecha_final(tipo_sensor,eje):
           "WHERE t.dbl_v is NOT NULL and dic.key = '"+str(eje)+"' and d.type = '"+str(tipo_sensor)+"' "
           "ORDER BY t.ts DESC LIMIT 1;")
 
+    print('query fecha final')
     df = pd.read_sql_query(query,coneccion)
 
     return df['timestamp'][0]
@@ -375,33 +382,35 @@ def horas_del_dia(sensor,fecha_inicial):
     return horas,min_,max_
     '''
 
-    fecha_final = (fecha_inicial + td(days=1)).timestamp()*1000
-    fecha_inicial = fecha_inicial.timestamp() * 1000
+    #fecha_final = (fecha_inicial + td(days=1)).timestamp()*1000
+    #fecha_inicial = fecha_inicial.timestamp() * 1000
 
     horas = list()
     
     #Consulta lenta ! solo activar si es que en el dia no hay las 24 horas de datos
-    query = ("SELECT DISTINCT EXTRACT(HOUR FROM(to_timestamp(t.ts/1000) AT TIME ZONE 'UTC+3')) as horas "
+    """query = ("SELECT DISTINCT EXTRACT(HOUR FROM(to_timestamp(t.ts/1000) AT TIME ZONE 'UTC+3')) as horas "
           "FROM public.ts_kv as t "
           "JOIN public.ts_kv_dictionary as dic ON t.key = dic.key_id "
           "WHERE (t.entity_id = '"+str(sensor)+"') and (dic.key = 'x') and (t.ts BETWEEN "+str(fecha_inicial)+" and "+str(fecha_final)+") "
-          "ORDER BY horas;")
-    horas =  pd.read_sql_query(query,coneccion)
-    horas = list(map(int, horas['horas'].tolist()))
-    horas.sort()
-    cant_horas = len(horas)
-    if not horas:
+          "ORDER BY horas;")"""
+    #print('query horas_de_dia')
+    #horas =  pd.read_sql_query(query,coneccion)
+    
+    #horas = list(map(int, horas['horas'].tolist()))
+    #horas.sort()
+    #cant_horas = len(horas)
+    """if not horas:
         min_ = 0
         max_ = 0
     else:
         min_ = horas[0]
-        max_ = horas[cant_horas-1]
-    '''
+        max_ = horas[cant_horas-1]"""
+    
     for i in range(24):
         horas.append(i)
     min_ = 0
     max_ = 23
-    '''
+    
     #horas[0] = 12
     #min_ = 12
     #max_= 12
@@ -464,6 +473,7 @@ def datos_box(fecha_inicio,freq,sensor,eje):
              "GROUP BY fecha "
              "ORDER BY fecha ASC LIMIT "+str(periodo)+";")
 
+    print('query datos box')
     new_df = pd.read_sql_query(query,coneccion)
     if(new_df.empty):
         rango_horas = list(pd.date_range(fecha_inicio, periods=301, freq=freq).strftime('%Y-%m-%d %H:%M:%S'))
@@ -534,7 +544,7 @@ def generar_reportes(fig_principal,fig_sec1,fig_sec2,valor_promedio,valor_max,va
         return base64.b64encode(scope.transform(fig, format="png")).decode('utf-8')
 
     #Transforma el logo en uri, para poder ser visualizados en html
-    with open("./assets/SHM-logo2.bmp", "rb") as imageFile:
+    with open("./DatosRecientes/assets/SHM-logo2.bmp", "rb") as imageFile:
         logo = base64.b64encode(imageFile.read()).decode('utf-8')
     
     # se guardan los garficos en formato uri en una lista
