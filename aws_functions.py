@@ -111,7 +111,7 @@ def build_sql_query(values):
     if values['destino_consulta'] == 'almacenamiento_programado':
         query = query + "FROM " + "test "
     elif values['destino_consulta'] == 'evento_inesperado':
-        query = query + "FROM " + "test " ## cambiar a tabla eventos inesperados
+        query = query + "FROM " + "test_eventos_inesperados " 
 
     ########## WHERE ##########
 
@@ -241,7 +241,7 @@ def build_download_sql_query(params,values,now_time):
     if values['destino_consulta'] == 'almacenamiento_programado':
         query = query + " FROM " + "test "
     elif values['destino_consulta'] == 'evento_inesperado':
-        query = query + " FROM " + "test_eventos_inesperados " ## cambiar a tabla eventos inesperados
+        query = query + " FROM " + "test_eventos_inesperados " 
 
     ##### WHERE #####   
     if values['rango_consulta'] == 'todo_entre_las_fechas':
