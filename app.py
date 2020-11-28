@@ -10,6 +10,7 @@ from flask_mail import Mail, Message
 import os
 import dash
 
+"""
 import dash_core_components as dcc
 import dash_html_components as html
 import templates.datos_recientes as datosrecientes
@@ -22,7 +23,7 @@ import plotly.graph_objects as go
 import collections
 import plotly.express as px
 import dash_bootstrap_components as dbc
-
+"""
 app = Flask(__name__, template_folder='templates', static_folder='static', static_url_path='')
 app.config.from_pyfile('config.py')
 app.config.update(
@@ -38,11 +39,11 @@ app.config.update(
 
 #plotly_app = dash.Dash(__name__, server=app, url_base_pathname="/dash/", external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-plotly_app = dash.Dash(__name__, server=app, url_base_pathname="/dash/")
-plotly_app.layout = datosrecientes.datos_recientes_layout
+#plotly_app = dash.Dash(__name__, server=app, url_base_pathname="/dash/")
+#plotly_app.layout = datosrecientes.datos_recientes_layout
 
 
-@app.route("/dash")
+"""@app.route("/dash")
 def my_dash_app():
     return plotly_app.index()
 
@@ -717,7 +718,7 @@ def crear_reporte(clicks, fig_principal,fig_sec1,fig_sec2,valor_promedio,valor_m
         datos.generar_reportes(go.Figure(fig_principal),go.Figure(fig_sec1),go.Figure(fig_sec2),valor_promedio,valor_max,valor_min,fecha_valor_max,fecha_valor_min,num_valor_max,num_valor_min,alert_sup,alert_inf,fecha_alert_sup,fecha_alert_inf,sensor,sensores,fecha,ventana_tiempo,valor_linea_control_sup,valor_linea_control_inf,hora,cantidad_sensores,ejes,eje)
     return 'uno'
 
-
+"""
 
 
 
