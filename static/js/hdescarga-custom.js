@@ -71,7 +71,7 @@ function estimate_size(dt1, dt2,n_axis,n_sensor,type) {
 	low_size = low_size * n_axis * n_sensor;
 	high_size = high_size * n_axis * n_sensor;
 
-	var estimate = "[" + low_size + " - " + high_size + "]";
+	var estimate = "[" + low_size.toFixed(1) + " - " + high_size.toFixed(1) + "]";
 
 	return estimate;
 }
