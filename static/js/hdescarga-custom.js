@@ -33,13 +33,49 @@ $("#idform").keypress(function(e) {
 });
 
 
-function diff_hours(dt2, dt1) {
+function estimate_size(dt1, dt2,n_axis,n_sensor,type) {
 
-	var diff =(dt2.getTime() - dt1.getTime()) / 1000;
-	diff /= (60 * 60);
-	return Math.abs(Math.round(diff));
+	var map_hours = [2,3,4,5, 7,8,9,10, 13,14,15,16, 18,19,20,21]; //Bloques de horarios
+	var low_size = 0.0;
+	var high_size = 0.0;
 
+	if(type == "todo_entre_las_fechas"){
+
+		while(dt1.getTime() != dt2.getTime()){
+			if(map_hours.includes(dt1.getHours())){
+				low_size += 0.7;
+				high_size += 1.3;
+			}
+			dt1.setHours(dt1.getHours() + 1);
+		}
+
+	}
+
+	if(type == "horas_por_dia"){
+
+		var diff =(dt2.getTime() - dt1.getTime()) / 1000;
+		diff /= (60 * 60);
+		var days = Math.abs(Math.round(diff));
+
+		while(dt1.getHours() != dt2.getHours()){
+			if(map_hours.includes(dt1.getHours())){
+				low_size += 0.7;
+				high_size += 1.3;
+			}
+			dt1.setHours(dt1.getHours() + 1);
+		}
+		low_size *= days;
+		high_size *= days;
+	}
+
+	low_size = low_size * n_axis * n_sensor;
+	high_size = high_size * n_axis * n_sensor;
+
+	var estimate = "[" + low_size.toFixed(1) + " - " + high_size.toFixed(1) + "]";
+
+	return estimate;
 }
+
 
 //////////////////////////////////////////
 ///////// Validando Form submit/////////
@@ -124,44 +160,34 @@ $('#submitBtn').click(function() {
     var h_f_int = hora_final.split(":",1);
 	date_inicial = new Date( fecha_inicial + " " + hora_inicial);
 	date_final = new Date( fecha_final + " " + hora_final);
-    var lower_bound = 0.2; // 1 solo sensor
-    var upper_bound = 18; // todos los sensores
-    var number_axis = consultas_ejes.lenght; // numero de sensores involucrados
+    
+    //3,4MB por sensor y eje
+    var number_axis = consultas_ejes.length; // numero de sensores involucrados
+    var number_sensor = lista_sensores.length;
+
 
     // Texto consulta a realizar
     if (destino_consulta == "almacenamiento_programado"){
     	if (rango_consulta == "todo_entre_las_fechas"){
     		//Todo entre [Fecha inicio a las Hora inicio] y [Fecha fin a las Hora fin]
-    		var query_hours = diff_hours(date_inicial, date_final); 
-    		lower_bound = Math.round(lower_bound * query_hours * number_axis);
-    		upper_bound = Math.round(upper_bound * query_hours * number_axis);
     		$('#texto_rango').text("Todo entre [" + fecha_inicial + " a las " + hora_inicial + "] y [" + fecha_final + " a las " + hora_final + "]");
     		$('#texto_sensores').text("Sensores: " + lista_sensores);
     		$('#texto_ejes').text("Ejes: " + consultas_ejes);
-    		if(upper_bound != 0)
-    			$('#texto_consulta').text("Tamaño estimado \u2245 < 12 MB");
-    		else 
-    			$('#texto_consulta').text("Tamaño estimado \u2245 [" + lower_bound + " - " + upper_bound + "] MB");
+    		$('#texto_consulta').text("Tamaño estimado \u2245 "  + estimate_size(date_inicial,date_final,number_axis,number_sensor,"todo_entre_las_fechas") + " MB");
     	}
     	else if (rango_consulta == "horas_por_dia"){
     		//Desde el [Fecha inicio] hasta [Fecha fin] entre los horarios [Hora inicial] y [Hora fin]
-    		var query_days = date_final.getTime() - date_inicial.getTime();
-    		query_days = query_days / (1000*3600*24);
-    		lower_bound =  Math.round(lower_bound * (h_f_int - h_i_int) * query_days);
-    		upper_bound =  Math.round(upper_bound * (h_f_int - h_i_int) * query_days);
     		$('#texto_rango').text("Desde el [" + fecha_inicial + "] hasta [" + fecha_final + "] entre los horarios [" + hora_inicial + "] y [" + hora_final + "]");
     		$('#texto_sensores').text("Sensores: " + lista_sensores);
     		$('#texto_ejes').text("Ejes: " + consultas_ejes);
-    		$('#texto_consulta').text("Tamaño estimado:\u2245 [" + lower_bound + " - " + upper_bound + "] MB" );
+    		$('#texto_consulta').text("Tamaño estimado:\u2245 "  + estimate_size(date_inicial,date_final,number_axis,number_sensor,"horas_por_dia") + " MB" );
     	}
     }
     else if (destino_consulta == "evento_inesperado"){
         //Todo entre [Fecha inicio a las Hora inicio] y [Fecha fin a las Hora fin]
-		var query_hours = diff_hours(date_inicial, date_final); 
-		upper_bound = Math.round(upper_bound * query_hours);
 	    $('#texto_rango').text("Todo evento inesperado entre [" + fecha_inicial + " a las " + hora_inicial + "] y [" + fecha_final + " a las " + hora_final + "]");
 		$('#texto_sensores').text("Sensores: " + lista_sensores);
 		$('#texto_ejes').text("Ejes: " + consultas_ejes);
-		$('#texto_consulta').text("Tamaño estimado \u2245 [0 - " + upper_bound + "] MB");
+		$('#texto_consulta').text("Tamaño estimado \u2245 "  + estimate_size(date_inicial,date_final,number_axis,number_sensor,"todo_entre_las_fechas") + " MB");
     }
 });

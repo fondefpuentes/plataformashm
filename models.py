@@ -74,6 +74,8 @@ class Estructura(db.Model):
     coord_x = db.Column(db.Float)
     coord_y = db.Column(db.Float)
     dashboard = db.Column(db.String(500))
+    ip_instancia = db.Column(db.String(100))
+    en_monitoreo = db.Column(db.Boolean)
 
 class TipoSensor(db.Model):
     __tablename__ = 'tipos_de_sensor'
@@ -85,7 +87,7 @@ class TipoSensor(db.Model):
 class Sensor(db.Model):
     __tablename__ = 'sensores'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement = True)
     tipo_sensor = db.Column(db.Integer, db.ForeignKey('inventario_puentes.tipos_de_sensor.id'))
     frecuencia = db.Column(db.Integer)
     minimo_umbral = db.Column(db.Float)
@@ -94,16 +96,17 @@ class Sensor(db.Model):
     bias_level = db.Column(db.Float)
     modelo = db.Column(db.String(10))
     serial = db.Column(db.String(10))
+    uuid_device = db.Column(db.String(100))
 
 class InstalacionSensor(db.Model):
     __tablename__ = 'instalaciones_de_sensores'
     __table_args__ = {'schema':'inventario_puentes'}    
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     fecha_instalacion = db.Column(db.DateTime)
 
 class SensorInstalado(db.Model):
     __tablename__ = 'sensores_instalados'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     id_instalacion = db.Column(db.Integer, db.ForeignKey('inventario_puentes.instalaciones_de_sensores.id'))
     id_sensor = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores.id'))
     id_zona = db.Column(db.Integer)
@@ -119,7 +122,7 @@ class SensorInstalado(db.Model):
 class DescripcionSensor(db.Model):
     __tablename__ = 'descripciones_de_sensores'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'))
     descripcion = db.Column(db.String(1000))
 
@@ -142,7 +145,7 @@ class CalibracionSensor(db.Model):
 class DAQ(db.Model):
     __tablename__ = 'daqs'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement = True)
     coord_x = db.Column(db.Float)
     coord_y = db.Column(db.Float)
     coord_z = db.Column(db.Float)
@@ -167,7 +170,7 @@ class DescripcionDAQ(db.Model):
     __tablename__ = 'descripciones_de_daqs'
     __table_args__ = {'schema':'inventario_puentes'}
     id_daq = db.Column(db.Integer, db.ForeignKey('inventario_puentes.daqs.id'))
-    id_tipo = db.Column(db.Integer, primary_key=True)
+    id_tipo = db.Column(db.Integer, primary_key=True, autoincrement = True)
     caracteristicas = db.Column(db.String(100))
 
 class EstadoDAQ(db.Model):
@@ -181,7 +184,7 @@ class EstadoDAQ(db.Model):
 class Canal(db.Model):
     __tablename__ = 'canales'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     id_daq = db.Column(db.Integer, db.ForeignKey('inventario_puentes.daqs.id'))
     numero_canal = db.Column(db.Integer)
 

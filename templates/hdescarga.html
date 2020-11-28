@@ -76,10 +76,10 @@
 			      <th scope="row">
 			      	2020
 			      </th>
-			      <td>[7:00 - 9:00]</td>
-			      <td>[12:00 - 15:00]</td>
-			      <td>[23:00 -2:00]</td>
-			      <td>[3:00 - 6:00]</td>
+			      <td>[2:00 - 5:00]</td>
+			      <td>[7:00 - 10:00]</td>
+			      <td>[13:00 -16:00]</td>
+			      <td>[18:00 - 21:00]</td>
 			    </tr>
 			    <tr>
 			      <th scope="row">
@@ -207,24 +207,11 @@
 			</div>
 			<div class="ml-2 mb-0 form-group">	
 				<select multiple class="form-control" name="sensor_list" id="sensor_list" required>
-					<option value="AC01">AC01</option>
-					<option value="AC02">AC02</option>
-					<option value="AC03">AC03</option>
-					<option value="AC04">AC04</option>
-					<option value="AC05">AC05</option>
-					<option value="AC06">AC06</option>
-					<option value="AC07">AC07</option>
-					<option value="AC08">AC08</option>
-					<option value="AC09">AC09</option>
-					<option value="AC10">AC10</option>
-					<option value="AC11">AC11</option>
-					<option value="AC12">AC12</option>
-					<option value="AC13">AC13</option>
-					<option value="AC14">AC14</option>
-					<option value="AC15">AC15</option>
-					<option value="AC16">AC16</option>
-					<option value="AC17">AC17</option>
-					<option value="AC18">AC18</option>
+
+				  	{%for i in info_sensores:%}
+				  		<option value={{i["name"]}}>{{i["name"]}}</option>
+				    {% endfor %}
+				    
 				</select>
 		        <div class="invalid-feedback">
 	          		Seleccionar sensores.
@@ -235,19 +222,15 @@
 					<p class="text-center">Ejes:</p>
 				</div>
 			</div>
-			<div class="ml-2 mb-0 form-group">	
+			<div class="ml-2 mb-0 form-group">
+
+				{%for i in info_ejes:%}
 				<div class="form-check">
-				  <input class="form-check-input" type="checkbox" name="consultas_ejes" value="x" id="defaultCheck1">
-				  <label class="form-check-label" for="defaultCheck1">Eje X</label>
+				  <input class="form-check-input" type="checkbox" name="consultas_ejes" value={{i}} id="defaultCheck1">
+				  <label class="form-check-label" for="defaultCheck1">Eje {{i}}</label>
 				</div>
-				<div class="form-check">
-				  <input class="form-check-input" type="checkbox" name="consultas_ejes" value="y" id="defaultCheck2">
-				  <label class="form-check-label" for="defaultCheck1">Eje Y</label>
-				</div>
-				<div class="form-check">
-				  <input class="form-check-input" type="checkbox" name="consultas_ejes" value="z" id="defaultCheck3">
-				  <label class="form-check-label" for="defaultCheck1">Eje Z</label>
-				</div>
+
+				{% endfor %}
 			</div>
 		</div>
 

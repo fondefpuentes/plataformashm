@@ -14,7 +14,7 @@ def get_consultas(params):
     s3 = boto3.client('s3')
 
     paginator = s3.get_paginator('list_objects_v2')
-    pages = paginator.paginate(Bucket=params['bucket'], Prefix=params['path'] +'/metadata/' + params['user_id'])
+    pages = paginator.paginate(Bucket=params['bucket'], Prefix=params['path'] + '/' + params['user_id'] +'/metadata/')
 
     s3 = boto3.resource('s3')
 
@@ -58,7 +58,7 @@ def detalle_consultas(params,filename):
 
     filename_metadata = filename.split(".")
 
-    object_metadata = s3.Object( params['bucket'] , params['path'] +'/metadata/' + params['user_id'] + '/' + filename_metadata[0] + '.json')
+    object_metadata = s3.Object( params['bucket'] , params['path'] + '/' + params['user_id'] +'/metadata/' + filename_metadata[0] + '.json')
 
     metadata = object_metadata.get()['Body'].read().decode('UTF-8')
 
@@ -79,7 +79,7 @@ def detalle_descarga(params,filename):
 
     filename_metadata = filename.split(".")
 
-    object_metadata = s3.Object( params['bucket'] , params['path'] +'/metadata/' + params['user_id'] + '/' + filename_metadata[0] + '.json')
+    object_metadata = s3.Object( params['bucket'] , params['path'] + '/' + params['user_id'] +'/metadata/' + filename_metadata[0] + '.json')
 
     metadata = object_metadata.get()['Body'].read().decode('UTF-8')
 
@@ -104,9 +104,9 @@ def build_sql_query(values):
 
         if first:
             first = False
-            query =  query + i + "(value) as " + i + " "
+            query =  query + i + "(dbl_v) as " + i + " "
         else:
-            query = query + ", " +  i + "(value) as " + i + " " 
+            query = query + ", " +  i + "(dbl_v) as " + i + " " 
     ########## FROM ###############
     if values['destino_consulta'] == 'almacenamiento_programado':
         query = query + "FROM " + "test "
@@ -122,13 +122,13 @@ def build_sql_query(values):
     ##### sensores #####    
     query = query + " AND ("
     first = True
-    for j in values['lista_sensores']:
+    for j in values['id_sensores']:
 
         if first:
             first = False
-            query = query + "name = '" + j + "'"
+            query = query + "id = '" + j + "'"
         else:
-            query = query + "OR name = '" + j + "'"
+            query = query + "OR id = '" + j + "'"
     ##### ejes #####    
     query = query + ") AND ("
     first = True
@@ -141,8 +141,8 @@ def build_sql_query(values):
     query = query + ")"
 
     query = query + " GROUP BY name, axis"
-    query = query + " ORDER BY name, axis"
-
+    query = query + " ORDER BY axis, name"
+    print(query)
     return query
 
 
@@ -223,7 +223,7 @@ def query_athena(params,values):
             values["file_name"] = now_time + ".csv"
             time_end = time.time()
             values["execution_time"] = round(time_end - time_start)
-            object_metadata = s3.Object( params['bucket'] , params['path'] +'/metadata/' + params['user_id'] + "/" + now_time + '.json')
+            object_metadata = s3.Object( params['bucket'] , params['path'] + '/' + params['user_id'] +'/metadata/' + now_time + '.json')
             object_metadata.put( Body=(bytes(json.dumps(values).encode('UTF-8'))), ContentType='application/json' )
 
             return True
@@ -235,13 +235,13 @@ def query_athena(params,values):
 def build_download_sql_query(params,values,now_time):
 
     ##### SELECT #####
-    query = "SELECT ts, name, axis, type, value"
+    query = "SELECT ts, name, axis, type, dbl_v"
 
     ##### FROM #####
     if values['destino_consulta'] == 'almacenamiento_programado':
         query = query + " FROM " + "test "
     elif values['destino_consulta'] == 'evento_inesperado':
-        query = query + " FROM " + "test " ## cambiar a tabla eventos inesperados
+        query = query + " FROM " + "test_eventos_inesperados " ## cambiar a tabla eventos inesperados
 
     ##### WHERE #####   
     if values['rango_consulta'] == 'todo_entre_las_fechas':
@@ -251,13 +251,13 @@ def build_download_sql_query(params,values,now_time):
     ##### sensores #####    
     query = query + " AND ("
     first = True
-    for j in values['lista_sensores']:
+    for j in values['id_sensores']:
 
         if first:
             first = False
-            query = query + "name = '" + j + "'"
+            query = query + "id = '" + j + "'"
         else:
-            query = query + "OR name = '" + j + "'"
+            query = query + "OR id = '" + j + "'"
     ##### ejes #####    
     query = query + ") AND ("
     first = True
@@ -271,7 +271,7 @@ def build_download_sql_query(params,values,now_time):
 
     query = query + " ORDER BY ts, name, axis ASC"
 
-    query = "CREATE table new_parquet WITH (format='PARQUET', parquet_compression='SNAPPY', external_location = 's3://" + params['bucket'] + "/descargas/" + "test" + "/" + params['user_id'] + "/" + now_time + "', bucketed_by = ARRAY['ts'], bucket_count = 1) AS(" + query + ");"
+    query = "CREATE table new_parquet WITH (format='PARQUET', parquet_compression='GZIP', external_location = 's3://" + params['bucket'] + "/descargas/" + "test" + "/" + params['user_id'] + "/" + now_time + "', bucketed_by = ARRAY['ts'], bucket_count = 1) AS(" + query + ");"
 
     query_droptable = "DROP TABLE new_parquet;"
 
@@ -337,7 +337,7 @@ def download_query_athena(params,values):
                     break
                 for obj in page['Contents']:
                     queryLoc = params['bucket'] + "/" + obj['Key']
-                    s3.Object(params['bucket'], params['path'] + '/' + params['user_id'] + '/' + now_time).copy_from(CopySource = queryLoc)
+                    s3.Object(params['bucket'], params['path'] + '/' + params['user_id'] + '/' + now_time + '.gz.parquet').copy_from(CopySource = queryLoc)
                     s3 = boto3.client('s3')
                     #deletes Athena generated file
                     response = s3.delete_object(
@@ -354,7 +354,7 @@ def download_query_athena(params,values):
                     'Database' : params['database']
                 },
                 ResultConfiguration = {
-                    'OutputLocation': 's3://' + params['bucket'] + params['path_athena'] + '/' + params['user_id'] + '/' + now_time
+                    'OutputLocation': 's3://' + params['bucket'] + '/' + params['path_athena'] + '/' + params['user_id'] + '/' + now_time
                 }
             )
             ## Descarga sin contenido
@@ -365,10 +365,10 @@ def download_query_athena(params,values):
             s3 = boto3.resource('s3')
             values["fecha_consulta"] = now.strftime("%Y-%m-%d %H:%M:%S")
             values["file_name"] = now_time
-            values["size"] = round(s3.Bucket(params['bucket'] ).Object(params['path'] + '/' + params['user_id'] + '/' + now_time).content_length / pow(1024,2),1)
+            values["size"] = round(s3.Bucket(params['bucket'] ).Object(params['path'] + '/' + params['user_id'] + '/' + now_time + '.gz.parquet').content_length / pow(1024,2),1)
             time_end = time.time()
             values["execution_time"] = round(time_end - time_start)
-            object_metadata = s3.Object( params['bucket'] , params['path'] +'/metadata/' + params['user_id'] + '/' + now_time + '.json')
+            object_metadata = s3.Object( params['bucket'] , params['path'] + '/' + params['user_id'] +'/metadata/' + now_time + '.json')
             object_metadata.put( Body=(bytes(json.dumps(values).encode('UTF-8'))), ContentType='application/json')
             return True
         else:
@@ -379,4 +379,4 @@ def download_query_athena(params,values):
 
 def get_attachment_url(params,filename):
     s3 = boto3.client('s3')
-    return s3.generate_presigned_url('get_object', Params={'Bucket': params['bucket'], "Key": params['path'] + '/' + params['user_id'] + '/' + filename }, ExpiresIn=60)
+    return s3.generate_presigned_url('get_object', Params={'Bucket': params['bucket'], "Key": params['path'] + '/' + params['user_id'] + '/' + filename + '.gz.parquet'}, ExpiresIn=60)
