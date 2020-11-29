@@ -38,10 +38,15 @@ function estimate_size(dt1, dt2,n_axis,n_sensor,type) {
 	var map_hours = [2,3,4,5, 7,8,9,10, 13,14,15,16, 18,19,20,21]; //Bloques de horarios
 	var low_size = 0.0;
 	var high_size = 0.0;
+	
+	//Check invalid values
+	if(n_sensor == 0 || n_axis == 0 || isNaN(dt1) || isNaN(dt2) || dt2.getTime() <= dt1.getTime()){
+		return 0;
+	}
 
 	if(type == "todo_entre_las_fechas"){
 
-		while(dt1.getTime() != dt2.getTime()){
+		while(dt1.getTime() < dt2.getTime()){
 			if(map_hours.includes(dt1.getHours())){
 				low_size += 0.7;
 				high_size += 1.3;
@@ -57,7 +62,7 @@ function estimate_size(dt1, dt2,n_axis,n_sensor,type) {
 		diff /= (60 * 60);
 		var days = Math.abs(Math.round(diff));
 
-		while(dt1.getHours() != dt2.getHours()){
+		while(dt1.getHours() < dt2.getHours()){
 			if(map_hours.includes(dt1.getHours())){
 				low_size += 0.7;
 				high_size += 1.3;
