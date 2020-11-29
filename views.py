@@ -14,6 +14,7 @@ import boto3
 import aws_functions
 import swagger
 import pytz
+import requests
 
 views_api = Blueprint('views_api',__name__)
 
@@ -267,13 +268,7 @@ def informacion_estructura(id):
     #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser as√≠, es por que no est√° siendo monitoreada
-    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
-    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
-    esta_monitoreada = True
-    if(check_schema is None):
-        esta_monitoreada = False
-    #Consulta por rutas de im√°genes y BIM asociados
+    esta_monitoreada = estructura.en_monitoreo
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1075,8 +1070,6 @@ def agregar_hallazgo(id_informe):
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
 
-
-#Rutas que permiten acceder a recursos est√°ticos de la plataforma (Archivos BIM, Im√°genes e Informes)
 #Rutas que permiten acceder a recursos est√°ticos de la plataforma (Archivos BIM, Im√°genes e Informes)
 @views_api.route('/static/bim/<int:id_puente>')
 def show_3d_bim(id_puente):
@@ -1206,6 +1199,36 @@ def obtener_hallazgos(id_puente):
         }
     return res
 
+####################### INTEGRACION UNITY ####################################
+@views_api.route('/sensores_instalados/<int:id_puente>')
+def sensores_instalados(id_puente):
+  sensores_actuales = db.session.query(Sensor.id, SensorInstalado.id.label("si"),SensorInstalado.coord_x,SensorInstalado.coord_y,SensorInstalado.coord_z,Sensor.frecuencia,Sensor.uuid_device, TipoSensor.nombre, ZonaEstructura.descripcion, InstalacionSensor.fecha_instalacion,DescripcionSensor.descripcion.label("nsensor")).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ZonaEstructura.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc()).all()
+  data = {}
+  data['data'] = []
+  for element in sensores_actuales:
+    aux = {
+    'nombre'    : element.nsensor,
+    'id'        : element.si,
+    'uuid'      : element.uuid_device,
+    'frecuencia': element.frecuencia,
+    'tipo'      : element.nombre,
+    'fecha_inst': element.fecha_instalacion,
+    'zona'      : element.descripcion,
+    'coord_x'   : element.coord_x,
+    'coord_y'   : element.coord_y,
+    'coord_z'   : element.coord_z
+    }
+    data['data'].append(aux)
+  
+  return data 
+
+@views_api.route('/estado_sensor/<int:id_si>')
+def estado_sensor(id_si):
+  return 0
+
+@views_api.route('/actualizar_si/<int:id_si>', methods=["POST"])
+def actualizar_si(id_si):
+  return 0
 ####################### INTEGRACI√ìN CON THINGSBOARD #########################
 @views_api.route('/tiemporeal/<int:id>')
 def tiempo_real(id):
@@ -1269,12 +1292,7 @@ def hconsulta(id):
     #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser asÌ, es por que no est· siendo monitoreada
-    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
-    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
-    esta_monitoreada = True
-    if(check_schema is None):
-        esta_monitoreada = False
+    esta_monitoreada = estructura.en_monitoreo
     #Consulta por rutas de im·genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
@@ -1358,12 +1376,7 @@ def hdetalles(id,filename):
     #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser asÌ, es por que no est· siendo monitoreada
-    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
-    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
-    esta_monitoreada = True
-    if(check_schema is None):
-        esta_monitoreada = False
+    esta_monitoreada = estructura.en_monitoreo
     #Consulta por rutas de im·genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
@@ -1394,12 +1407,7 @@ def hdescarga(id):
 #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser asÌ, es por que no est· siendo monitoreada
-    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
-    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
-    esta_monitoreada = True
-    if(check_schema is None):
-        esta_monitoreada = False
+    esta_monitoreada = estructura.en_monitoreo
     #Consulta por rutas de im·genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
@@ -1481,12 +1489,7 @@ def hdetallesdescarga(id,filename):
     #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
-    #Revisa si el schema del puente existe, de no ser asÌ, es por que no est· siendo monitoreada
-    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
-    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
-    esta_monitoreada = True
-    if(check_schema is None):
-        esta_monitoreada = False
+    esta_monitoreada = estructura.en_monitoreo
     #Consulta por rutas de im·genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()

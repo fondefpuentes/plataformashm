@@ -16,3 +16,4 @@ PyJWT
 boto3
 pytz
 pandas==1.1.2
+requests
