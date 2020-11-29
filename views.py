@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, flash, request, redirect, url_for, send_file
+from flask import Blueprint, render_template, session, flash, request, redirect, url_for, send_file, jsonify, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from models import *
@@ -1205,30 +1205,56 @@ def sensores_instalados(id_puente):
   sensores_actuales = db.session.query(Sensor.id, SensorInstalado.id.label("si"),SensorInstalado.coord_x,SensorInstalado.coord_y,SensorInstalado.coord_z,Sensor.frecuencia,Sensor.uuid_device, TipoSensor.nombre, ZonaEstructura.descripcion, InstalacionSensor.fecha_instalacion,DescripcionSensor.descripcion.label("nsensor")).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ZonaEstructura.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc()).all()
   data = {}
   data['data'] = []
-  for element in sensores_actuales:
-    aux = {
-    'nombre'    : element.nsensor,
-    'id'        : element.si,
-    'uuid'      : element.uuid_device,
-    'frecuencia': element.frecuencia,
-    'tipo'      : element.nombre,
-    'fecha_inst': element.fecha_instalacion,
-    'zona'      : element.descripcion,
-    'coord_x'   : element.coord_x,
-    'coord_y'   : element.coord_y,
-    'coord_z'   : element.coord_z
-    }
-    data['data'].append(aux)
-  
+  if(sensores_actuales != None):
+    for element in sensores_actuales:
+      aux = {
+      'nombre'    : element.nsensor,
+      'id'        : element.si,
+      'uuid'      : element.uuid_device,
+      'frecuencia': element.frecuencia,
+      'tipo'      : element.nombre,
+      'fecha_inst': element.fecha_instalacion,
+      'zona'      : element.descripcion,
+      'coord_x'   : element.coord_x,
+      'coord_y'   : element.coord_y,
+      'coord_z'   : element.coord_z
+      }
+      data['data'].append(aux)
+  else:
+    data['data'] = "ND"
   return data 
 
 @views_api.route('/estado_sensor/<int:id_si>')
 def estado_sensor(id_si):
-  return 0
+  estado = db.session.query(EstadoSensor.detalles, EstadoSensor.fecha_estado).filter(SensorInstalado.id == id_si, EstadoSensor.id_sensor_instalado == SensorInstalado.id).order_by(EstadoSensor.fecha_estado.desc()).first()
+  if(estado != None):
+    data = estado.detalles
+  else:
+    data = "ND"  
+  return data
 
 @views_api.route('/actualizar_si/<int:id_si>', methods=["POST"])
 def actualizar_si(id_si):
-  return 0
+  if request.is_json:
+    req = request.get_json()
+    sensor_a_actualizar = SensorInstalado.query.filter_by(id = id_si).first()
+    try:
+      sensor_a_actualizar.coord_x = req.get("x")
+      sensor_a_actualizar.coord_y = req.get("y")
+      sensor_a_actualizar.coord_z = req.get("z")
+      db.session.add(sensor_a_actualizar)
+      db.session.commit()
+      response_body = {
+      "message": "Aceptado" 
+      }
+      res = make_response(jsonify(response_body), 200)
+      return res
+    except:
+      db.session.rollback()
+      return make_response(jsonify({"message": "Error al Actualizar"}), 400)
+  else:
+    return make_response(jsonify({"message": "No es un JSON valido"}), 400)
+    
 ####################### INTEGRACIÓN CON THINGSBOARD #########################
 @views_api.route('/tiemporeal/<int:id>')
 def tiempo_real(id):
