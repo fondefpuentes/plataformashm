@@ -111,7 +111,7 @@ def build_sql_query(values):
     if values['destino_consulta'] == 'almacenamiento_programado':
         query = query + "FROM " + "test "
     elif values['destino_consulta'] == 'evento_inesperado':
-        query = query + "FROM " + "test " ## cambiar a tabla eventos inesperados
+        query = query + "FROM " + "test_eventos_inesperados " 
 
     ########## WHERE ##########
 
@@ -241,7 +241,7 @@ def build_download_sql_query(params,values,now_time):
     if values['destino_consulta'] == 'almacenamiento_programado':
         query = query + " FROM " + "test "
     elif values['destino_consulta'] == 'evento_inesperado':
-        query = query + " FROM " + "test_eventos_inesperados " ## cambiar a tabla eventos inesperados
+        query = query + " FROM " + "test_eventos_inesperados " 
 
     ##### WHERE #####   
     if values['rango_consulta'] == 'todo_entre_las_fechas':
@@ -337,7 +337,7 @@ def download_query_athena(params,values):
                     break
                 for obj in page['Contents']:
                     queryLoc = params['bucket'] + "/" + obj['Key']
-                    s3.Object(params['bucket'], params['path'] + '/' + params['user_id'] + '/' + now_time).copy_from(CopySource = queryLoc)
+                    s3.Object(params['bucket'], params['path'] + '/' + params['user_id'] + '/' + now_time + '.gz.parquet').copy_from(CopySource = queryLoc)
                     s3 = boto3.client('s3')
                     #deletes Athena generated file
                     response = s3.delete_object(
@@ -365,7 +365,7 @@ def download_query_athena(params,values):
             s3 = boto3.resource('s3')
             values["fecha_consulta"] = now.strftime("%Y-%m-%d %H:%M:%S")
             values["file_name"] = now_time
-            values["size"] = round(s3.Bucket(params['bucket'] ).Object(params['path'] + '/' + params['user_id'] + '/' + now_time).content_length / pow(1024,2),1)
+            values["size"] = round(s3.Bucket(params['bucket'] ).Object(params['path'] + '/' + params['user_id'] + '/' + now_time + '.gz.parquet').content_length / pow(1024,2),1)
             time_end = time.time()
             values["execution_time"] = round(time_end - time_start)
             object_metadata = s3.Object( params['bucket'] , params['path'] + '/' + params['user_id'] +'/metadata/' + now_time + '.json')
@@ -379,4 +379,4 @@ def download_query_athena(params,values):
 
 def get_attachment_url(params,filename):
     s3 = boto3.client('s3')
-    return s3.generate_presigned_url('get_object', Params={'Bucket': params['bucket'], "Key": params['path'] + '/' + params['user_id'] + '/' + filename }, ExpiresIn=60)
+    return s3.generate_presigned_url('get_object', Params={'Bucket': params['bucket'], "Key": params['path'] + '/' + params['user_id'] + '/' + filename + '.gz.parquet'}, ExpiresIn=60)
