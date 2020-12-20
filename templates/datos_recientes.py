@@ -86,8 +86,8 @@ datos_recientes_layout = html.Div([
                                         dcc.Dropdown(
                                             id="elegir-sensor", 
                                             multi=False, 
-                                            options=[{"label": key , "value": value}for key,value in datos.nombres_sensores('acelerometro').items()],
-                                            value=str(datos.nombres_sensores('acelerometro').get(list(datos.nombres_sensores('acelerometro').keys())[0])),
+                                            options=[{"label": key , "value": value}for key,value in datos.nombres_sensores('Acelerometro').items()],
+                                            value=str(datos.nombres_sensores('Acelerometro').get(list(datos.nombres_sensores('Acelerometro').keys())[0])),
                                         ),
                                     ],type="default"
                                 )
@@ -99,8 +99,8 @@ datos_recientes_layout = html.Div([
                                         dcc.Dropdown(
                                             id="elegir-sensor-multi",
                                             multi=True, 
-                                            options=[{"label": key , "value": value}for key,value in datos.nombres_sensores('acelerometro').items()],
-                                            value=str(datos.nombres_sensores('acelerometro').get(list(datos.nombres_sensores('acelerometro').keys())[0])),
+                                            options=[{"label": key , "value": value}for key,value in datos.nombres_sensores('Acelerometro').items()],
+                                            value=str(datos.nombres_sensores('Acelerometro').get(list(datos.nombres_sensores('Acelerometro').keys())[0])),
                                         ),
                                     ],type="default"
                                 )
@@ -153,10 +153,10 @@ datos_recientes_layout = html.Div([
                                         dcc.DatePickerSingle(
                                             id='elegir-fecha',
                                             display_format='DD/MM/YYYY',
-                                            min_date_allowed=datos.fecha_inicial('acelerometro','x'),
-                                            max_date_allowed=datos.fecha_final('acelerometro','x'),
-                                            initial_visible_month=datos.fecha_inicial('acelerometro','x'),
-                                            date = datos.fecha_inicial('acelerometro','x')
+                                            min_date_allowed=datos.fecha_inicial('Acelerometro','x'),
+                                            max_date_allowed=datos.fecha_final('Acelerometro','x'),
+                                            initial_visible_month=datos.fecha_inicial('Acelerometro','x'),
+                                            date = datos.fecha_inicial('Acelerometro','x')
                                         ),
                                     ],type="default"
                                 )
@@ -196,7 +196,7 @@ datos_recientes_layout = html.Div([
                                                 id='horas-disponibles',
                                                 min=0,
                                                 max=23,
-                                                value=int(datos.horas_del_dia(str(datos.nombres_sensores('acelerometro').get(list(datos.nombres_sensores('acelerometro').keys())[0])),datos.fecha_inicial('acelerometro','x'))[1]),
+                                                value=int(datos.horas_del_dia(str(datos.nombres_sensores('Acelerometro').get(list(datos.nombres_sensores('Acelerometro').keys())[0])),datos.fecha_inicial('Acelerometro','x'))[1]),
                                                 step=None,
                                                 dots=True,
                                                 updatemode='drag',
