@@ -1554,5 +1554,7 @@ def hgetdescarga(file_name):
 
 @views_api.route("/datos_recientes")
 def datos_recientes():
-    context = {}
-    return render_template('template_datos_recientes.html',**context)
+    if current_user.is_authenticated:
+        return render_template('template_datos_recientes.html')
+    else:
+        return redirect(url_for('views_api.usuario_no_autorizado'))
