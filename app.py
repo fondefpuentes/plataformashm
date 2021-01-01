@@ -11,7 +11,6 @@ import os
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import templates.datos_recientes as datosrecientes
 import DatosRecientes.dataframe as datos
 from dash.dependencies import Input, Output,State
 from datetime import datetime as dt
@@ -21,6 +20,7 @@ import plotly.graph_objects as go
 import collections
 import plotly.express as px
 import dash_bootstrap_components as dbc
+import DatosRecientes.layout as DashLayout
 
 
 app = Flask(__name__, template_folder='templates', static_folder='static', static_url_path='')
@@ -29,28 +29,16 @@ app.config.update(
     MAIL_SERVER = 'smtp.gmail.com',
     MAIL_PORT = 465,
     MAIL_USE_SSL = True,
-    MAIL_USERNAME = "plataformasmh@gmail.com",
-    MAIL_PASSWORD = "mcffsubqdrxznqaq",
+    MAIL_USERNAME = "plataforma.shm.chile@gmail.com",
+    MAIL_PASSWORD = "vewtbinxfhhjsfea",
 )
 
-plotly_app = dash.Dash(__name__, server=app, url_base_pathname="/dash/")
-plotly_app.layout = datosrecientes.datos_recientes_layout
+### INTEGRACION DATOS RECIENTES ###
 
+plotly_app = dash.Dash(__name__, server=app, url_base_pathname="/dash/", assets_folder="./DatosRecientes/assets")
+plotly_app.layout = DashLayout.datos_recientes_layout
 
-@app.route("/dash")
-def my_dash_app():
-    return plotly_app.index()
-
-@app.route("/datos_recientes")
-def datos_recientes():
-    context = {}
-    return render_template('template_datos_recientes.html',**context)
-
-
-
-
-@plotly_app.callback(Output('indicador-multi','style'),
-              [Input('boton-aceptar', 'n_clicks')],[State('cantidad-sensores','value')])
+@plotly_app.callback(Output('indicador-multi','style'),[Input('boton-aceptar', 'n_clicks')],[State('cantidad-sensores','value')])
 
 def update_info(clicks,cantidad_sensores):
     if clicks >= 0:
@@ -242,7 +230,7 @@ def update_grafico_principal(n_clicks,click_linea_sup,click_linea_inf,cantidad_s
     if n_clicks >= 0:
         fecha_ini_titulo,fecha_fin_titulo = datos.fecha_titulo(fecha,ventana_tiempo)
         #Dependiendo del tipo de sensor se crean visualizaciones distintas
-        if tipo_sensor == 'acelerometro':
+        if tipo_sensor == 'Acelerometro':
             if cantidad_sensores == '1-sensor':
                 # La variable df contiene el dataframe que se utiliza para generar los graficos OHLC e histograma
                 
@@ -472,7 +460,7 @@ def update_grafico_1(n_clicks,cantidad_sensores,hora,tipo_sensor,sensor,sensor_m
     if n_clicks >= 0:
         fecha_ini_titulo,fecha_fin_titulo = datos.fecha_titulo(fecha,ventana_tiempo) 
         #Dependiendo del tipo de sensor se crean visualizaciones distintas
-        if tipo_sensor == 'acelerometro':
+        if tipo_sensor == 'Acelerometro':
             if cantidad_sensores == '1-sensor':
 
                 #Aqui se crea el grafico boxplot
@@ -622,7 +610,7 @@ def update_grafico_2(n_clicks,cantidad_sensores,hora,tipo_sensor,sensor,sensor_m
             titulo_OHLC = datos.titulo_OHLC(ventana_tiempo)
 
             fig_2.update_layout(title={'text':"Dirección y Velocidad (m/s) del viento durante "+str(titulo_OHLC)+" "})
-        elif tipo_sensor == 'acelerometro':
+        elif tipo_sensor == 'Acelerometro':
             if cantidad_sensores == '1-sensor':
                 # La variable df contiene el dataframe que se utiliza para generar el histograma
                 # Aqui se crea el histograma
@@ -712,6 +700,7 @@ def crear_reporte(clicks, fig_principal,fig_sec1,fig_sec2,valor_promedio,valor_m
         datos.generar_reportes(go.Figure(fig_principal),go.Figure(fig_sec1),go.Figure(fig_sec2),valor_promedio,valor_max,valor_min,fecha_valor_max,fecha_valor_min,num_valor_max,num_valor_min,alert_sup,alert_inf,fecha_alert_sup,fecha_alert_inf,sensor,sensores,fecha,ventana_tiempo,valor_linea_control_sup,valor_linea_control_inf,hora,cantidad_sensores,ejes,eje)
     return 'uno'
 
+### FIN DATOS RECIENTES ###
 
 mail = Mail(app)
 

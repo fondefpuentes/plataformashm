@@ -1319,7 +1319,7 @@ def hconsulta(id):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de imágenes y BIM asociados
+    #Consulta por rutas de imï¿½genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1403,7 +1403,7 @@ def hdetalles(id,filename):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de imágenes y BIM asociados
+    #Consulta por rutas de imï¿½genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1434,7 +1434,7 @@ def hdescarga(id):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de imágenes y BIM asociados
+    #Consulta por rutas de imï¿½genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1516,7 +1516,7 @@ def hdetallesdescarga(id,filename):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de imágenes y BIM asociados
+    #Consulta por rutas de imï¿½genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1551,3 +1551,8 @@ def hgetdescarga(file_name):
 
     url = aws_functions.get_attachment_url(params,file_name)
     return redirect(url, code=302)
+
+@views_api.route("/datos_recientes")
+def datos_recientes():
+    context = {}
+    return render_template('template_datos_recientes.html',**context)
