@@ -89,7 +89,20 @@ def detalle_descarga(params,filename):
     metadata_content["rango_consulta"] =  metadata_content["rango_consulta"].replace("_"," ")
 
 
-    return metadata_content
+    s3 = boto3.client('s3')
+    paginator = s3.get_paginator('list_objects_v2')
+    pages = paginator.paginate(Bucket=params['bucket'], Prefix=params['path'] + '/' + params['user_id'] + '/' + filename + '/')
+    lista_descargables = []
+    for page in pages:
+        if (page["KeyCount"] == 0):
+            break
+        for obj in page['Contents']:
+            print(obj)
+            aux = obj['Key'].split("/")
+            lista_descargables.append(aux.pop())
+            print(lista_descargables)
+
+    return metadata_content, lista_descargables
 
 
 
@@ -234,6 +247,12 @@ def query_athena(params,values):
 
 def build_download_sql_query(params,values,now_time):
 
+    n_days = 1
+    dia_inicio = datetime.strptime(values['fecha_inicial'] + ' ' + values['hora_inicial'], "%Y-%m-%d %H:%M")
+    dia_fin = datetime.strptime(values['fecha_final'] + ' ' + values['hora_final'], "%Y-%m-%d %H:%M")
+    delta = dia_fin - dia_inicio
+    n_days = max(1,round(delta.total_seconds()/86400))
+
     ##### SELECT #####
     query = "SELECT ts, name, axis, type, dbl_v"
 
@@ -269,12 +288,9 @@ def build_download_sql_query(params,values,now_time):
             query = query + "OR axis = '" + k + "'"
     query = query + ")"
 
-    query = query + " ORDER BY ts, name, axis ASC"
-
-    query = "CREATE table new_parquet WITH (format='PARQUET', parquet_compression='GZIP', external_location = 's3://" + params['bucket'] + "/descargas/" + "test" + "/" + params['user_id'] + "/" + now_time + "', bucketed_by = ARRAY['ts'], bucket_count = 1) AS(" + query + ");"
+    query = "CREATE table new_parquet WITH (format='PARQUET', parquet_compression='GZIP', external_location = 's3://" + params['bucket'] + "/descargas/" + "test" + "/" + params['user_id'] + "/" + now_time + "', bucketed_by = ARRAY['ts'], bucket_count ="+ str(n_days) +") AS(" + query + ");"
 
     query_droptable = "DROP TABLE new_parquet;"
-
     return query, query_droptable
 
 
@@ -331,20 +347,23 @@ def download_query_athena(params,values):
             s3 = boto3.client('s3')
             paginator = s3.get_paginator('list_objects_v2')
             pages = paginator.paginate(Bucket=params['bucket'], Prefix=params['path'] + '/' + params['user_id'] + '/' + now_time)
-            s3 = boto3.resource('s3')
+            total_size = 0
             for page in pages:
+                count = 0
                 if (page["KeyCount"] == 0):
                     break
                 for obj in page['Contents']:
+                    total_size += obj['Size']/ pow(1024,2)
+                    s3 = boto3.resource('s3')
                     queryLoc = params['bucket'] + "/" + obj['Key']
-                    s3.Object(params['bucket'], params['path'] + '/' + params['user_id'] + '/' + now_time + '.gz.parquet').copy_from(CopySource = queryLoc)
+                    s3.Object(params['bucket'], params['path'] + '/' + params['user_id'] + '/' + now_time + '/' + now_time + "-" + str(count) + '.gz.parquet').copy_from(CopySource = queryLoc)
                     s3 = boto3.client('s3')
                     #deletes Athena generated file
                     response = s3.delete_object(
                         Bucket=params['bucket'],
                         Key= obj['Key']
                     )
-
+                    count += 1
 
             # Drop CTAS Table
             s3 = boto3.resource('s3')
@@ -365,7 +384,7 @@ def download_query_athena(params,values):
             s3 = boto3.resource('s3')
             values["fecha_consulta"] = now.strftime("%Y-%m-%d %H:%M:%S")
             values["file_name"] = now_time
-            values["size"] = round(s3.Bucket(params['bucket'] ).Object(params['path'] + '/' + params['user_id'] + '/' + now_time + '.gz.parquet').content_length / pow(1024,2),1)
+            values["size"] = round(total_size,1)
             time_end = time.time()
             values["execution_time"] = round(time_end - time_start)
             object_metadata = s3.Object( params['bucket'] , params['path'] + '/' + params['user_id'] +'/metadata/' + now_time + '.json')
@@ -379,4 +398,5 @@ def download_query_athena(params,values):
 
 def get_attachment_url(params,filename):
     s3 = boto3.client('s3')
-    return s3.generate_presigned_url('get_object', Params={'Bucket': params['bucket'], "Key": params['path'] + '/' + params['user_id'] + '/' + filename + '.gz.parquet'}, ExpiresIn=60)
+    folder = filename.split('.')[0]
+    return s3.generate_presigned_url('get_object', Params={'Bucket': params['bucket'], "Key": params['path'] + '/' + params['user_id'] + '/' + folder + '/' + filename}, ExpiresIn=60)

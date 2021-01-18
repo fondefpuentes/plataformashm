@@ -1402,9 +1402,9 @@ def hdetallesdescarga(id,filename):
     'user_id': current_user.id
     }
 
-    metadata_consulta = aws_functions.detalle_descarga(params,filename)
+    metadata_consulta, lista_descargables = aws_functions.detalle_descarga(params,filename)
 
-    return render_template('hdetallesdescarga.html', **context, metadata = metadata_consulta)
+    return render_template('hdetallesdescarga.html', **context, metadata = metadata_consulta, lista_descargables = lista_descargables)
 
 @views_api.route('/descargar/<string:file_name>')
 def hgetdescarga(file_name):
