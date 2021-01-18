@@ -1,15 +1,92 @@
-{% extends "base.html" %}
+<!-- templates/base.html -->
 
-{% block customcss %}
-    {{ super() }}
-    <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
-{% endblock %}
+<!DOCTYPE html>
+<html>
 
-{% block content %}
-    <p>
-        To reset your password
-        <a href="{{ url_for('views_api.reset_verified', user=user, token=token, _external=True) }}">
-            click here
-        </a>.
-    </p>
-{% endblock %}
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Plataforma de Monitoreo SHM</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css')}}">
+	<link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">	
+
+</head>       
+
+<body>
+        <table class="wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation" style="box-sizing: border-box; background-color: #f8fafc; margin: 0; padding: 0; width: 100%;">
+            <tbody>
+                <tr>
+                    <td align="center" style="box-sizing: border-box;">
+                        <table class="content" width="100%" cellpadding="0" cellspacing="0" role="presentation" style="box-sizing: border-box; background-color: #f8fafc; margin: 0; padding: 0; width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td class="header" style="box-sizing: border-box;padding: 25px 0;text-align: center;">
+                                        <img class="img-fluid" src="https://drive.google.com/uc?export=view&id=1N576GkO5WvwMYZnQWw9wS6z0UYSfoEcq" style="width:70px;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="body" style="box-sizing: border-box;background-color: #ffffff;border-bottom: 1px solid #edeff2;border-top: 1px solid #edeff2;margin: 0;padding: 0;width: 100%;">
+                                        <table class="inner-body" width="100%" cellpadding="0" cellspacing="0" role="presentation" style="box-sizing: border-box;background-color: #ffffff;margin: 0 auto;padding: 0;">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="content-cell" style="box-sizing: border-box;padding: 35px;">
+                                                        <h3 style="box-sizing: border-box;color: #3d4852;font-size: 19px;font-weight: bold;margin-top: 0;text-align: left;">Estimado</h3>
+                                                        <p align="justify" style="box-sizing: border-box;color: #3d4852;font-size: 16px;line-height: 1.5em;margin-top: 0;text-align: left;">Hemos recibido una solicitud para reestablecer la contraseña de la cuenta asociada a este correo electrónico. Para iniciar el proceso de reestablecer contraseña, haga clic en el siguiente enlace.</p>
+                                                        <table class="action" width="100%" cellpadding="0" cellspacing="0" role="presentation" style="box-sizing: border-box;margin: 30px auto;padding: 0;text-align: center;width: 100%;">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td align="center" style="box-sizing: border-box;">
+                                                                        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="box-sizing: border-box;">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td align="center" style="box-sizing: border-box;">
+
+                                                                                        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="box-sizing: border-box;">
+                                                                                            <tbody>
+                                                                                                <tr>
+                                                                                                    <td align="center" style="box-sizing: border-box;">
+                                                                                                        <a target="_blank" rel="noopener noreferrer" href="{{ url_for('views_api.reset_verified', user=user, token=token, _external=True) }}" class="button button-primary" style="box-sizing: border-box; border-radius: 3px; box-shadow: 0 2px 3px rgba(0, 0, 0, 0.16); color: #fff; display: inline-block; text-decoration: none; -webkit-text-size-adjust: none; background-color: #17a2b8; border-top: 10px solid #17a2b8; border-right: 18px solid #17a2b8; border-bottom: 10px solid #17a2b8; border-left: 18px solid #17a2b8;">Acceder</a>
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <p style="box-sizing: border-box;color: #3d4852;font-size: 16px;line-height: 1.5em;margin-top: 0;text-align: left;">Saluda atentamente</p>
+                                                        <p style="box-sizing: border-box;color: #3d4852;font-size: 16px;line-height: 1.5em;margin-top: 0;text-align: left;">Plataforma de Monitoreo Estructural SHM.</p>
+                                                        <table class="subcopy" width="100%" cellpadding="0" cellspacing="0" role="presentation" style="font-family: Poppins, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; box-sizing: border-box; border-top: 1px solid #edeff2; margin-top: 25px; padding-top: 25px;">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td style="box-sizing: border-box;">
+                                                                        <p style="box-sizing: border-box; color: #3d4852; line-height: 1.5em; margin-top: 0; text-align: left; font-size: 12px;">Si tiene problemas para acceder a través del botón, copie y pegue el siguiente enlace en su navegador web: <a target="_blank" rel="noopener noreferrer" href="{{ url_for('views_api.reset_verified', user=user, token=token, _external=True) }}" style="box-sizing: border-box; color: #17a2b8;">{{ url_for('views_api.reset_verified', user=user, token=token, _external=True) }}"</a></p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>
+
+
+
+
+    

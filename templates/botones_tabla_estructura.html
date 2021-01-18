@@ -22,9 +22,15 @@
                 <!--form action="{{url_for('views_api.informes_monitoreo_estructura', id_puente=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Informes de monitoreo</button>
                 </form-->
+                
                 <form action="{{url_for('views_api.tiempo_real', id=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Monitoreo Tiempo Real</button>
                 </form>
+                
+                <form action="{{url_for('views_api.datos_recientes')}}">
+                    <button class="btn btn-secondary btn-sm">Datos Recientes</button>
+                </form>
+
                 <form action="{{url_for('views_api.hconsulta', id=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Consultas</button>
                 </form>
