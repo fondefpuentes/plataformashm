@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="bg">
+    <div class="container px-5 py-5">
+        <h1 class="title py-3">Gestión de usuarios</h1>
+        <div class="row">
+            
+        </div>
+        <div class="row py-3 table-responsive">
+            <table class="table table-striped table-hover clickable-row sortable">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Permisos</th>
+                        <th colspan="2">Editar permisos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in usuarios %}
+                        <tr>
+                            <td>{{i.nombre}}</td>
+                            <td>{{i.apellido}}</td>
+                            <td>{{i.permisos}}</td>
+
+                            <td>
+                                <form method="POST" action="{{url_for('views_api.cambiar_permisos')}}">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <select class="custom-select" id="permisos" name="permisos">
+                                                <option value="Administrador" {% if i.permisos == "Administrador" %}selected{% endif %}>Administrador</option>
+                                                <option value="Dueño" {% if i.permisos == "Dueño" %}selected{% endif %}>Dueño</option>
+                                                <option value="Analista" {% if i.permisos == "Analista" %}selected{% endif %}>Analista</option>
+                                                <option value="Visita" {% if i.permisos == "Visita" %}selected{% endif %}>Visita</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <button type="submit" value="{{i.id}}" name="userid" class="btn btn-primary btn-sm">Guardar</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </td>
+                            <td>
+                                <form method="POST" action="{{url_for('views_api.eliminar_usuario')}}">
+                                    <button type="submit" value="{{i.id}}" name="userid" class="btn btn-sm btn-danger">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

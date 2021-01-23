@@ -1,5 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+import jwt
+import os
+from time import time
+from flask import current_app
 
 db = SQLAlchemy()
 
@@ -11,6 +15,28 @@ class Usuario(UserMixin, db.Model):
     apellido = db.Column(db.String(20))
     contrasena = db.Column(db.String(200))
     permisos = db.Column(db.String(20))
+    # validado = db.Column(db.Boolean)
+
+    def verify_email(email):
+        user = Usuario.query.filter_by(id=email).first()
+        return user
+
+    def verify_reset_token(token):
+        try:
+            username = jwt.decode(token, key=current_app.config['SECRET_KEY'])['reset_password']
+            # print(username)
+        except Exception as e:
+            # print(e)
+            return
+        return Usuario.query.filter_by(id=username).first()
+
+    def get_reset_token(self, expires=500):
+        print(self.id)
+        print(time() + expires)
+        print(current_app.config['SECRET_KEY'])
+        x = jwt.encode({'reset_password': self.id, 'exp': time() + expires}, key=current_app.config['SECRET_KEY'])
+        print(x)
+        return x
 
 class TipoZona(db.Model):
     __tablename__ = 'tipos_de_zona'
@@ -21,7 +47,7 @@ class TipoZona(db.Model):
 class ZonaEstructura(db.Model):
     __tablename__ = 'zonas_estructura'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'), primary_key=True)
     tipo_zona = db.Column(db.Integer, db.ForeignKey('inventario_puentes.tipos_de_zona.id'))
     material = db.Column(db.String(20))
@@ -48,6 +74,8 @@ class Estructura(db.Model):
     coord_x = db.Column(db.Float)
     coord_y = db.Column(db.Float)
     dashboard = db.Column(db.String(500))
+    ip_instancia = db.Column(db.String(100))
+    en_monitoreo = db.Column(db.Boolean)
 
 class TipoSensor(db.Model):
     __tablename__ = 'tipos_de_sensor'
@@ -59,7 +87,7 @@ class TipoSensor(db.Model):
 class Sensor(db.Model):
     __tablename__ = 'sensores'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement = True)
     tipo_sensor = db.Column(db.Integer, db.ForeignKey('inventario_puentes.tipos_de_sensor.id'))
     frecuencia = db.Column(db.Integer)
     minimo_umbral = db.Column(db.Float)
@@ -68,16 +96,17 @@ class Sensor(db.Model):
     bias_level = db.Column(db.Float)
     modelo = db.Column(db.String(10))
     serial = db.Column(db.String(10))
+    uuid_device = db.Column(db.String(100))
 
 class InstalacionSensor(db.Model):
     __tablename__ = 'instalaciones_de_sensores'
     __table_args__ = {'schema':'inventario_puentes'}    
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     fecha_instalacion = db.Column(db.DateTime)
 
 class SensorInstalado(db.Model):
     __tablename__ = 'sensores_instalados'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     id_instalacion = db.Column(db.Integer, db.ForeignKey('inventario_puentes.instalaciones_de_sensores.id'))
     id_sensor = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores.id'))
     id_zona = db.Column(db.Integer)
@@ -93,7 +122,7 @@ class SensorInstalado(db.Model):
 class DescripcionSensor(db.Model):
     __tablename__ = 'descripciones_de_sensores'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'))
     descripcion = db.Column(db.String(1000))
 
@@ -116,7 +145,7 @@ class CalibracionSensor(db.Model):
 class DAQ(db.Model):
     __tablename__ = 'daqs'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement = True)
     coord_x = db.Column(db.Float)
     coord_y = db.Column(db.Float)
     coord_z = db.Column(db.Float)
@@ -141,7 +170,7 @@ class DescripcionDAQ(db.Model):
     __tablename__ = 'descripciones_de_daqs'
     __table_args__ = {'schema':'inventario_puentes'}
     id_daq = db.Column(db.Integer, db.ForeignKey('inventario_puentes.daqs.id'))
-    id_tipo = db.Column(db.Integer, primary_key=True)
+    id_tipo = db.Column(db.Integer, primary_key=True, autoincrement = True)
     caracteristicas = db.Column(db.String(100))
 
 class EstadoDAQ(db.Model):
@@ -155,7 +184,7 @@ class EstadoDAQ(db.Model):
 class Canal(db.Model):
     __tablename__ = 'canales'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     id_daq = db.Column(db.Integer, db.ForeignKey('inventario_puentes.daqs.id'))
     numero_canal = db.Column(db.Integer)
 
