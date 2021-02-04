@@ -1,0 +1,34 @@
+<table class="table table-bordered table-responsive-md border-1 sortable">
+    <thead class="thead-dark">
+        <tr>
+            <th>Nombre</th>
+            <th>Tipo Sensor</th>
+            <th>Zona</th>
+            <th>DAQ</th>
+            <th>Estado de Daño</th>
+            <th>Fecha Estado Daño</th>
+            <th>Operatividad (1)</th>
+            <th>Confiabilidad (2)</th>
+            <th>Mantenimiento (3)</th>
+            <th>Fecha estados (1,2,3)</th>
+        </tr>
+    </thead>
+    <tbody id="sensor_data">
+    {%if sensores %}
+        {% for element in sensores %}
+        <tr>
+            <td><a href="#">{{ element.si }}</a></td>
+            <td>{{ element.nombre}}</td>
+            <td>{{ element.descripcion }}</td>
+            <td>[POR DEFINIR]</td>
+            <td>[POR DEFINIR]</td>
+            <td>[POR DEFINIR]</td>
+            <td>[POR DEFINIR]</td>
+            <td>[POR DEFINIR]</td>
+            <td>[POR DEFINIR]</td>
+            <td>[POR DEFINIR]</td>
+        </tr>
+        {%endfor%}
+    {%endif%}
+    </tbody>
+</table>
