@@ -1,0 +1,38 @@
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  <div class="col">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="card-title">Estado de Daño</h2>
+        <p class="card-text">Estado ...</p>
+      </div>
+      <div class="card-footer">
+        <small class="text-muted">Ultima Actualizacion: [dd/mm/aa hh:mm:ss]</small>
+      </div>
+      <a href="#" class="btn btn-outline-primary">Detalles</a>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="card-title">Estado Estructura Global</h2>
+        <p class="card-text">Estado ...</p>
+      </div>
+      <div class="card-footer">
+        <small class="text-muted">Ultima Actualizacion: [dd/mm/aa hh:mm:ss]</small>
+      </div>
+      <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="card-title">Nivel de Seguridad</h2>
+        <p class="card-text">Estado ...</p>
+      </div>
+      <div class="card-footer">
+        <small class="text-muted">Ultima Actualizacion: [dd/mm/aa hh:mm:ss]</small>
+      </div>
+      <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
+    </div>
+  </div>
+</div>

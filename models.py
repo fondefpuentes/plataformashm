@@ -38,14 +38,14 @@ class Usuario(UserMixin, db.Model):
         print(x)
         return x
 
-class TipoZona(db.Model):
-    __tablename__ = 'tipos_de_zona'
+class TipoElemento(db.Model):
+    __tablename__ = 'tipo_de_elemento'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     nombre_zona = db.Column(db.String(20))
 
-class ZonaEstructura(db.Model):
-    __tablename__ = 'zonas_estructura'
+class ElementoEstructural(db.Model):
+    __tablename__ = 'elemento_estructural'
     __table_args__ = {'schema':'inventario_puentes'}
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'), primary_key=True)
@@ -80,7 +80,7 @@ class Estructura(db.Model):
 class TipoSensor(db.Model):
     __tablename__ = 'tipos_de_sensor'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer,primary_key=True, autoincrement=True)
     nombre = db.Column(db.String(20))
     unidad_medida = db.Column(db.String(10))
 
@@ -133,14 +133,18 @@ class EstadoSensor(db.Model):
     id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'), primary_key=True)
     fecha_estado = db.Column(db.DateTime, primary_key=True)
     detalles = db.Column(db.String(1000))
+    operatividad = db.Column(db.String(100))
+    confiabilidad = db.Column(db.String(100))
+    mantenimiento = db.Column(db.String(100))
 
-class CalibracionSensor(db.Model):
-    __tablename__ = 'calibraciones_sensores'
+class Mantenimiento(db.Model):
+    __tablename__ = 'mantenimiento'
     __table_args__ = {'schema':'inventario_puentes'}
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'), primary_key=True)
-    fecha_calibracion = db.Column(db.DateTime, primary_key=True)
+    fecha_mantenimiento = db.Column(db.DateTime, primary_key=True)
     detalles = db.Column(db.String(1000))
+    estado = db.Column(db.String(100))
 
 class DAQ(db.Model):
     __tablename__ = 'daqs'
@@ -158,12 +162,12 @@ class DAQPorZona(db.Model):
     id_estructura = db.Column(db.Integer, primary_key=True)
     __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.zonas_estructura.id','inventario_puentes.zonas_estructura.id_estructura']),{'schema':'inventario_puentes'})
 
-class RevisionDAQ(db.Model):
-    __tablename__ = 'revisiones_de_daqs'
+class MantenimientoDAQ(db.Model):
+    __tablename__ = 'mantenimiento_de_daq'
     __table_args__ = {'schema':'inventario_puentes'}
     id_daq = db.Column(db.Integer, db.ForeignKey('inventario_puentes.daqs.id'))    
     id_revision = db.Column(db.Integer, primary_key=True)
-    fecha_revision = db.Column(db.DateTime)
+    fecha_mantenimiento = db.Column(db.DateTime)
     detalles = db.Column(db.String(1000))
 
 class DescripcionDAQ(db.Model):
@@ -180,6 +184,8 @@ class EstadoDAQ(db.Model):
     id_daq = db.Column(db.Integer, db.ForeignKey('inventario_puentes.daqs.id'))
     fecha_estado = db.Column(db.DateTime)
     detalles = db.Column(db.String(1000))
+    operatividad = db.Column(db.String(100))
+    mantenimiento = db.Column(db.String(100))
 
 class Canal(db.Model):
     __tablename__ = 'canales'
@@ -229,12 +235,13 @@ class ConjuntoSensorInstalado(db.Model):
     id_conjunto = db.Column(db.Integer, db.ForeignKey('inventario_puentes.conjuntos.id'), primary_key=True)
     id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'), primary_key=True)
 
-class EstadoMonitoreo(db.Model):
-    __tablename__ = 'estados_de_monitoreo'
+class EstadoEstructura(db.Model):
+    __tablename__ = 'estados_estructura'
     __table_args__ = {'schema':'inventario_puentes'}
     id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'), primary_key=True)
     fecha_estado = db.Column(db.DateTime, primary_key=True)
-    estado = db.Column(db.String(20))
+    estado = db.Column(db.String(50))
+    seguridad = db.Column(db.String(50))
 
 class VisualizacionBIM(db.Model):
     __tablename__ = 'visualizaciones_bim'
@@ -254,7 +261,7 @@ class ImagenEstructura(db.Model):
 class InformeMonitoreoVisual(db.Model):
     __tablename__ = 'informes_monitoreo_visual'
     __table_args__ = {'schema':'inventario_puentes'}
-    id_informe = db.Column(db.Integer, primary_key=True)
+    id_informe = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_usuario = db.Column(db.String(100), db.ForeignKey('inventario_puentes.usuarios.id'))
     id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'))
     contenido = db.Column(db.String(2000))
@@ -271,7 +278,7 @@ class InformeZona(db.Model):
 class HallazgoVisual(db.Model):
     __tablename__ = 'hallazgos_visuales'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_usuario = db.Column(db.String(100), db.ForeignKey('inventario_puentes.usuarios.id'))
     detalle_hallazgo = db.Column(db.String(2000))
     fecha = db.Column(db.DateTime)
@@ -322,3 +329,66 @@ class SensorPorGrupoDefinido(db.Model):
     id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'),primary_key=True)
     id_grupo = db.Column(db.Integer, db.ForeignKey('inventario_puentes.grupos_definidos_por_usuario.id'),primary_key=True)
     fecha_creacion = db.Column(db.DateTime)
+
+class EstadoElemento(db.Model):
+    __tablename__ = 'estado_de_elemento'
+    __table_args__ = {'schema':'inventario_puentes'}
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True) 
+    id_elemento = db.Column(db.Integer)
+    id_estructura = db.Column(db.Integer)
+    fecha_estado = db.Column(db.DateTime)
+    detalles = db.Column(db.String(100))
+    __table_args__ = (db.ForeignKeyConstraint(['id_elemento','id_estructura'],['inventario_puentes.elemento_estructural.id','inventario_puentes.elemento_estructural.id_estructura']),{'schema':'inventario_puentes'})
+    
+class EstadoDanoEstructura(db.Model):
+    __tablename__ = 'estado_de_dano_estructura'
+    __table_args__ = {'schema':'inventario_puentes'}
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'))
+    diahora_calculo = db.Column(db.DateTime)
+    estado = db.Column(db.String(100))
+    
+class EstadoDanoElemento(db.Model):
+    __tablename__ = 'estado_de_dano_elemento'
+    __table_args__ = {'schema':'inventario_puentes'}
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True) 
+    id_elemento = db.Column(db.Integer)
+    id_estructura = db.Column(db.Integer)
+    diahora_calculo = db.Column(db.DateTime)
+    estado = db.Column(db.String(100))
+    __table_args__ = (db.ForeignKeyConstraint(['id_elemento','id_estructura'],['inventario_puentes.elemento_estructural.id','inventario_puentes.elemento_estructural.id_estructura']),{'schema':'inventario_puentes'})
+    
+class EstadoDanoSensor(db.Model):
+    __tablename__ = 'estado_de_dano_sensor'
+    __table_args__ = {'schema':'inventario_puentes'}
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'))
+    id_anomalia = db.Column(db.Integer, db.ForeignKey('inventario_puentes.anomalia_por_hora.id'))
+    diahora_calculo = db.Column(db.DateTime)
+    estado = db.Column(db.String(100))
+
+class AnomaliaPorHora(db.Model):
+    __tablename__ = 'anomalia_por_hora'
+    __table_args__ = {'schema':'inventario_puentes'}
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'))
+    hora_calculo = db.Column(db.DateTime)
+    anomalia = db.Column(db.Boolean)
+    
+class ReporteDanoAR(db.Model):
+    __tablename__ = 'reporte_dano_ar'
+    __table_args__ = {'schema':'inventario_puentes'}
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'))
+    hora = db.Column(db.DateTime)
+
+class ModeloAR(db.Model):
+    __tablename__ = 'modelo_ar'
+    __table_args__ = {'schema':'inventario_puentes'}
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    
+class CoeficienteAR(db.Model):
+    __tablename__ = 'coeficiente_ar'
+    __table_args__ = {'schema':'inventario_puentes'}
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    valor = db.Column(db.Float)
