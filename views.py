@@ -1365,7 +1365,6 @@ def hconsulta(id):
                 if j["name"] == i:
                     id_sensores.append(j["uuid"])
 
-        print(id_sensores)
         ####Conversion tiempo local a UTC####
         local_timezone = pytz.timezone ("America/Santiago")
         naive = datetime.strptime(fecha_inicial + " " + hora_inicial, "%Y-%m-%d %H:%M")

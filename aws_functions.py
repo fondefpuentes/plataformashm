@@ -4,6 +4,7 @@ import csv
 import time
 import json
 import pytz
+import re
 from datetime import datetime
 
 
@@ -97,10 +98,8 @@ def detalle_descarga(params,filename):
         if (page["KeyCount"] == 0):
             break
         for obj in page['Contents']:
-            print(obj)
             aux = obj['Key'].split("/")
             lista_descargables.append(aux.pop())
-            print(lista_descargables)
 
     return metadata_content, lista_descargables
 
@@ -155,7 +154,6 @@ def build_sql_query(values):
 
     query = query + " GROUP BY name, axis"
     query = query + " ORDER BY axis, name"
-    print(query)
     return query
 
 
@@ -252,7 +250,9 @@ def build_download_sql_query(params,values,now_time):
     dia_fin = datetime.strptime(values['fecha_final'] + ' ' + values['hora_final'], "%Y-%m-%d %H:%M")
     delta = dia_fin - dia_inicio
     n_days = max(1,round(delta.total_seconds()/86400))
-
+    user_formatted = re.sub(r'[^a-zA-Z0-9]', '', params['user_id'])
+    time_formatted = re.sub(r'[^a-zA-Z0-9]', '', now_time)
+    table_name = user_formatted + time_formatted
     ##### SELECT #####
     query = "SELECT ts, name, axis, type, dbl_v"
 
@@ -288,9 +288,10 @@ def build_download_sql_query(params,values,now_time):
             query = query + "OR axis = '" + k + "'"
     query = query + ")"
 
-    query = "CREATE table new_parquet WITH (format='PARQUET', parquet_compression='GZIP', external_location = 's3://" + params['bucket'] + "/descargas/" + "test" + "/" + params['user_id'] + "/" + now_time + "', bucketed_by = ARRAY['ts'], bucket_count ="+ str(n_days) +") AS(" + query + ");"
+    query = "CREATE table " + table_name + " WITH (format='PARQUET', parquet_compression='GZIP', external_location = 's3://" + params['bucket'] + "/descargas/" + "test" + "/" + params['user_id'] + "/" + now_time + "', bucketed_by = ARRAY['ts'], bucket_count ="+ str(n_days) +") AS(" + query + ");"
 
-    query_droptable = "DROP TABLE new_parquet;"
+    query_droptable = "DROP TABLE " + table_name + ";"
+
     return query, query_droptable
 
 
@@ -399,4 +400,4 @@ def download_query_athena(params,values):
 def get_attachment_url(params,filename):
     s3 = boto3.client('s3')
     folder = filename.split('.')[0]
-    return s3.generate_presigned_url('get_object', Params={'Bucket': params['bucket'], "Key": params['path'] + '/' + params['user_id'] + '/' + folder + '/' + filename}, ExpiresIn=60)
+    return s3.generate_presigned_url('get_object', Params={'Bucket': params['bucket'], "Key": params['path'] + '/' + params['user_id'] + '/' + folder[:-2] + '/' + filename}, ExpiresIn=60)
