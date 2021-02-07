@@ -1,4 +1,4 @@
-<div class="btn-toolbar py-3">
+<div class="btn-toolbar py-3 px-1 row row-cols-4 g-4 align-items-center" role="toolbar">
     {% if esta_monitoreada %}
             <!--form action="{{url_for('views_api.zonas_de_estructura', id=datos_puente.id)}}">
                 <button class="btn btn-secondary btn-sm">Zonas</button>
@@ -17,31 +17,89 @@
                     <button class="btn btn-secondary btn-sm">Clusters</button>
                 </form-->
                 <form action="{{url_for('views_api.show_3d_bim',id_puente=datos_puente.id)}}">
-                    <button class="btn btn-secondary btn-sm">Visualización 3D</button>
+                    <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                        <div class="row row-cols-2">
+                            <div class="col-auto"><i class="bi bi-badge-3d-fill"></i></div>
+                            <div class="col-lg">Exploración de Estructura en 3D</div>
+                        </div>
+                    </button>
                 </form>
                 <!--form action="{{url_for('views_api.informes_monitoreo_estructura', id_puente=datos_puente.id)}}">
                     <button class="btn btn-secondary btn-sm">Informes de monitoreo</button>
                 </form-->
                 
                 <form action="{{url_for('views_api.tiempo_real', id=datos_puente.id)}}">
-                    <button class="btn btn-secondary btn-sm">Monitoreo Tiempo Real</button>
+                    <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                        <div class="row row-cols-2">
+                            <div class="col-auto"><i class="bi bi-exclamation-circle-fill"></i></div>
+                            <div class="col-lg">Mediciones y Alertas en Tiempo Real</div>
+                        </div>
+                    </button>
                 </form>
                 
                 <form action="{{url_for('views_api.datos_recientes')}}">
-                    <button class="btn btn-secondary btn-sm">Datos Recientes</button>
+                    <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                        <div class="row row-cols-2">
+                            <div class="col-auto"><i class="bi bi-clipboard-data"></i></div>
+                            <div class="col-lg">Analisis de Mediciones Recientes</div>
+                        </div>
+                    </button>
                 </form>
-
+                
+                <form action="#">
+                    <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                        <div class="row row-cols-2">
+                            <div class="col-auto"><i class="bi bi-display"></i></div>
+                            <div class="col-lg">Detección Temprana de Daños</div>
+                        </div>
+                    </button>
+                </form>
+                
                 <form action="{{url_for('views_api.hconsulta', id=datos_puente.id)}}">
-                    <button class="btn btn-secondary btn-sm">Consultas</button>
+                    <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                        <div class="row row-cols-2">
+                            <div class="col-auto"><i class="bi bi-clock-history"></i></div>
+                            <div class="col-lg">Consulta de Mediciones Históricas</div>
+                        </div>
+                    </button>
                 </form>
+                
                 <form action="{{url_for('views_api.hdescarga', id=datos_puente.id)}}">
-                    <button class="btn btn-secondary btn-sm">Descargas</button>
+                    <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                        <div class="row row-cols-2">
+                            <div class="col-auto"><i class="bi bi-download"></i></div>
+                            <div class="col-lg">Descarga de Mediciones Históricas</div>
+                        </div>
+                    </button>
+                </form>
+                
+                <form action="https://www.dronedeploy.com/app2/sites/5fff6b913301e685de4313f3/maps/5fff6b553301e685de4313f2">
+                    <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                        <div class="row row-cols-2">
+                            <div class="col-auto"><i class="bi bi-camera-fill"></i></div>
+                            <div class="col-lg">Visualización Modelo Externo 2 </div>
+                        </div>
+                    </button>
+                </form>
+                
+                <form action="#">
+                    <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                        <div class="row row-cols-2">
+                            <div class="col-auto"><i class="bi bi-pie-chart-fill"></i></div>
+                            <div class="col-lg">Visualización Modelo Externo 1 </div>
+                        </div>
+                    </button>
                 </form>
         {% endif %}
     {% else %}
         {% if current_user.permisos == 'Administrador' %}
                 <form action="{{ url_for('views_api.crear_monitoreo', id_puente=datos_puente.id) }}", method="POST">
-                    <button class="btn btn-secondary btn-sm">Iniciar Monitoreo</button>
+                    <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                        <div class="row row-cols-2">
+                            <div class="col-auto"><i class="bi bi-search px-2"></i></div>
+                            <div class="col-lg">Iniciar Monitoreo</div>
+                        </div>
+                    </button>
                 </form>
         {% endif %} 
     {% endif %}
