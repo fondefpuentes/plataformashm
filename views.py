@@ -271,6 +271,7 @@ def informacion_estructura(id):
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc()).all()
     daqs = DAQPorZona.query.filter_by(id_estructura = id).all()
+    ultimo_estado = EstadoEstructura.query.filter_by(id_estructura=id).order_by(EstadoEstructura.fecha_estado.desc()).first()
     context = {
         'datos_puente':estructura,
         'estado_monitoreo':estado_monitoreo,
@@ -278,7 +279,8 @@ def informacion_estructura(id):
         'imagenes_estructura':imagenes_estructura,
         'bim_estructura':bim_estructura,
         'sensores':sensores,
-        'daqs' : daqs
+        'daqs' : daqs,
+        'estado': ultimo_estado
     }
     return render_template('tabla_estructura.html', **context)
 
@@ -317,28 +319,34 @@ def gestion_estado(id):
         if(request.method == "GET"):
             estructura = Estructura.query.filter_by(id=id).first()
             esta_monitoreada = estructura.en_monitoreo
-            zonas_puente = db.session.query(ElementoEstructural.id, ElementoEstructural.descripcion).filter_by(id_estructura=id).all()
-            #Se filtran los sensores ya conectados
-            sensores_conectados = db.session.query(SensorInstalado.conexion_actual).filter(SensorInstalado.id_estructura == id, SensorInstalado.conexion_actual > 0)
-            conexiones = db.session.query(Canal.id.label('sensores_conectados')).except_(sensores_conectados).subquery()
-            #Se obtienen las conexiones disponibles de los DAQs
-            disponibles = db.session.query(Canal).join(conexiones, conexiones.c.sensores_conectados == Canal.id).order_by(Canal.id_daq.asc(), Canal.numero_canal.asc()).all()
-            tipos_sensores = TipoSensor.query.all()
             #Se guarda momentaneamente el id del puente en la sesión actual
             session['id_puente'] = id
+            estados = EstadoEstructura.query.filter_by(id_estructura=id).order_by(EstadoEstructura.fecha_estado.desc()).all()
             context = {
                 'id_puente' : id,
                 'nombre_y_tipo_activo' : obtener_nombre_y_activo(id),
                 'datos_puente' : estructura,
                 'esta_monitoreada':esta_monitoreada,
-                'zonas_puente': zonas_puente,
-                'tipos_sensores': tipos_sensores,
-                'conexiones' : disponibles
+                'historial': estados
             }
             return render_template('gestion_estado.html',**context)
         #En POST se envia lo ingresado via formulario, para guardar en la BD
         elif(request.method == "POST"):
-            x = 1
+            estado_global = request.form.get('globalRadio')
+            nivel_seguridad = request.form.get('seguridadRadio')
+            detalles_estado = request.form.get('detalles')
+            try:
+                nuevo_estado = EstadoEstructura(id_estructura=id,fecha_estado=datetime.now(),estado=estado_global,seguridad=nivel_seguridad,detalles=detalles_estado)
+                db.session.add(nuevo_estado)
+                db.session.commit()
+            #En caso de ocurrir un fallo, se hace un rollback()
+            except:
+                db.session.rollback()
+                return "ERROR"
+                raise
+            #Finalmente, se redirige al listado de sensores disponibles
+            finally:
+                return redirect(url_for('views_api.gestion_estado',id=session['id_puente']))
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
 
