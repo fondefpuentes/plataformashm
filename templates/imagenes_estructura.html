@@ -4,12 +4,12 @@
             {% if imagenes_estructura%}
                 {% for i in imagenes_estructura %}
                     <div class="carousel-item{% if loop.index == 1 %} active{% endif %}">
-                        <img id="bridge-img" class="d-block w-100" src="/static/images/{{i.ruta_acceso_archivo}}" alt="{{i.descripcion}}">
+                        <img id="bridge-img" class="d-block" src="/static/images/{{i.ruta_acceso_archivo}}" alt="{{i.descripcion}}">
                     </div>
                 {% endfor %}
             {% else %}
                 <div class="carousel-item active">
-                    <img id="img-not-available" class="d-block w-100" src="/static/images/imagen_no_disponible.png" alt="f">
+                    <img id="img-not-available" class="d-block" src="/static/images/imagen_no_disponible.png" alt="f">
                 </div>
             {% endif %}
         </div>
