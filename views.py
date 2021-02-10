@@ -75,6 +75,7 @@ def profile():
     }
     return render_template('profile.html', **context)
 
+
 #PERMISOS = TODOS
 #En caso de error, redirige a esta pa«µina
 @views_api.route('/acceso_restringido')
@@ -1333,7 +1334,7 @@ def hconsulta(id):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de im·genes y BIM asociados
+    #Consulta por rutas de im?enes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1417,7 +1418,7 @@ def hdetalles(id,filename):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de im·genes y BIM asociados
+    #Consulta por rutas de im?enes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1448,7 +1449,7 @@ def hdescarga(id):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de im·genes y BIM asociados
+    #Consulta por rutas de im?enes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1530,7 +1531,7 @@ def hdetallesdescarga(id,filename):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de im·genes y BIM asociados
+    #Consulta por rutas de im?enes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1565,3 +1566,22 @@ def hgetdescarga(file_name):
 
     url = aws_functions.get_attachment_url(params,file_name)
     return redirect(url, code=302)
+
+
+   ############################### Ultima iteracion ##########################
+
+    #Vista de mapa nueva
+@views_api.route('/mapa')
+@login_required
+def mapa():
+    puentes = Estructura.query.all()
+    #Genera los markers para el mapa
+    markers = []
+    for i in puentes:
+        markers.append([i.coord_x, i.coord_y, i.tipo_activo.capitalize()+' '+i.nombre.capitalize(), i.id])
+    #Variables para el template
+    context = {
+        'puentes' : puentes,
+        'markers' : markers
+    }
+    return render_template('mapa.html', **context)
