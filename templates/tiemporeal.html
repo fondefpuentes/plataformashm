@@ -11,7 +11,8 @@
             {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
         </h1>
 	{% include 'botones_tabla_estructura.html' %}
-
+{% include 'breadcrumb.html' %}
+<div class="embed-container">
    <iframe src="{{datos_puente.dashboard}}" width="100%" frameborder="0" height="900"></iframe>
 </div>
 {% endblock %}

@@ -435,3 +435,17 @@ datos_recientes_layout = html.Div([
         ),
     ],id="mainContainer",style={"display": "flex", "flex-direction": "column"},
 )
+
+#Si se desean agregar mas graficas se puede copiar esta plantilla despues de la grafica 2
+'''
+        html.Div([
+                html.Div([
+                    dcc.Graph(
+                        figure=datos-grafico(),
+                        id="grafico-3"
+                    )],
+                    className="pretty_container five columns", #El largo la grilla es 12 y esta plantilla tiene tamaño 5 (five)
+                ),
+            ],id='cuadro-grafico-3',className="row flex-display",
+        ),
+'''

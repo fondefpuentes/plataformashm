@@ -1,6 +1,7 @@
 import dash
 import collections
-import dataframe as datos
+from . import dataframe as datos
+from . import layout as layout
 import plotly.express as px
 import pandas as pd
 import dash_core_components as dcc
@@ -11,472 +12,16 @@ from dash.dependencies import Input, Output,State
 from datetime import datetime as dt
 from time import time
 
-
-app = dash.Dash(
-    __name__,meta_tags=[{"name": "viewport", "content": "width=device-width"}]
-)
-#server = app.server
-app.title = 'Datos Recientes - Plataforma de Monitoreo Salud Estructural'
-
-server = app.server
-# Contiene la estructuracion completa de la pagina 
-app.layout = html.Div([
-                
-                #Div que contiene el titulo de la pagina
-                html.Div([
-                    html.Div(
-                        id='retorno-reportes', 
-                        style={'display': 'none'}
-                    ),
-                    html.Div([
-                        html.Img(
-                            src=app.get_asset_url("SHM-logo.bmp"),
-                            id="SHM-imagen",
-                            style={
-                                "height": "60px",
-                                "width": "auto",
-                                "margin-bottom": "25px",
-                            },
-                        )
-                    ],className="one-third column",
-                    ),
-                    html.Div([
-                        html.H3(
-                            "Datos Recientes",
-                            style={'color': 'Black','font-weight': 'bold',"margin-bottom": "0px"},
-                        ),
-                        html.H5(
-                            "Plataforma Monitoreo Salud Estructural", 
-                            style={"margin-top": "0px"}
-                        ),
-                    ],
-                    className="one-half column",
-                    id="title",
-                    ),
-                    html.Div([
-                        html.A(
-                            dcc.Loading(
-                                id="carga-reportes",
-                                children=[
-                                    html.Button(
-                                        "Generar Reporte", 
-                                        id="boton-generar-reporte",
-                                        n_clicks = 0,
-                                        style={'color': 'Black', 'backgroundColor':'lavender','font-size':'17px'}
-                                    ),
-                                ]
-                            )
-                        )
-                    ],
-                    className="one-third column",
-                    id="button",
-                    ),
-                ],
-                id="header",
-                className="row flex-display",
-                style={"margin-bottom": "25px"},
-        ),
-        html.Div([
-            html.Div([
-                #Esta seccion contiene todo lo que se muestra en la pestaña "Datos Sensores" del menu de opciones
-                dcc.Tabs([
-                    dcc.Tab(
-                        label='Datos Sensores', 
-                        children=[
-                            html.P(
-                                "Seleccione Tipo de Sensor",
-                                className="control_label",
-                                style={'textAlign': 'center','font-size':'20px'}
-                            ),
-                            html.Div([
-                                dcc.Loading(
-                                    id="carga-elegir-tipo-sen", 
-                                    children=[
-                                        dcc.Dropdown(
-                                            id="elegir-tipo-sensor", 
-                                            multi=False, 
-                                            options=[{"label": key , "value": value}for key,value in datos.tipos_sensores().items()],
-                                            value=str(datos.tipos_sensores().get(list(datos.tipos_sensores().keys())[0])),
-                                        ),
-                                    ],type="default"
-                                )
-                            ]),
-                            html.Br(),
-                            html.P(
-                                "Seleccione Sensor",
-                                className="control_label",
-                                style={'textAlign': 'center','font-size':'20px'}
-                            ),
-                            html.Div([
-                                dcc.Loading(
-                                    id="carga-elegir-sen", 
-                                    children=[
-                                        dcc.Dropdown(
-                                            id="elegir-sensor", 
-                                            multi=False, 
-                                            options=[{"label": key , "value": value}for key,value in datos.nombres_sensores('acelerometro').items()],
-                                            value=str(datos.nombres_sensores('acelerometro').get(list(datos.nombres_sensores('acelerometro').keys())[0])),
-                                        ),
-                                    ],type="default"
-                                )
-                            ],id='sensor-uni'),
-                            html.Div([
-                                dcc.Loading(
-                                    id="carga-elegir-sen-multi", 
-                                    children=[
-                                        dcc.Dropdown(
-                                            id="elegir-sensor-multi",
-                                            multi=True, 
-                                            options=[{"label": key , "value": value}for key,value in datos.nombres_sensores('acelerometro').items()],
-                                            value=str(datos.nombres_sensores('acelerometro').get(list(datos.nombres_sensores('acelerometro').keys())[0])),
-                                        ),
-                                    ],type="default"
-                                )
-                            ],style={'display':'none'},id='sensor-multi'),
-                            html.P(
-                                "Seleccione Ejes",
-                                className="control_label",
-                                style={'textAlign': 'center','font-size':'20px'}
-                            ),
-                            html.Div([
-                                dcc.Loading(
-                                    id="carga-elegir-eje", 
-                                    children=[
-                                        dcc.Checklist(
-                                            id="elegir-eje",  
-                                            options=[{'label': 'X', 'value': 'x'},
-                                                    {'label': 'Y', 'value': 'y'},
-                                                    {'label': 'Z', 'value': 'z'}],
-                                            value=['x'],
-                                            labelStyle={'display': 'inline-block'}
-                                        ),
-                                    ],type="default"
-                                )
-                            ],style={'textAlign': 'center','display':'inline'},id='ejes'),
-                            html.Div([
-                                dcc.Loading(
-                                    id="carga-elegir-eje-multi", 
-                                    children=[
-                                        dcc.RadioItems(
-                                            id="elegir-eje-multi",  
-                                            options=[{'label': 'X', 'value': 'x'},
-                                                    {'label': 'Y', 'value': 'y'},
-                                                    {'label': 'Z', 'value': 'z'}],
-                                            value='x',
-                                            labelStyle={'display': 'inline-block'}
-                                        ),
-                                    ],type="default"
-                                )
-                            ],style={'display':'none'},id='ejes-multi'),
-                            html.Br(),
-                            html.P(
-                                "Seleccione Fecha Inicial: ",
-                                className="control_label",
-                                style={'textAlign': 'center','font-size':'20px'}
-                            ),
-                            html.Div([
-                                dcc.Loading(
-                                    id="carga-elegir-fecha", 
-                                    children=[
-                                        dcc.DatePickerSingle(
-                                            id='elegir-fecha',
-                                            display_format='DD/MM/YYYY',
-                                            min_date_allowed=datos.fecha_inicial('acelerometro','x'),
-                                            max_date_allowed=datos.fecha_final('acelerometro','x'),
-                                            initial_visible_month=datos.fecha_inicial('acelerometro','x'),
-                                            date = datos.fecha_inicial('acelerometro','x')
-                                        ),
-                                    ],type="default"
-                                )
-                            ],style={'textAlign': 'center'}),
-                            html.Br(),
-                            html.P(
-                                "Seleccione Ventana de Tiempo", 
-                                className="control_label",
-                                style={'textAlign': 'center','font-size':'20px'}
-                            ),
-                            html.Div([
-                                dcc.Loading(
-                                    id="carga-ventana-tiempo", 
-                                    children=[
-                                        dcc.RadioItems(
-                                            id="ventana-tiempo",
-                                            options=[{"label": key , "value": value}for key,value in datos.ventana_tiempo(3).items()],
-                                            value=str(list(datos.ventana_tiempo(3).values())[0]),
-                                            labelStyle={"display": "inline-block"},
-                                            className="dcc_control",
-                                        ),
-                                    ],type="default"
-                                )  
-                            ],style={'textAlign': 'center'}),
-                            html.Br(),
-                            html.Div([
-                                html.P(
-                                    "Deslice para Seleccionar Hora", 
-                                    className="control_label",
-                                    style={'textAlign': 'center','font-size':'20px'}
-                                ),
-                                html.Div([
-                                    dcc.Loading(
-                                        id="carga-horas-disponibles", 
-                                        children=[
-                                            dcc.Slider(
-                                                id='horas-disponibles',
-                                                min=0,
-                                                max=23,
-                                                value=int(datos.horas_del_dia(str(datos.nombres_sensores('acelerometro').get(list(datos.nombres_sensores('acelerometro').keys())[0])),datos.fecha_inicial('acelerometro','x'))[1]),
-                                                step=None,
-                                                dots=True,
-                                                updatemode='drag',
-                                                included=False
-                                            ),
-                                        ],type="default"
-                                    )
-                                ]),  
-                                html.P(
-                                    "Hora Seleccionada: ---",
-                                    id='hora-disponible-seleccionada', 
-                                    className="control_label",
-                                    style={'textAlign': 'center','font-size':'18px'}
-                                )    
-                            ],id='contenedor-horas-disponibles'),
-                            html.Br(),
-                            html.Div([
-                                html.Button(
-                                    "Actualizar Gráficos",
-                                    id='boton-aceptar',
-                                    n_clicks = 0,
-                                    style={'color': 'Black', 'backgroundColor':'lavender','font-size':'17px'}
-                                ),
-                            ],style={'textAlign': 'center'}),
-                        ]),
-                        # Esta seccion contiene todo lo que se muestra en la pestaña "Propiedades de los graficos"
-                    dcc.Tab(
-                            label='Propiedades de los Gráficos', 
-                            children=[
-                                html.Br(),
-                                html.Br(),
-                                html.P(
-                                    "Cantidad de Sensores a Visualizar por Gráficas", 
-                                    className="control_label",
-                                    style={'textAlign': 'center','font-size':'20px'}
-                                ),
-                                html.Br(),
-                                html.Div([
-                                    dcc.RadioItems(
-                                        id='cantidad-sensores',
-                                        options=[
-                                            {'label': '1 Sensor', 'value': '1-sensor'},
-                                            {'label': 'Varios Sensores', 'value': 'varios-sensores'},
-                                        ],
-                                        value='1-sensor',
-                                        labelStyle={'display': 'inline-block'}
-                                    ), 
-                                ],style={'textAlign': 'center'}), 
-                                html.Br(),
-                                html.Br(),
-                                html.P(
-                                    "Linea de control Superior", 
-                                    className="control_label",
-                                    style={'textAlign': 'center','font-size':'20px'}
-                                ),
-                                html.Br(),
-                                html.Div([
-                                    dcc.Input(
-                                        id='linea-control-sup', 
-                                        type="number", 
-                                        placeholder="Solo valores positivos",
-                                        min=0, 
-                                        max=1000, 
-                                        step=0.001,
-                                        style={"width": "35%",'font-size':'15px'}
-                                    ),
-                                ],style={'textAlign': 'center'}),
-                                html.Br(),
-                                html.Div([
-                                    html.Button(
-                                        'Agregar / Actualizar',
-                                        id='boton-linea-sup',
-                                        n_clicks = 0,
-                                        style={'color': 'Black', 'backgroundColor':'lavender','font-size':'15px'}
-                                    ),
-                                    html.Button(
-                                        'Quitar',
-                                        id='boton-quitar-linea-sup',
-                                        n_clicks = 0,
-                                        style={'color': 'Black', 'backgroundColor':'tomato','font-size':'15px'}
-                                    ),
-                                ],style={'textAlign': 'center'}),
-                                html.Br(),
-                                html.Br(),
-                                html.P(
-                                    "Linea de control Inferior", 
-                                    className="control_label",
-                                    style={'textAlign': 'center','font-size':'20px'}
-                                ),
-                                html.Br(),
-                                html.Div([
-                                    dcc.Input(
-                                        id='linea-control-inf', 
-                                        type="number", 
-                                        placeholder="Solo valores negativos",
-                                        value =None,
-                                        min=-1000, 
-                                        max=0, 
-                                        step=0.001,
-                                        style={"width": "35%",'font-size':'15px'}
-                                    ),
-                                ],style={'textAlign': 'center'}),
-                                html.Br(),
-                                html.Div([
-                                    html.Button(
-                                        'Agregar / Actualizar',
-                                        id='boton-linea-inf',
-                                        n_clicks = 0,
-                                        style={'color': 'Black', 'backgroundColor':'lavender','font-size':'15px'}
-                                    ),
-                                    html.Button(
-                                        'Quitar',
-                                        id='boton-quitar-linea-inf',
-                                        n_clicks = 0,
-                                        style={'color': 'Black', 'backgroundColor':'tomato','font-size':'15px'}
-                                    ),
-                                ],style={'textAlign': 'center'})
-                            ])
-                    ])
-                ],className="pretty_container four columns",id="cross-filter-options",
-            ),
-            # En esta seccion se tiene todo lo relacionado con los indicadores, promedio, maximo valor , minimo valor y las lineas de control
-            html.Div([
-                html.Div([
-                    html.Div([
-                        dcc.Loading(
-                            id="carga-promedio", 
-                            children=[
-                                html.Br(),
-                                html.Br(),  
-                                html.P("Valor Promedio",style={'color': 'Black','font-weight': 'bold'}),
-                                html.H4('---',id="valor-promedio"),
-                                html.P("(Datos de los indicadores pertencientes al ultimo sensor seleccionado)", id="indicador-multi",style={'display': 'none'}),
-                                ],type="default"        
-                            )
-                            ],id="promedio",className="mini_container",
-                        ),
-                    html.Div([
-                        dcc.Loading(
-                            id="carga-val-max", 
-                            children=[
-                                html.P("Valor Máximo",style={'color': 'Black','font-weight': 'bold'}),
-                                html.H4('---',id="valor-max"),
-                                html.P("N° Veces: ---",id='num-valor-max'),
-                                html.P("Última Repetición:"),
-                                html.P("---",id='fecha-valor-max'),
-                                ],type="default"
-                            ),
-                            ],id="max",className="mini_container",
-                        ),
-                    html.Div([
-                        dcc.Loading(
-                            id="carga-val-min", 
-                            children=[
-                                html.P("Valor Mínimo",style={'color': 'Black','font-weight': 'bold'}),
-                                html.H4('---',id="valor-min"),
-                                html.P("N° Veces: ---",id='num-valor-min'),
-                                html.P("Última Repetición:"),
-                                html.P("---",id='fecha-valor-min'),
-                                ],type="default"
-                            ),
-                            ],id="min",className="mini_container",
-                        ),
-                    html.Div([
-                        dcc.Loading(
-                            id="carga-aler-sup", 
-                            children=[
-                                html.P("N° Alertas",style={'color': 'Black','font-weight': 'bold'}),
-                                html.P("Línea de Control",style={'color': 'Black','font-weight': 'bold'}),
-                                html.P("Superior",style={'color': 'Black','font-weight': 'bold'}),
-                                html.H4('---',id="alert-sup"),
-                                html.P("Última Alerta:"),
-                                html.P("---",id='fecha-alert-sup'),
-                                ],type="default"
-                            ),
-                            ],id="alertmax",className="mini_container",
-                        ),
-                    html.Div([
-                        dcc.Loading(
-                            id="carga-aler-inf",
-                            children=[
-                                html.P("N° Alertas",style={'color': 'Black','font-weight': 'bold'}),
-                                html.P("Línea de Control",style={'color': 'Black','font-weight': 'bold'}),
-                                html.P("Inferior",style={'color': 'Black','font-weight': 'bold'}),
-                                html.H4('---',id="alert-inf"),
-                                html.P("Última Alerta:"),
-                                html.P("---",id='fecha-alert-inf'),
-                                ],type="default"
-                            ),
-                            ],id="alertmin",className="mini_container",
-                        ),
-                    ],id="info-container",className="row container-display",
-                ),
-                # En esta seccion se tienen todos los graficos a mostrar en la ventana
-                html.Div([
-                    dcc.Loading(
-                        id="carga-grafico-principal",
-                        children=[
-                            dcc.Graph(
-                                id="grafico-principal"
-                                )
-                            ],type="default"
-                        ),
-                    ],id='cuadro-grafico-principal',className="pretty_container",
-                    ),
-                ],id="right-column",className="eight columns",
-            ),
-            ],className="row flex-display",
-        ),
-        #Esta seccion contiene todas las graficas
-        html.Div([
-            html.Div([
-                dcc.Loading(
-                    id="carga-grafico-1",
-                    children=[
-                        dcc.Graph(
-                            id='grafico-1'
-                            )
-                        ],type="default"
-                    ),
-                ],id='cuadro-grafico-1',className="pretty_container seven columns",
-            ),
-            html.Div([
-                dcc.Loading(
-                    id="carga-grafico-2",
-                    loading_state={'is_loading':True},
-                    children=[
-                        dcc.Graph(
-                            id='grafico-2'
-                            )
-                        ],type="default"
-                    ),
-                ],id='cuadro-grafico-2',className="pretty_container five columns",
-            ),
-            ],className="row flex-display",
-        ),
-    ],id="mainContainer",style={"display": "flex", "flex-direction": "column"},
+plotly_app = dash.Dash(
+    __name__,meta_tags=[{"name": "viewport", "content": "width=device-width"}], url_base_pathname="/dash/", assets_folder="./DatosRecientes/assets"
 )
 
-#Si se desean agregar mas graficas se puede copiar esta plantilla despues de la grafica 2
-'''
-        html.Div([
-                html.Div([
-                    dcc.Graph(
-                        figure=datos-grafico(),
-                        id="grafico-3"
-                    )],
-                    className="pretty_container five columns", #El largo la grilla es 12 y esta plantilla tiene tamaño 5 (five)
-                ),
-            ],id='cuadro-grafico-3',className="row flex-display",
-        ),
-'''
+def init_plotly(server):    
+    plotly_app.title = 'Datos Recientes - Plataforma de Monitoreo Salud Estructural' 
+    plotly_app.layout = layout.datos_recientes_layout
+    plotly_app.server = server
+    return plotly_app.server
+
 #@app.callback(Output('boton-generar-reporte', 'disabled'),
 #              [Input('carga-grafico-principal', 'loading_state'),Input('carga-grafico-1', 'loading_state'),Input('carga-grafico-2', 'loading_state')])
 
@@ -484,7 +29,7 @@ app.layout = html.Div([
 #    print(type(fig_principal))
 #    return False
 
-@app.callback(Output('indicador-multi','style'),
+@plotly_app.callback(Output('indicador-multi','style'),
               [Input('boton-aceptar', 'n_clicks')],[State('cantidad-sensores','value')])
 
 def update_info(clicks,cantidad_sensores):
@@ -495,7 +40,7 @@ def update_info(clicks,cantidad_sensores):
             return {'display':'inline'}
 
 # Esta funcion cambia segun el tipo de sensor, los sensores disponibles y ademas si en las propiedades se selecciona tener mas de 1 sensor por grafica cambia el dropdown a multiple
-@app.callback([Output('elegir-sensor', 'value'),Output('elegir-sensor', 'options'),Output('elegir-sensor-multi', 'value'),Output('elegir-sensor-multi', 'options'),Output('sensor-multi', 'style'),Output('sensor-uni','style'),Output('ejes-multi', 'style'),Output('ejes','style')],
+@plotly_app.callback([Output('elegir-sensor', 'value'),Output('elegir-sensor', 'options'),Output('elegir-sensor-multi', 'value'),Output('elegir-sensor-multi', 'options'),Output('sensor-multi', 'style'),Output('sensor-uni','style'),Output('ejes-multi', 'style'),Output('ejes','style')],
               [Input('cantidad-sensores','value'),Input('elegir-tipo-sensor','value')])
 
 def lista_sensores(cantidad_sensores,tipo_sensor):
@@ -505,7 +50,7 @@ def lista_sensores(cantidad_sensores,tipo_sensor):
         return '',[{"label":'',"value":''}],[str(datos.nombres_sensores(tipo_sensor).get(list(datos.nombres_sensores(tipo_sensor).keys())[0]))],[{"label": key , "value": value}for key,value in datos.nombres_sensores(tipo_sensor).items()],{'display':'inline'},{'display':'none'},{'textAlign': 'center','display':'inline'},{'textAlign': 'center','display':'none'}
 
 #Esta funcion cambia las fechas del selector de fechas deacuerdo a las disponibles en cada sensor
-@app.callback([Output('elegir-fecha','min_date_allowed'),Output('elegir-fecha','max_date_allowed'),Output('elegir-fecha','initial_visible_month'),Output('elegir-fecha','date')],
+@plotly_app.callback([Output('elegir-fecha','min_date_allowed'),Output('elegir-fecha','max_date_allowed'),Output('elegir-fecha','initial_visible_month'),Output('elegir-fecha','date')],
               [Input('elegir-tipo-sensor','value')])
 
 def update_fecha(tipo_sensor):
@@ -515,7 +60,7 @@ def update_fecha(tipo_sensor):
     return ini,fin,ini,ini
 
 # Esta funcion muestra el rangeslider de horas, siempre que este seleccionado la opcion de "1 hora" 
-@app.callback(Output('contenedor-horas-disponibles', 'style'),
+@plotly_app.callback(Output('contenedor-horas-disponibles', 'style'),
               [Input('ventana-tiempo','value')])
 
 def update_seleccion_horas(opciones):
@@ -525,7 +70,7 @@ def update_seleccion_horas(opciones):
         return {'display':'none'}
 
 #Muestra las horas disponibles segun el sensor en el rangeslider
-@app.callback([Output('horas-disponibles','value'),Output('horas-disponibles','min'),Output('horas-disponibles','max'),Output('horas-disponibles','marks')],
+@plotly_app.callback([Output('horas-disponibles','value'),Output('horas-disponibles','min'),Output('horas-disponibles','max'),Output('horas-disponibles','marks')],
               [Input('elegir-sensor','value'),Input('elegir-sensor-multi','value'),Input('elegir-fecha','date'),Input('cantidad-sensores','value')])
 
 def horas_disponibles_sensor(sensor,sensor_multi,fecha_ini,cantidad_sensores):
@@ -560,7 +105,7 @@ def horas_disponibles_sensor(sensor,sensor_multi,fecha_ini,cantidad_sensores):
         return min,min,max,marks
 
 # Esta funcion actualiza el texto bajo el rangeslider de horas, con la hora que se selecciona en el rangeslider
-@app.callback(Output('hora-disponible-seleccionada','children'),
+@plotly_app.callback(Output('hora-disponible-seleccionada','children'),
              [Input('horas-disponibles', 'value')])
 
 def update_hora_seleccionada(hora):
@@ -568,14 +113,14 @@ def update_hora_seleccionada(hora):
     return hora_sel
 
 # Esta funcion cambia las opciones que se muestran en el radioitem cantidad de sensores a visualizar
-@app.callback(Output('cantidad-sensores','options'),
+@plotly_app.callback(Output('cantidad-sensores','options'),
              [Input('elegir-tipo-sensor','value')])
 
 def change_cantidad_sensores(tipo_sensor):
     return [{"label": key , "value": value}for key,value in datos.cantidad_sensores_visualizar(tipo_sensor).items()]
 
 # Esta funcion cambia las opciones que se muestran en el radioitem ventana de tiempo, dependiendo de lo que se encuentre en la base de datos
-@app.callback([Output('ventana-tiempo','options'),Output('ventana-tiempo','value')],
+@plotly_app.callback([Output('ventana-tiempo','options'),Output('ventana-tiempo','value')],
              [Input('elegir-fecha', 'date'),Input('elegir-tipo-sensor','value')])
 
 def change_ventana_tiempo(fecha_ini,tipo_sensor):
@@ -596,7 +141,7 @@ def change_ventana_tiempo(fecha_ini,tipo_sensor):
         return [{"label": key , "value": value}for key,value in datos.ventana_tiempo(0).items()],str(list(datos.ventana_tiempo(3).values())[0])
 
 # Esta funcion actualiza el numero de clicks del boton agregar linea de control inferior, cuando se presiona el boton quitar linea 
-@app.callback(Output('boton-linea-inf', 'n_clicks'),
+@plotly_app.callback(Output('boton-linea-inf', 'n_clicks'),
               [Input('boton-quitar-linea-inf', 'n_clicks')])
 
 def update_boton_inf(click_quitar_inf):
@@ -606,7 +151,7 @@ def update_boton_inf(click_quitar_inf):
         return 1
 
 # Esta funcion actualiza el numero de clicks del boton agregar linea de control superior, cuando se presiona el boton quitar linea
-@app.callback(Output('boton-linea-sup', 'n_clicks'),
+@plotly_app.callback(Output('boton-linea-sup', 'n_clicks'),
               [Input('boton-quitar-linea-sup', 'n_clicks')])
 
 def update_boton_sup(click_quitar_sup):
@@ -616,7 +161,7 @@ def update_boton_sup(click_quitar_sup):
         return 1
 
 # Esta funcion actualiza el texto que aparece en el cuadro para indicar el valor de la linea de control inferior, una vez que se presiona el boton de quitar linea
-@app.callback(Output('linea-control-inf','value'),
+@plotly_app.callback(Output('linea-control-inf','value'),
              [Input('boton-quitar-linea-inf','n_clicks')])
 
 def update_text_input_inf(clicks_inf):
@@ -624,7 +169,7 @@ def update_text_input_inf(clicks_inf):
         return None
 
 # Esta funcion actualiza el texto que aparece en el cuadro para indicar el valor de la linea de control superior, una vez que se presiona el boton de quitar linea
-@app.callback(Output('linea-control-sup','value'),
+@plotly_app.callback(Output('linea-control-sup','value'),
              [Input('boton-quitar-linea-sup','n_clicks')])
 
 def update_text_input_sup(clicks_sup):
@@ -632,7 +177,7 @@ def update_text_input_sup(clicks_sup):
         return None
 
 #funcion que desabilita el dropdown de tipos de sensores cuando se agrega una linea de control o cuando se selecciona la opcion de multiples sensores
-@app.callback([Output('elegir-tipo-sensor','disabled'),Output('elegir-sensor','disabled'),Output('elegir-sensor-multi','disabled')],
+@plotly_app.callback([Output('elegir-tipo-sensor','disabled'),Output('elegir-sensor','disabled'),Output('elegir-sensor-multi','disabled')],
              [Input('cantidad-sensores','value'),Input('boton-linea-sup', 'n_clicks'),Input('boton-linea-inf', 'n_clicks')])
 
 def disable_tipo_sensores(cantidad_sensores,click_agr_sup,click_agr_inf):
@@ -648,7 +193,7 @@ def disable_tipo_sensores(cantidad_sensores,click_agr_sup,click_agr_inf):
             return True,False,False
 
 #Funcion que actualiza el grafico principal y le agrega las lineas de control
-@app.callback([Output('valor-promedio', 'children'),Output('valor-max', 'children'),Output('valor-min', 'children'),Output('fecha-valor-max','children'),
+@plotly_app.callback([Output('valor-promedio', 'children'),Output('valor-max', 'children'),Output('valor-min', 'children'),Output('fecha-valor-max','children'),
                Output('fecha-valor-min','children'),Output('num-valor-max','children'),Output('num-valor-min','children'),Output('alert-sup','children'),
                Output('alert-inf','children'),Output('fecha-alert-sup','children'),Output('fecha-alert-inf','children'),Output('grafico-principal','figure')],
               [Input('boton-aceptar', 'n_clicks'),Input('boton-linea-sup', 'n_clicks'),Input('boton-linea-inf', 'n_clicks')],
@@ -677,7 +222,7 @@ def update_grafico_principal(n_clicks,click_linea_sup,click_linea_inf,cantidad_s
     if n_clicks >= 0:
         fecha_ini_titulo,fecha_fin_titulo = datos.fecha_titulo(fecha,ventana_tiempo)
         #Dependiendo del tipo de sensor se crean visualizaciones distintas
-        if tipo_sensor == 'acelerometro':
+        if tipo_sensor == 'Acelerometro':
             if cantidad_sensores == '1-sensor':
                 # La variable df contiene el dataframe que se utiliza para generar los graficos OHLC e histograma
                 
@@ -884,7 +429,7 @@ def update_grafico_principal(n_clicks,click_linea_sup,click_linea_inf,cantidad_s
     #    return '---','---','---','---','---','---','---','---','---','---','---',{}
 
 #Funcion que actualiza el grafico secundario 1
-@app.callback(Output('grafico-1','figure'),
+@plotly_app.callback(Output('grafico-1','figure'),
               [Input('boton-aceptar', 'n_clicks')],
               [State('cantidad-sensores','value'),State('horas-disponibles', 'value'),State('elegir-tipo-sensor','value'),State('elegir-sensor','value'),
                State('elegir-sensor-multi','value'),State('elegir-fecha','date'),State('ventana-tiempo','value'),State('elegir-eje','value'),State('elegir-eje-multi','value')])
@@ -907,7 +452,7 @@ def update_grafico_1(n_clicks,cantidad_sensores,hora,tipo_sensor,sensor,sensor_m
     if n_clicks >= 0:
         fecha_ini_titulo,fecha_fin_titulo = datos.fecha_titulo(fecha,ventana_tiempo) 
         #Dependiendo del tipo de sensor se crean visualizaciones distintas
-        if tipo_sensor == 'acelerometro':
+        if tipo_sensor == 'Acelerometro':
             if cantidad_sensores == '1-sensor':
 
                 #Aqui se crea el grafico boxplot
@@ -1020,7 +565,7 @@ def update_grafico_1(n_clicks,cantidad_sensores,hora,tipo_sensor,sensor,sensor_m
     #    return {}
 
 #Funcion que actualiza el grafico secundario 2
-@app.callback(Output('grafico-2','figure'),
+@plotly_app.callback(Output('grafico-2','figure'),
               [Input('boton-aceptar', 'n_clicks')],
               [State('cantidad-sensores','value'),State('horas-disponibles', 'value'),State('elegir-tipo-sensor','value'),State('elegir-sensor','value'),
                State('elegir-sensor-multi','value'),State('elegir-fecha','date'),State('ventana-tiempo','value'),State('elegir-eje','value'),State('elegir-eje-multi','value')])
@@ -1057,7 +602,7 @@ def update_grafico_2(n_clicks,cantidad_sensores,hora,tipo_sensor,sensor,sensor_m
             titulo_OHLC = datos.titulo_OHLC(ventana_tiempo)
 
             fig_2.update_layout(title={'text':"Dirección y Velocidad (m/s) del viento durante "+str(titulo_OHLC)+" "})
-        elif tipo_sensor == 'acelerometro':
+        elif tipo_sensor == 'Acelerometro':
             if cantidad_sensores == '1-sensor':
                 # La variable df contiene el dataframe que se utiliza para generar el histograma
                 # Aqui se crea el histograma
@@ -1124,7 +669,7 @@ def update_grafico_2(n_clicks,cantidad_sensores,hora,tipo_sensor,sensor,sensor_m
     #    return {}
 
 #Funcion para crear los reportes
-@app.callback(Output('retorno-reportes','children'),
+@plotly_app.callback(Output('retorno-reportes','children'),
              [Input('boton-generar-reporte','n_clicks')],[State('grafico-principal','figure'),State('grafico-1','figure'),State('grafico-2','figure'),
               State('valor-promedio', 'children'),State('valor-max', 'children'),State('valor-min', 'children'),State('fecha-valor-max','children'),
               State('fecha-valor-min','children'),State('num-valor-max','children'),State('num-valor-min','children'),State('alert-sup','children'),
@@ -1149,10 +694,5 @@ def crear_reporte(clicks, fig_principal,fig_sec1,fig_sec2,valor_promedio,valor_m
 
 
 # Main
-if __name__ == "__main__":
-    #PORT = 8000
-    #ADDRESS = '11.11.11.11'
-    #app.run_server(port=PORT,host=ADDRESS,debug=False, dev_tools_ui=False, dev_tools_props_check=False)
-    #app.run_server(debug=False, dev_tools_ui=False, dev_tools_props_check=False)
-    #app.run_server(debug=True,dev_tools_ui=False, dev_tools_props_check=False)
-    app.run_server(debug=True)
+#if __name__ == "__main__":
+#    plotly_app.run_server(debug=True)
