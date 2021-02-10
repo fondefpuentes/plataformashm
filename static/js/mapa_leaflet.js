@@ -11,7 +11,7 @@ function onMapClick(e) {
 function mapa_del_puente(coord_x, coord_y){
     //mapa político
     var osmLayer = new L.TileLayer('https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=zZkrANgINoCERa0zI6td');
-    //mapa físico
+    //mapa físicobasic
     var ESRIWorldImageryLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
 
     var baseMaps = {
@@ -25,7 +25,8 @@ function mapa_del_puente(coord_x, coord_y){
     var map = L.map('map');
     map.setView(new L.LatLng(coord_x, coord_y),10);
     map.addControl(layerControl);    
-    map.addLayer(ESRIWorldImageryLayer);
+    //map.addLayer(ESRIWorldImageryLayer);
+    map.addLayer(osmLayer);
 
     
     var popup = new L.popup();
