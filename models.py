@@ -241,7 +241,8 @@ class EstadoEstructura(db.Model):
     id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'), primary_key=True)
     fecha_estado = db.Column(db.DateTime, primary_key=True)
     estado = db.Column(db.String(50))
-    seguridad = db.Column(db.String(50))
+    seguridad = db.Column(db.String(100))
+    detalles = db.Column(db.String(500))
 
 class VisualizacionBIM(db.Model):
     __tablename__ = 'visualizaciones_bim'

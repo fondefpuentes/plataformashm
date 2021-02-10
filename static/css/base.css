@@ -18,3 +18,7 @@
 .modal{
     z-index:1100;
 }
+
+body.modal-open{
+  padding-right: 0px !important;
+}

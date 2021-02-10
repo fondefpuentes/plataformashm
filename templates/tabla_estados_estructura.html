@@ -11,14 +11,15 @@
       <a href="#" class="btn btn-outline-primary">Detalles</a>
     </div>
   </div>
+  {%if estado%}
   <div class="col">
     <div class="card h-100">
       <div class="card-body">
         <h2 class="card-title">Estado Estructura Global</h2>
-        <p class="card-text">Estado ...</p>
+        <p class="card-text"><strong>{{estado.estado}} </strong><i class="bi bi-circle-fill" id="global-circle"></i></p>
       </div>
       <div class="card-footer">
-        <small class="text-muted">Ultima Actualizacion: [dd/mm/aa hh:mm:ss]</small>
+        <small class="text-muted">Ultima Actualizacion: {{estado.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</small>
       </div>
       <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
     </div>
@@ -27,12 +28,38 @@
     <div class="card h-100">
       <div class="card-body">
         <h2 class="card-title">Nivel de Seguridad</h2>
-        <p class="card-text">Estado ...</p>
+        <p class="card-text font-weight-bold"><strong>{{estado.seguridad}} </strong><i class="bi bi-circle-fill" id="seg-circle"></i></p>
       </div>
       <div class="card-footer">
-        <small class="text-muted">Ultima Actualizacion: [dd/mm/aa hh:mm:ss]</small>
+        <small class="text-muted">Ultima Actualizacion: {{estado.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</small>
       </div>
       <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
     </div>
   </div>
+  {%else%}
+  <div class="col">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="card-title">Estado Estructura Global</h2>
+        <p class="card-text"><strong>Sin Registro </strong><i class="bi bi-circle-fill" id="global-circle"></i></p>
+      </div>
+      <div class="card-footer">
+        <small class="text-muted">Ultima Actualizacion: --/--/-- --:--:-- </small>
+      </div>
+      <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="card-title">Nivel de Seguridad</h2>
+        <p class="card-text font-weight-bold"><strong>Sin Registro </strong><i class="bi bi-circle-fill" id="seg-circle"></i></p>
+      </div>
+      <div class="card-footer">
+        <small class="text-muted">Ultima Actualizacion: --/--/-- --:--:-- </small>
+      </div>
+      <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
+    </div>
+  </div>
+  {%endif%}
 </div>

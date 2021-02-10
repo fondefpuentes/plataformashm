@@ -1,0 +1,204 @@
+
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg"">
+   {% include 'modal_glosario_estados.html'%}
+   
+   <div class="container-fluid px-5 py-2">
+      {% include 'breadcrumb.html' %}
+      <h1 class="title text-capitalize">
+         {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }} :: Estado Estructural
+      </h1>
+      <div class="row py-3 d-flex flex-sm-row-reverse">
+         <div class="col-sm-3 mb-2">{% include 'botones_tabla_estructura.html' %}</div>
+         <div class="col-sm-9">
+            <h1 class="subtitle fs-3 py-1">Estado Actual <i type="button" class=" bi bi-info-circle" data-bs-toggle="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Glosario Estados" data-bs-target="#modal_glosario" ></i></h1>
+            <div class="card px-3 py-1 my-3">
+               <div class="card-body row">
+                  <p class="col fs-5 card-text">Global: <b>{% if historial %}{{historial[0].estado}} {%else%} No Data {%endif%}</b> <i class="bi bi-circle-fill" id="global-circle"></i></p>
+                  <p class="col fs-5 card-text">Seguridad: <b>{% if historial %}{{historial[0].seguridad}}{%else%} No Data {%endif%}</b> <i class="bi bi-circle-fill" id="seg-circle"></i></p>
+               </div>
+               <div class="card-footer">
+                  <small class="text-muted">{% if historial %}Ultima Actualizacion:  {{historial[0].fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}} {%else%} [dd/mm/aa hh:mm:ss] No Data {%endif%}</small>
+               </div>
+            </div>
+            <h1 class="subtitle fs-3 py-3">Actualizar Estado</h1>
+            <div class="card py-3 my-3">
+               <form class="card-body row" id="actualizar-estado" action="{{url_for('views_api.gestion_estado', id=id_puente)}}" method="POST">
+                  <div class="col-md-6">
+                     <h1 class="subtitle fs-5">Estado Estructura Global:</h1>
+                     <div class="form-check">
+                        <input class="form-check-input" type="radio" name="globalRadio" id="pristina" value="Prístina" checked>
+                        <label class="form-check-label" for="pristino"><i class="bi bi-circle-fill" style="color: var(--bs-green);"></i> Prístina</label>
+                     </div>
+                     <div class="form-check">
+                        <input class="form-check-input" type="radio" name="globalRadio" id="dano" value="Con daño">
+                        <label class="form-check-label" for="dano"><i class="bi bi-circle-fill" style="color: var(--bs-yellow);"></i> Con daño</label>
+                     </div>
+                     <div class="form-check">
+                        <input class="form-check-input" type="radio" name="globalRadio" id="falla_leve" value="Falla estructural leve">
+                        <label class="form-check-label" for="falla_leve"><i class="bi bi-circle-fill" style="color: var(--bs-orange);"></i> Falla estructural leve</label>
+                     </div>
+                     <div class="form-check">
+                        <input class="form-check-input" type="radio" name="globalRadio" id="falla_grave" value="Falla estructural grave">
+                        <label class="form-check-label" for="falla_grave"><i class="bi bi-circle-fill" style="color: var(--bs-red);"></i> Falla estructural grave</label>
+                     </div>
+                     <div class="form-check">
+                        <input class="form-check-input" type="radio" name="globalRadio" id="critico" value="Crítico">
+                        <label class="form-check-label" for="critico"><i class="bi bi-circle-fill" style="color: var(--bs-purple);"></i> Crítico</label>
+                     </div>
+                  </div>
+                  <div class="col-md-6 py-3">
+                     <h1 class="subtitle fs-5">Nivel de Seguridad:</h1>
+                     <div class="form-check">
+                        <input class="form-check-input" type="radio" name="seguridadRadio" id="seguro" value="Seguro" checked>
+                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: var(--bs-green);"></i> Seguro</label>
+                     </div>
+                     <div class="form-check">
+                        <input class="form-check-input" type="radio" name="seguridadRadio" id="seg_op" value="Seguro para operar" >
+                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: var(--bs-yellow);"></i> Seguro para operar</label>
+                     </div>
+                     <div class="form-check">
+                        <input class="form-check-input" type="radio" name="seguridadRadio" id="inseguro" value="Inseguro para libre circulación">
+                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: var(--bs-red);"></i> Inseguro para libre circulación</label>
+                     </div>
+                     <div class="form-check">
+                        <input class="form-check-input" type="radio" name="seguridadRadio" id="peligro" value="Peligro">
+                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: var(--bs-purple);"></i> Peligro</label>
+                     </div>
+                  </div>
+                  <div class="mb-3 px-3 py-3">
+                     <label for="exampleFormControlTextarea1" class="form-label">Detalles</label>
+                     <textarea name="detalles" class="form-control" id="detalles" rows="3" required></textarea>
+                     <small id="TextAreaHelpBlock" class="form-text text-muted">El texto ingresado no debe exceder los 500 caracteres de longitud.</small>
+                  </div>
+                  <div class="d-grid justify-content-md-end"><button type="button" id="revision-btn" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#revision_modal">
+                     Revisar
+                     </button>
+                  </div>
+                  <div class="modal fade" id="revision_modal" tabindex="-1" aria-labelledby="revision_label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-scrollable">
+                     <div class="modal-content">
+                        <div class="modal-header">
+                           <h5 class="modal-title fs-5" id="revision-title">Actualizar Estado</h5>
+                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                           <div class="row py-1">
+                               <div class="col-4">Estado Global:</div>
+                               <div class="col-8"></i><p id="global-prev"></p></div>
+                            </div>
+                           <div class="row py-1">
+                               <div class="col-4">Nivel de Seguridad:</div>
+                               <div class="col-8"><p id="seguridad-prev"></p></div>
+                            </div>
+                            <div class="row py-1">
+                               <div class="col-4">Detalles:</div>
+                               <div class="col-8"><p id="detalles-prev"></p></div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                           <button type="button" id="actualizar-btn" class="btn btn-success">Actualizar</button>
+                        </div>
+                     </div>
+                 </div>
+               </div>
+               </form>
+            </div>
+         </div>
+      </div>
+      <div class="row py-3">
+         <h1 class="subtitle fs-3">Estados Anteriores</h1>
+         <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="filterInput" placeholder="estados">
+            <label for="filterInput"><i class="bi bi-search px-3"></i>Filtrar Estados</label>
+         </div>
+         <div>
+            <table class="table table-bordered table-responsive-md border-1 sortable px-3">
+               <thead>
+                  <tr style="color: var(--bs-purple);">
+                     <th>Fecha Estado</th>
+                     <th>Estado Global</th>
+                     <th>Nivel de Seguridad</th>
+                     <th>Detalles</th>
+                  </tr>
+               </thead>
+               <tbody id="estados_data">
+                  {%if historial%}
+                  {%for i in historial%}
+                  
+                  <tr>
+                     <td>{{i.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                     <td>{{i.estado}}</td>
+                     <td>{{i.seguridad}}</td>
+                     <td>{{i.detalles}}</td>
+                  </tr>
+                  {%endfor%}
+                  {%endif%}
+               </tbody>
+            </table>
+         </div>
+      </div>
+   </div>
+</div>
+{% endblock %}
+{% block customjs %}
+<script>
+
+function asignar_color( strEstado){
+          if( strEstado === 'Prístina'){return ('green');}
+          else if (strEstado === 'Con daño'){return ('yellow');}
+          else if (strEstado === 'Falla estructural leve'){return ('orange');}
+          else if (strEstado === 'Falla estructural grave'){return ('red');}
+          else if (strEstado === 'Crítico'){return ('purple');}
+          else if (strEstado === 'Seguro'){return ('green');}
+          else if (strEstado === 'Seguro para operar'){return ('yellow');}
+          else if (strEstado === 'Inseguro para libre circulación'){return ('red');}
+          else if (strEstado === 'Peligro'){return ('purple');}
+          else{return ('gray');}
+          }
+      $(document).ready(function(){
+        
+          {%if historial%}
+          var globString = "{{historial[0].estado}}";
+          var segString = "{{historial[0].seguridad}}";
+
+          $('#global-circle').css("color","var(--bs-" + asignar_color(globString) + ")");
+          $('#seg-circle').css("color","var(--bs-" + asignar_color(segString) + ")");
+          {%endif%}
+          $('[data-toggle="tooltip"]').tooltip();
+            
+         $(".modal-dialog").draggable({
+              handle: ".modal-header"
+          });
+          $(".modal-content").resizable({
+          minWidth: 625,
+          minHeight: 175,
+          handles: 'n, e, s, w, ne, sw, se, nw',
+          });
+          
+          $('#revision-btn').click(function() {
+             var globalS = $('input:radio[name=globalRadio]:checked');
+             var secS = $('input:radio[name=seguridadRadio]:checked');
+             $('#global-prev').text(globalS.val());
+             $('#seguridad-prev').text(secS.val());
+             $('#detalles-prev').text($('#detalles').val());
+          });
+
+          $('#actualizar-btn').click(function(){
+              $('#actualizar-estado').submit();
+          });
+          
+         $("#filterInput").on("keyup", function() {
+             var value = $(this).val().toLowerCase();
+             $("#estados_data tr").filter(function() {
+                 $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+             });
+          });
+      }); 
+</script> 
+{% endblock %}
+
