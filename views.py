@@ -75,6 +75,7 @@ def profile():
     }
     return render_template('profile.html', **context)
 
+
 #PERMISOS = TODOS
 #En caso de error, redirige a esta paǵina
 @views_api.route('/acceso_restringido')
@@ -1303,10 +1304,24 @@ def actualizar_si(id_si):
 ####################### INTEGRACIÓN CON THINGSBOARD #########################
 @views_api.route('/tiemporeal/<int:id>')
 def tiempo_real(id):
+    #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
-
+    estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
+    #Revisa si el schema del puente existe, de no ser así, es por que no está siendo monitoreada
+    nombre_del_schema = estructura.nombre.lower().replace(" ","_")
+    check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
+    esta_monitoreada = True
+    if(check_schema is None):
+        esta_monitoreada = False
+    #Consulta por rutas de imágenes y BIM asociados
+    imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
+    bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
-        'datos_puente':estructura
+        'datos_puente':estructura,
+        'estado_monitoreo':estado_monitoreo,
+        'esta_monitoreada':esta_monitoreada,
+        'imagenes_estructura':imagenes_estructura,
+        'bim_estructura' : bim_estructura
     }
     return render_template('tiemporeal.html', **context)
 
@@ -1448,7 +1463,6 @@ def hdetalles(id,filename):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoEstructura.query.filter_by(id_estructura = id).order_by(EstadoEstructura.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de im�genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1479,7 +1493,6 @@ def hdescarga(id):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoEstructura.query.filter_by(id_estructura = id).order_by(EstadoEstructura.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de im�genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1561,7 +1574,6 @@ def hdetallesdescarga(id,filename):
     estructura = Estructura.query.filter_by(id=id).first()
     estado_monitoreo = EstadoEstructura.query.filter_by(id_estructura = id).order_by(EstadoEstructura.fecha_estado.desc()).first()
     esta_monitoreada = estructura.en_monitoreo
-    #Consulta por rutas de im�genes y BIM asociados
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     context = {
@@ -1596,6 +1608,25 @@ def hgetdescarga(file_name):
 
     url = aws_functions.get_attachment_url(params,file_name)
     return redirect(url, code=302)
+
+
+   ############################### Ultima iteracion ##########################
+
+    #Vista de mapa nueva
+@views_api.route('/mapa')
+@login_required
+def mapa():
+    puentes = Estructura.query.all()
+    #Genera los markers para el mapa
+    markers = []
+    for i in puentes:
+        markers.append([i.coord_x, i.coord_y, i.tipo_activo.capitalize()+' '+i.nombre.capitalize(), i.id])
+    #Variables para el template
+    context = {
+        'puentes' : puentes,
+        'markers' : markers
+    }
+    return render_template('mapa.html', **context)
 
 @views_api.route("/datos_recientes")
 def datos_recientes():

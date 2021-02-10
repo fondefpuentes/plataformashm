@@ -6,12 +6,15 @@
 {% endblock %}
 
 {% block content %}
-	<div class="bg">  
+<div>
+	<div class="bg">
+	<h1 class="title">Listado de Puentes</h1>
 		<div class="container py-5">
-			<form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
+			{% include	'botones_profile.html' %}
+<!--			<form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
 				<div class="row no-gutters">
 					<div class="col-9 col-md-10">
-						<input id="autocomplete" type="text" name="autocomplete" placeholder="Buscar estructura por nombre" required list="estructuras"/>
+						<input id="autocomplete" type="text" name="autocomplete" placeholder="Buscar estructura" required list="estructuras"/>
 						<datalist id="estructuras">
 							{% for i in puentes %}
 							<option data-value="{{i.id}}">{{i.id}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
@@ -25,16 +28,94 @@
 					</div>
 				</div>
 			</form>
-			<br>
-			<div id="map">
-			</div>
+-->
+<input type="text" id="myInput" onkeyup="filtrotabla()" placeholder="Filtrar estructuras por nombre">
+<button id="botontodas" type="button" class="btn btn-secondary">Todas</button>
+<button id="botonmonitoreadas" type="button" class="btn btn-secondary">Monitoreadas</button>
+<button type="button" class="btn btn-secondary">Alertas</button>
+
+<form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
+
+<table class="table table-hover" id="myTable">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Id</th>
+      <th scope="col">Nombre</th>
+      <th scope="col">Región</th>
+      <th scope="col">Estado de Alerta</th>
+      <th scope="col">Fecha Estado Alerta</th>
+      <th scope="col">Estado Global</th>
+      <th scope="col">Estado de Seguridad</th>
+      <th scope="col">Fecha Estado Global y Seguridad</th>
+      <th style="display: none;" scope="col">True</th>
+
+    </tr>
+  </thead>
+  <tbody>
+  		{%for i in puentes %}
+    <tr class='clickable-row' data-href="{{url_for('views_api.informacion_estructura', id=i.id)}}">
+      <th>{{i.id}}</th>
+      <td>{{ i.nombre }}</td>
+      <td>{{ i.region }}</td>
+      <td> - </td>
+      <td> - </td>
+      <td> - </td>
+      <td> - </td>
+      <td> - </td>
+      <td style="display: none;">{{ i.en_monitoreo }}</td>
+    </tr>
+    	{% endfor %}
+  </tbody>
+</table>
+
+</form>
+
+<script>
+function filtrotabla() {
+  // Declare variables
+  var input, filter, table, tr, td, i, txtValue;
+  input = document.getElementById("myInput");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("myTable");
+  tr = table.getElementsByTagName("tr");
+
+  // Loop through all table rows, and hide those who don't match the search query
+  for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[0];
+    if (td) {
+      txtValue = td.textContent || td.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+}
+</script>
+  <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+<script>
+  $("#botonmonitoreadas").click(function(){
+    var rows = $("#myTable").find("tr").hide();
+    rows.filter(":contains('True')").show();
+  });
+</script>
+<script>
+  $("#botontodas").click(function(){
+    var rows = $("#myTable").find("tr").hide();
+    rows.show();
+  });
+</script>
+<script>
+ 
+ jQuery(document).ready(function($) {
+    $(".clickable-row").click(function() {
+        window.location = $(this).data("href");
+    });
+});
+
+</script>
 		</div>
 	</div>
+</div>
 {% endblock %}
-
-{% block customjs %}
-	{{ super() }}
-	<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
-	<script>setMarkersOnMap({{ markers|tojson }})</script>
-{% endblock %}
-
