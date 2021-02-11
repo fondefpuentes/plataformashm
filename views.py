@@ -90,16 +90,19 @@ def crear_monitoreo(id_puente):
     if(current_user.permisos == 'Administrador'):
         puente_a_monitorear = Estructura.query.get(id_puente)
         ip_request = puente_a_monitorear.ip_instancia
-  
+        error_prone = {}
+        
         if(ip_request == None or puente_a_monitorear.en_monitoreo):
-          return redirect(url_for('views_api.informacion_estructura',id = id_puente))
+          error_prone['exit'] = "PASS"
+          return redirect(url_for('views_api.informacion_estructura', id=id_puente))
   
         #obtencion API KEY de TB    
         api_key_url = requests.post(
         ip_request + '/api/auth/login',
         data='{"username":"tenant@thingsboard.org", "password":"tenant"}', headers={'Content-Type': 'application/json','Accept': 'application/json'})
         json_response = api_key_url.json()
-  
+        
+        error_prone['API_KEY'] = "PASS"
         #Generacion de API_KEY para autentificacion en Swagger
         x_auth = 'Bearer ' + json_response['token']
   
@@ -119,13 +122,13 @@ def crear_monitoreo(id_puente):
         response = requests.get ( ip_request + '/api/tenant/assets?pageSize=40&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth})
         json_assets = response.json()
         zonas_dict = {}
-  
+        error_prone['assets'] = "PASS"
         #Peticion a Swagger de DEVICES
         response = requests.get( ip_request + '/api/tenant/deviceInfos?pageSize=20&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth},)
         json_devices = response.json()
         sensores_dict = {}
         daq_dict = {}
-  
+        error_prone['devices'] = "PASS"
         #insercion de nuevas zonas a BD
         try:
           for i in json_assets['data']:
@@ -134,6 +137,8 @@ def crear_monitoreo(id_puente):
               db.session.add(nueva_zona)
               db.session.flush()
               zonas_dict[i['name']] = nueva_zona.id
+          
+          error_prone['zonas'] = "PASS"
   
           #insercion DAQs 
 
@@ -144,13 +149,16 @@ def crear_monitoreo(id_puente):
               attr_response = attr_request.json()
               chns = 0
               zona = ""
-        
+              
+              error_prone['daq'] = "retrieve"
               for attr in attr_response:
                 if(attr['key'] == "Canales"):
                   chns = attr['value']
                 if(attr['key'] == "Zona"):
                   zona = attr['value']
-        
+                  
+              error_prone['daq'] = "retrieve_attr"
+              
               nuevo_daq = DAQ(nro_canales=chns)
               db.session.add(nuevo_daq)
               db.session.flush()
@@ -164,8 +172,9 @@ def crear_monitoreo(id_puente):
               for i in range(1,int(nuevo_daq.nro_canales)+1):
                 x = Canal(id_daq=nuevo_daq.id, numero_canal=i)
                 canales.append(x)
-              db.session.bulk_save_objects(canales)                
-  
+              db.session.bulk_save_objects(canales) 
+                             
+          error_prone['daq'] = "PASS"
           #insercion sensores 
           for i in json_devices['data']:
             if(i['type'] != "daq"):
@@ -173,11 +182,13 @@ def crear_monitoreo(id_puente):
               attr_request = requests.get(ip_request + '/api/plugins/telemetry/DEVICE/' + str(i['id']['id'])+'/values/attributes',headers={'Accept' : 'application/json','X-Authorization': x_auth})
               attr_response = attr_request.json()
               zona = ""
-        
+              
+              error_prone['sensor'] = "retrieve"
               for attr in attr_response:
                 if(attr['key'] == "Zona"):
                   zona = attr['value']
-            
+                  
+              error_prone['sensor'] = "retrieve_zone"
               nuevo_sensor = Sensor(tipo_sensor = t_s_dict[i['type']],frecuencia = 120,uuid_device = i['id']['id'])
               nueva_instalacion_sensor = InstalacionSensor(fecha_instalacion=datetime.now())
               db.session.add(nueva_instalacion_sensor)
@@ -190,6 +201,7 @@ def crear_monitoreo(id_puente):
               db.session.add(nueva_descripcion)
               db.session.flush()   
           
+          error_prone['sensor'] = "PASS"
           puente_a_monitorear.en_monitoreo = True
           db.session.add(puente_a_monitorear)
           db.session.commit()
@@ -1306,7 +1318,7 @@ def actualizar_si(id_si):
 def tiempo_real(id):
     #Detalles generales de la estructura
     estructura = Estructura.query.filter_by(id=id).first()
-    estado_monitoreo = EstadoMonitoreo.query.filter_by(id_estructura = id).order_by(EstadoMonitoreo.fecha_estado.desc()).first()
+    estado_monitoreo = EstadoEstructura.query.filter_by(id_estructura = id).order_by(EstadoEstructura.fecha_estado.desc()).first()
     #Revisa si el schema del puente existe, de no ser así, es por que no está siendo monitoreada
     nombre_del_schema = estructura.nombre.lower().replace(" ","_")
     check_schema = db.session.execute("""SELECT * FROM pg_catalog.pg_namespace WHERE nspname = \'"""+nombre_del_schema+"""\'""").fetchone()
