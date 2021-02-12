@@ -8,25 +8,20 @@
    <div class="container-fluid px-5 py-2">
       <div class="row">{% include 'breadcrumb.html' %}</div>
       <h1 class="title text-capitalize">
-         {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
+         {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }} :: Detalle Sensor ID( {{sensor.id}} )
       </h1>
       <div class="row py-3 d-flex flex-sm-row-reverse">
-         <div class="col-sm-3 mb-2">{% include 'botones_tabla_estructura.html' %}</div>
-         <div class="col-sm-9">
-            <div class="row row-cols-2 g-2">
-               <div class="col-sm-6">En Desarrollo</div>
-               </div>
-            </div>
-         </div>
+          <div class="col-sm-3 mb-2">{% include 'botones_tabla_estructura.html' %}</div>
+          <div class="col-sm-9 row">
+              <div class="col" >
+          </div>
       </div>
    </div>
 </div>
 {% endblock %}
 {% block customjs %}
 <script src="{{ url_for('static', filename='js/tabla_estructura.js')}}"></script>
-<script>
-   showBridgeOnMap({{datos_puente.coord_x}},{{datos_puente.coord_y}});
-</script>
+
 <script>
   function asignar_color( strEstado){
           if( strEstado === 'Prístina'){return ('green');}

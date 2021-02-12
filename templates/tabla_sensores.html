@@ -17,7 +17,7 @@
     {%if sensores %}
         {% for element in sensores %}
         <tr>
-            <td><a href="#">{{ element.si }}</a></td>
+            <td><a href="{{url_for('views_api.detalle_sensor',id_sensor=element.si)}}">{{ element.nombre_sensor }}</a></td>
             <td>{{ element.nombre}}</td>
             <td>{{ element.descripcion }}</td>
             <td>[POR DEFINIR]</td>
