@@ -1,0 +1,16 @@
+{
+"companyName": "DIICC UdeC",
+"productName": "IFC VIewer",
+"productVersion": "0.1",
+"dataUrl": "test_raya.data.unityweb",
+"wasmCodeUrl": "test_raya.wasm.code.unityweb",
+"wasmFrameworkUrl": "test_raya.wasm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Light",
+"backgroundColor": "#FFFFFF",
+"cacheControl": {"default": "must-revalidate"},
+"developmentBuild": false,
+"multithreading": false,
+"unityVersion": "2019.3.0f6"
+}

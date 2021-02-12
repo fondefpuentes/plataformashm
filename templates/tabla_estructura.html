@@ -24,12 +24,13 @@
             </div>
          </div>
       </div>
-      {% if esta_monitoreada%}
+      
       <div class="row py-3">
          <h1 class="subtitle fs-3">Estado de Diagnóstico</h1>
          <div>{% include 'tabla_estados_estructura.html' %}</div>
          <br>
       </div>
+      {% if esta_monitoreada%}
       <div class="row py-3">
          <h1 class="subtitle fs-3">Infraestructura de Monitoreo</h1>
          <div>
