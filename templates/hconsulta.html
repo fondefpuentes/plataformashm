@@ -8,12 +8,13 @@
 	<link href="{{ url_for('static', filename='css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet">
 	<link href="{{ url_for('static', filename='font-awesome/css/all.css') }}" rel="stylesheet">	
 	<link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
 {% endblock %}
 
 
 {% block content %}
-
-<div class="container-fluid px-5 py-5">
+{% include 'breadcrumb.html' %}
+<div class="container-fluid px-5 py-1">
 
 	<h1 class="title">
 	    {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
@@ -55,79 +56,69 @@
 		{% endwith %}
 	</div>
 
-	<div class="mt-3 mb-3 d-flex justify-content-center  ">
-		<div class="panel panel-default">
-		  <div class="panel-heading">
-		    <h1 class="panel-title">Rango de horarios</h1>
-		  </div>		  
-		  <div class="panel-body">
-			<table class="table table-bordered">
-			  <thead>
-			    <tr>
-			      <th scope="col">Años</th>
-			      <th scope="col">Bloque 1</th>
-			      <th scope="col">Bloque 2</th>
-			      <th scope="col">Bloque 3</th>
-			      <th scope="col">Bloque 4</th>
-			    </tr>
-			  </thead>
-			  <tbody>
-			    <tr>
-			      <th scope="row">
-			      	2020
-			      </th>
-			      <td>[2:00 - 5:00]</td>
-			      <td>[7:00 - 10:00]</td>
-			      <td>[13:00 -16:00]</td>
-			      <td>[18:00 - 21:00]</td>
-			    </tr>
-			    <tr>
-			      <th scope="row">
-			      	2021
-			      </th>
-			      <td>Desconocido</td>
-			      <td>Desconocido</td>
-			      <td>Desconocido</td>
-			      <td>Desconocido</td>
-			    </tr>
-			  </tbody>
-			</table>
-		  </div>
-		</div>
-	</div>
 
 	<form id="idform" class="needs-validation" method="post">
+		<p class="h5">Paso 1: Seleccione Tipo de Consulta</p>
+		<div class="mt-4 mb-3 d-flex justify-content-left">
 
-		<div class="mt-5 mb-3 d-flex justify-content-center">
-			<div class="form-check form-check-inline">
+			<div class="col-5 form-check form-check-inline">
 			  <input class="form-check-input" type="radio" name="destino_consulta" id="inlineRadio1" value="almacenamiento_programado" checked>
-			  <label class="form-check-label" for="inlineRadio1">Almacenamiento Programado</label>
+			  <label class="form-check-label" for="inlineRadio1">Mediciones de Almacenamiento Programado</label>
 			</div>
-			<div class="form-check form-check-inline">
+			<div class="col-5 form-check form-check-inline">
 			  <input class="form-check-input" type="radio" name="destino_consulta" id="inlineRadio2" value="evento_inesperado">
-			  <label class="form-check-label" for="inlineRadio2">Eventos Inesperados</label>
+			  <label class="form-check-label" for="inlineRadio2">Mediciones de Eventos Inesperados</label>
 			</div>
 		</div>
-
+		<div class="mt-1 mb-3 d-flex justify-content-left">
+			<div class="col-5">
+			  <div class="p">Mediciones almacenadas diariamente en los siguientes bloques:</div>
+			  <div class="p">bloque 1: [2:00 - 5:00]</div>
+			  <div class="p">bloque 2: [7:00 - 10:00]</div>
+			  <div class="p">bloque 3: [13:00 -16:00]</div>
+			  <div class="p">bloque 4: [18:00 - 21:00]</div>
+			</div>
+			<div class="col-5">
+			  <div class="p">Mediciones dentro o fuera de los bloques predefinidos. Almacenados debido a la detecci&oacuten de valores an&oacutemalos</div>
+			</div>
+		</div>
 		<div class = "hidediv">
-			<div class="mt-3 mb-3 d-flex justify-content-center  ">
-				<div class="form-check form-check-inline">
+			<div class="mt-3 mb-3 d-flex justify-content-left">
+				<div class="col-5 form-check form-check-inline">
 				  <input class="form-check-input" type="radio" name="rango_consulta" id="inlineRadio3" value="todo_entre_las_fechas" checked>
-				  <label class="form-check-label" for="inlineRadio3">Todo entre las fechas</label>
+				  <label class="form-check-label" for="inlineRadio3">Rango completo</label>
 				</div>
-				<div class="form-check form-check-inline">
+				<div class="col-5 form-check form-check-inline">
 				  <input class="form-check-input" type="radio" name="rango_consulta" id="inlineRadio4" value="horas_por_dia">
-				  <label class="form-check-label" for="inlineRadio4">Horas por dia</label>
+				  <label class="form-check-label" for="inlineRadio4">Rango por dia</label>
 				</div>
 			</div>
-		</div>
 
-		<div class="d-flex justify-content-center  mb-3">
-			<div class="mt-4 col-sm-1">
-				<p class="text-center">Inicio</p>
+			<div class="mt-1 mb-3 d-flex justify-content-left">
+				<div class="col-5">
+				  <div class="p">Consulta a todo horario entre dos fechas</div>
+				  <div class="p">Ejemplo:</div>
+				  <fieldset disabled>
+				  <input type="text" id="disabledTextInput" class="form-control" placeholder="Todo entre [Fecha inicio + Hora inicio] y [Fecha fin + Hora fin]">
+				</div>
+				<div class="col-5">
+				  <div class="p">Consulta un rango de horas en cada dia seleccionado</div>
+				  <div class="p">Ejemplo:</div>
+				  <fieldset disabled>
+				  <input type="text" id="disabledTextInput" class="form-control" placeholder="Desde el [Fecha inicio] hasta [Fecha fin] entre los horarios [Hora inicial] y [Hora fin]">
+				</div>
 			</div>
-			<div class="col-sm-3">
-				<p class="text-center">Fechas</p>
+
+		</div>
+		<p class="h5">Paso 2: Seleccione Pediodo de Mediciones a descargar</p>
+		<div class="d-flex justify-content-left  mb-3">
+			<div class="mt-4 py-1 col-sm-1">
+				<p class="text-center font-weight-bold">Desde</p>
+			</div>
+			<div class="mt-4 py-1 col-sm-1">
+				<p class="text-center">Fecha inicio:</p>
+			</div>
+			<div class="mt-4 col-sm-3">
 			    <div class="form-group mb-0">
 			        <div class="input-group date" id="datetimepicker2" data-target-input="nearest">
 			            <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker2" name="fecha_inicial" required/>
@@ -140,8 +131,10 @@
 			        </div>
 			    </div>
 			</div>
-			<div class="col-sm-3">
-				<p class="text-center">Horas</p>
+			<div class="mt-4 py-1 col-sm-1">
+				<p class="text-center">a las:</p>
+			</div>
+			<div class="mt-4 col-sm-3">
 			    <div class="form-group mb-0">
 			        <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
 			            <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker1" name="hora_inicial" required/>
@@ -156,9 +149,12 @@
 			</div>
 		</div>
 
-		<div class="d-flex justify-content-center  mb-3">
+		<div class="d-flex justify-content-left  mb-3">
 			<div class="mt-2 col-sm-1">
-				<p class="text-center">Fin</p>
+				<p class="text-center font-weight-bold">Hasta</p>
+			</div>
+			<div class="mt-2 col-sm-1">
+				<p class="text-center">Fecha fin:</p>
 			</div>
 			<div class="col-sm-3">
 			    <div class="form-group mb-0">
@@ -172,6 +168,9 @@
         				</div>
 			        </div>
 			    </div>
+			</div>
+			<div class="mt-2 col-sm-1">
+				<p class="text-center">a las:</p>
 			</div>
 			<div class="col-sm-3">
 			    <div class="form-group mb-0">
@@ -188,45 +187,58 @@
 			</div>
 		</div>
 
+		<p class="h5">Paso 3: Seleccione sensores y ejes</p>
+		<table
+	id="table"
+	data-toggle="table"
+	data-height="460"
+	data-search="true"
+	data-locale="es-ES"
+	data-click-to-select="true"
+	data-id-field="nombre_sensor"
+	data-select-item-name="sensor_list">
+  <thead>
+    <tr class="tr-class-1">
+      <th data-field="sensor_list" data-checkbox="true"></th>
+      <th data-field="nombre_sensor" data-sortable="true">Sensor</th>
+      <th data-field="tipo_sensor" data-sortable="true">Tipo Sensor</th>
+      <th data-field="modelo_sensor" data-sortable="true">Modelo</th>
+      <th data-field="frecuencia_sensor" data-sortable="true">Frecuencia</th>
+      <th data-field="zona_sensor" data-sortable="true">Zona</th>
+      <th data-field="DAQ_sensor" data-sortable="true">DAQ</th>
+      <th data-field="Estado_sensor" data-sortable="true">Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+  	{%for i in info_sensores:%}
+    <tr class="tr-class-1">
+    	<td></td>
+		<td>{{i["name"]}}</td>
+		<td>Acelerometro</td>
+		<td>Desconocido?</td>
+		<td>Por Agregar</td>
+		<td>Desconocido?</td>
+		<td>DAQ1</td>
+		<td>Por Agregar</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div id="validate_sensor_list" class="invalid-feedback">
+	Seleccionar un sensor.
+</div>
 
-		<div class="d-flex justify-content-center align-items-center  mb-3">
-			<div class="col-sm-6">
-				<fieldset disabled>
-				<label for="disabledTextInput">Consulta actual [opcion 1: Todo entre las fechas]</label>
-				<input type="text" id="disabledTextInput" class="form-control" placeholder="Todo entre [Fecha inicio + Hora inicio] y [Fecha fin + Hora fin]">
-				<label for="disabledTextInput">Consulta actual [opcion 2: Horas por dia]</label>
-				<input type="text" id="disabledTextInput" class="form-control" placeholder="Desde el [Fecha inicio] hasta [Fecha fin] entre los horarios [Hora inicial] y [Hora fin]">
-			</div>
-		</div>
+		<div class="d-flex justify-content-left align-items-center  mb-3">
 
-		<div class="d-flex justify-content-center align-items-center  mb-3">
-			<div class="col-sm-1">
-				<p class="text-center">Sensores:</p>
-			</div>
-			<div class=" btn-group-vertical">
-			  <button type="button" id="selectall" class="btn btn-info">Seleccionar <br> Todo/Ninguno</button>
-			</div>
-			<div class="ml-2 mb-0 form-group">	
-				<select multiple class="form-control" name="sensor_list" id="sensor_list" required>
-
-				  	{%for i in info_sensores:%}
-				  		<option value={{i["name"]}}>{{i["name"]}}</option>
-				    {% endfor %}
-
-				</select>
-		        <div class="invalid-feedback">
-	          		Seleccionar sensores.
-	        	</div>
-			</div>
 			<div class="ml-2 mb-0 form-group">	
 				<div class="col-sm-1">
-					<p class="text-center">Ejes:</p>
+					<p class="text-center font-weight-bold">Ejes:</p>
 				</div>
 			</div>
 			<div class="ml-2 mb-0 form-group">	
 
 				{%for i in info_ejes:%}
-				<div class="form-check">
+				<div class="mt-4 px-5 form-check-inline">
 				  <input class="form-check-input" type="checkbox" name="consultas_ejes" value={{i}} id="defaultCheck1">
 				  <label class="form-check-label" for="defaultCheck1">Eje {{i}}</label>
 				</div>
@@ -235,20 +247,18 @@
 
 			</div>
 		</div>
+		<p class="h5">Paso 4: Seleccione valores a consultar</p>
+		<div class="d-flex justify-content-left align-items-center  mb-3">
 
-		<div class="d-flex justify-content-center align-items-center  mb-3">
-			<div class="col-sm-1">
-				<p class="text-center">Consultas <br> (por sensor)</p>
-			</div>
-			<div class="form-check form-check-inline">
+			<div class="px-5 form-check form-check-inline">
 			  <input class="form-check-input" type="checkbox" name="consultas_sensor" id="inlineCheckbox1" value="max">
 			  <label class="form-check-label" for="inlineCheckbox1">Max</label>
 			</div>
-			<div class="form-check form-check-inline">
+			<div class="px-5 form-check form-check-inline">
 			  <input class="form-check-input" type="checkbox" name="consultas_sensor" id="inlineCheckbox2" value="min">
 			  <label class="form-check-label" for="inlineCheckbox2">Min</label>
 			</div>
-			<div class="form-check form-check-inline">
+			<div class="px-5 form-check form-check-inline">
 			  <input class="form-check-input" type="checkbox" name="consultas_sensor" id="inlineCheckbox3" value="avg">
 			  <label class="form-check-label" for="inlineCheckbox3">Promedio</label>
 			</div>
@@ -322,5 +332,11 @@
 	<script src="{{ url_for('static', filename='js/tempusdominus-bootstrap-4.min.js')}}"></script>
 	<script src="{{ url_for('static', filename='js/datetimepicker-custom.js')}}"></script>
 	<script src="{{ url_for('static', filename='js/hconsulta-custom.js')}}"></script>
-    <script type="text/javascript"></script>
+	<script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
+    <script type="text/javascript">
+
+    </script>
 {% endblock %}

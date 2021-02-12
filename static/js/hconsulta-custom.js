@@ -43,7 +43,10 @@ $('#submitBtn').click(function() {
     var hora_inicial = $('input[name="hora_inicial"]').val();
     var fecha_final = $('input[name="fecha_final"]').val();
     var hora_final = $('input[name="hora_final"]').val();
-    var lista_sensores = $('#sensor_list').val();
+    var lista_sensores = []
+    $("input:checkbox[name=sensor_list]:checked").each(function(){
+        lista_sensores.push($(this).val());
+    });
     var consultas_ejes = []
     $("input:checkbox[name=consultas_ejes]:checked").each(function(){
         consultas_ejes.push($(this).val());
@@ -71,6 +74,21 @@ $('#submitBtn').click(function() {
     else{
         for (i=0; i<sensor_query.length; i++){
             sensor_query[i].required = true;
+        }
+    }
+
+    sensor_query=document.getElementsByName("sensor_list");
+    var atLeastOneChecked_sensor=false;
+    for (i=0; i<sensor_query.length; i++) {
+        if (sensor_query[i].checked === true) {
+            atLeastOneChecked_sensor=true;
+        }
+    }
+    if (atLeastOneChecked_sensor === true) {
+        $('#validate_sensor_list').removeClass('d-block')
+    } else {
+        for (i=0; i<sensor_query.length; i++) { 
+            $('#validate_sensor_list').addClass('d-block');
         }
     }
 
