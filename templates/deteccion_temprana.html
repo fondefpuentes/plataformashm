@@ -1,0 +1,36 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg"">
+   {% include 'modal_glosario_estados.html'%}
+   
+   <div class="container-fluid px-5 py-2">
+      {% include 'breadcrumb.html' %}
+      <h1 class="title text-capitalize">
+         {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }} :: Detección Temprana 
+      </h1>
+      <div class="row py-3 d-flex flex-sm-row-reverse">
+         <div class="col-sm-3 mb-2">{% include 'botones_tabla_estructura.html' %}</div>
+		 <div class="col-sm-9">
+			 <div class="subtitle fs-3 py-1">Estado General de Sensores</div>
+		   <div class ="box">
+			   <h1>Estado de Alerta</h1>
+		     <div class="button">
+		    	 Ejecutar Anomalía
+		     </div>
+		   </div>
+			<div class="subtitle fs-3 py-1">Estados de Sensores</div>
+		   <div class="box">
+		   	"Listado de sensores"
+		   </div>
+
+		   <div class="subtitle fs-3 py-1">Historial de Estados (O ultima anomalia)</div>
+		   <div class="box">
+		   	"Listado de sensores"
+		   </div>
+		 </div>
+	  </div>
+   </div>
+</div>
+{% endblock %}

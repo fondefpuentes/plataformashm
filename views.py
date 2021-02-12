@@ -1646,3 +1646,24 @@ def datos_recientes():
         return render_template('template_datos_recientes.html')
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
+
+@views_api.route("/deteccion_temprana/<int:id_puente>", methods= ['GET', 'POST'])
+@login_required
+def deteccion_temprana(id_puente):
+    if current_user.is_authenticated:
+       if(request.method == "GET"):
+            estructura = Estructura.query.filter_by(id=id_puente).first()
+            esta_monitoreada = estructura.en_monitoreo
+            #Se guarda momentaneamente el id del puente en la sesión actual
+            session['id_puente'] = id_puente
+            # estados = EstadoEstructura.query.filter_by(id_estructura=id_puente).order_by(EstadoEstructura.fecha_estado.desc()).all()
+            context = {
+                'id_puente' : id_puente,
+                'nombre_y_tipo_activo' : obtener_nombre_y_activo(id_puente),
+                'datos_puente' : estructura,
+                'esta_monitoreada':esta_monitoreada,
+                # 'historial': estados
+            }
+            return render_template('deteccion_temprana.html',**context)
+    else:
+        return redirect(url_for('views_api.usuario_no_autorizado'))
