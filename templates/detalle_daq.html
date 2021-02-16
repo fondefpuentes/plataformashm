@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block customcss %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="bg">
+   <div class="container-fluid px-5 py-2">
+      <div class="row">{% include 'breadcrumb.html' %}</div>
+      <h1 class="title text-capitalize">
+         {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }} :: Detalle DAQ - {{info_daq.caracteristicas}} 
+      </h1>
+      <div class="row py-3 d-flex flex-sm-row-reverse">
+         <div class="col-sm-3 mb-2">{% include 'botones_tabla_estructura.html' %}</div>
+         <div class="col-sm-9">
+            <h1 class="subtitle fs-3 py-1">Especificaciones </h1>
+            <div class="row row-cols-2 g-2 py-3 ">
+               <div class="col-sm-6">
+                  <ul class="list-group list-group-flush">
+                     <li class="list-group-item"><b>Marca: </b>[Sin Especificar] </li>
+                     <li class="list-group-item"><b>Modelo: </b>[Sin Especificar]</li>
+                     <li class="list-group-item"><b>UUID: </b> [Sin Especificar]</li>
+                     <li class="list-group-item mt-4"><b>Fecha Instalacion: </b>[Sin Especificar] </li>
+                     <li class="list-group-item"><b>Zona: </b>{{zona.descripcion}}</li>
+                     <li class="list-group-item"><b>Numero de Canales: </b>{{info_daq.nro_canales}}</li>
+                  </ul>
+               </div>
+               <div class="col-sm-6 px-5"><img src="/static/images/daq.jpg  " class="img-fluid img-thumbnail" alt="..."></div>
+            </div>
+            <h1 class="subtitle fs-3 py-2">Estado de Funcionamiento Actual</h1>
+            <div class="row px-2 mb-4">
+               <div class="card h-100">
+                  <div class="card-body">
+                     <p><b>Operatividad: </b>{%if estado_daq%}{{estado_daq[0].operatividad}}{%else%}--Sin Registro--{%endif%}</p>
+                     <p><b>Mantenimiento: </b>{%if estado_daq%}{{estado_daq[0].mantenimiento}}{%else%}--Sin Registro--{%endif%}</p>
+                  </div>
+                  <div class="card-footer">
+                     <small class="text-muted">Ultima Actualizacion: {%if estado_daq%}{{estado_daq[0].fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}{%else%}[dd/mm/aa hh:mm:ss]{%endif%}</small>
+                  </div>
+               </div>
+            </div>
+            <h1 class="subtitle fs-3 py-2">Actualizar Estado de Funcionamiento</h1>
+            <div class="row px-2">
+               <div class="card">
+                  <form class="card-body" id="actualizar-estado" action="{{url_for('views_api.detalle_daq', id_daq=info_daq.id)}}" method="POST">
+                     <div class="row row-cols-6 py-1">
+                        <p class="col-sm-2"><b>Operatividad:</b></p>
+                        <div class="form-check form-check-inline" required>
+                           <input class="form-check-input" type="radio" name="opRadio" id="op" value="Operativo" checked>
+                           <label class="form-check-label" for="op"> Operativo</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                           <input class="form-check-input" type="radio" name="opRadio" id="inter" value="Intermitente">
+                           <label class="form-check-label" for="inter"> No Operativo</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                           <input class="form-check-input" type="radio" name="opRadio" id="no_op" value="No Operativo">
+                           <label class="form-check-label" for="no_op"> No Operativo</label>
+                        </div>
+                     </div>
+                     <div class="row row-cols-6 py-1">
+                        <p class="col-sm-2"><b>Mantenimiento:</b></p>
+                        <div class="form-check form-check-inline" required>
+                           <input class="form-check-input" type="radio" name="manRadio" id="dia" value="Al Dia" checked>
+                           <label class="form-check-label" for="dia"> Al Dia</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                           <input class="form-check-input" type="radio" name="manRadio" id="prog" value="Programado">
+                           <label class="form-check-label" for="prog"> Programado</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                           <input class="form-check-input" type="radio" name="manRadio" id="pend" value="Pendiente">
+                           <label class="form-check-label" for="pend"> Pendiente</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                           <input class="form-check-input" type="radio" name="manRadio" id="corr_nec" value="Correctivo Necesario">
+                           <label class="form-check-label" for="corr_nec"> Correctivo Necesario</label>
+                        </div>
+                     </div>
+                     <div class="d-grid justify-content-md-end mt-2">
+                        <button type="button" id="revision-btn" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#revision_modal">Revisar</button>
+                     </div>
+                     <div class="modal fade" id="revision_modal" tabindex="-1" aria-labelledby="revision_label" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-scrollable">
+                           <div class="modal-content">
+                              <div class="modal-header">
+                                 <h5 class="modal-title fs-5" id="revision-title">Revision Estado DAQ - {{info_daq.caracteristicas}}</h5>
+                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body">
+                                 <div class="row py-1">
+                                    <div class="col-sm-4"><b>Operatividad:</b></div>
+                                    <div class="col-sm-6">
+                                       <p id="op-prev"></p>
+                                    </div>
+                                    <span class="border-bottom"></span>
+                                 </div>
+                                 <div class="row py-1">
+                                    <div class="col-sm-4"><b>Mantenimiento:</b></div>
+                                    <div class="col-sm-6">
+                                       <p id="man-prev"></p>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="modal-footer">
+                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                 <button type="button" id="actualizar-btn" class="btn btn-success">Modificar Estado</button>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </form>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="row py-3">
+        <h1 class="subtitle fs-3 py-1">Sensores Conectados</h1>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="filterInputSensores" placeholder="estados">
+            <label for="filterInputSensores"><i class="bi bi-search px-3"></i>Filtrar Estados</label>
+         </div>
+         <div>
+            <table class="table table-bordered table-responsive-md border-1 px-3" 
+            id="table"
+	          data-toggle="table"
+            data-sortable="true"
+            data-pagination="true"
+            data-page-size="10"
+            data-locale="es-CL">
+               <thead>
+                  <tr style="color: var(--bs-purple);">
+                     <th data-field="Canal" data-sortable="true">Canal</th>
+                     <th data-field="Id" data-sortable="true">Id</th>
+                     <th data-field="Tipo Sensor" data-sortable="true">Tipo Sensor</th>
+                     <th data-field="Marca" data-sortable="true">Marca</th>
+                     <th data-field="Modelo" data-sortable="true">Modelo</th>
+                     <th data-field="Frecuencia" data-sortable="true">Frecuencia (Hz)</th>
+                     <th data-field="Zona" data-sortable="true">Zona</th>
+                     <th data-field="Operatividad" data-sortable="true">Operatividad</th>
+                  </tr>
+               </thead>
+               <tbody id="sensores_data">
+                  {%if sensores_conectados%}
+                  {%for i in sensores_conectados%}
+                  <tr>
+                     <td>{{i.numero_canal}}</td>
+                     <td><a href="{{url_for('views_api.detalle_sensor',id_sensor=i.id)}}">{{i.nombre_sensor}}</td>
+                     <td>{{i.nombre}}</td>
+                     <td>[POR DEFINIR]</td>
+                     <td>[POR DEFINIR]</td>
+                     <td>{{i.frecuencia}}</td>
+                     <td>{{i.descripcion}}</td>
+                     <td>{{i.operatividad}}</td>
+                  </tr>
+                  {%endfor%}
+                  {%endif%}
+               </tbody>
+            </table>
+         </div>
+      </div>
+      <div class="row py-5">
+        <h1 class="subtitle fs-3 py-1">Historial de Estados </h1>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="filterInputEstados" placeholder="estados">
+            <label for="filterInputEstados"><i class="bi bi-search px-3"></i>Filtrar Estados</label>
+         </div>
+         <div>
+            <table class="table table-bordered table-responsive-md border-1 px-3" 
+            id="table"
+	          data-toggle="table"
+            data-sortable="true"
+            data-show-export="true"
+            data-height="300"
+            data-locale="es-CL">
+               <thead>
+                  <tr style="color: var(--bs-purple);">
+                     <th data-field="Fecha" data-sortable="true">Fecha</th>
+                     <th data-field="Operatividad" data-sortable="true">Operatividad</th>
+                     <th data-field="Mantenimiento  " data-sortable="true">Mantenimiento</th>
+                  </tr>
+               </thead>
+               <tbody id="estados_data">
+                  {%if estado_daq%}
+                  {%for i in estado_daq%}
+                  <tr>
+                     <td>{{i.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                     <td>{{i.operatividad}}</td>
+                     <td>{{i.mantenimiento}}</td>
+                  </tr>
+                  {%endfor%}
+                  {%endif%}
+               </tbody>
+            </table>
+         </div>
+      </div>
+      <div class="row py-5">
+        <div class="row py-3">
+          <div class="col-10"><h1 class="subtitle fs-3 py-1">Mantenimiento</h1></div>
+          <div class="col-2 g-0"><button type="button" id="actualizar-btn" class="btn btn-success btn-md" data-bs-toggle="modal" data-bs-target="#mantenimiento_modal" style="width:100%;">  Anadir Mantenimiento  </button></div>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="filterInputMant" placeholder="mantenimiento">
+            <label for="filterInput"><i class="bi bi-search px-3"></i>Filtrar Mantenimientos</label>
+         </div>
+         <div>
+            <table class="table table-bordered table-responsive-md border-1 px-3" 
+            id="table"
+	          data-toggle="table"
+            data-sortable="true"
+            data-show-export="true"
+            data-height="300"
+            data-locale="es-CL">
+               <thead>
+                  <tr style="color: var(--bs-purple);">
+                     <th data-field="Fecha" data-sortable="true" data-width="200">Fecha</th>
+                     <th data-field="Detalle" data-sortable="true">Detalle Revision</th>
+                  </tr>
+               </thead>
+               <tbody id="mantenimiento_data">
+                  {%if mantenimientos%}
+                  {%for i in mantenimientos%}
+                  <tr>
+                     <td>{{i.fecha_mantenimiento.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                     <td>{{i.detalles}}</td>
+                  </tr>
+                  {%endfor%}
+                  {%endif%}
+               </tbody>
+            </table>
+            <div class="modal fade" id="mantenimiento_modal" tabindex="-1" aria-labelledby="revision_label" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-scrollable">
+                     <div class="modal-content">
+                        <div class="modal-header">
+                           <h5 class="modal-title fs-5" id="revision-title">Nuevo Mantenimiento DAQ - {{info_daq.caracteristicas}}</h5>
+                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form class="modal-body" id="mantenimiento-form" action="{{url_for('views_api.mantenimiento_daq', id_daq=info_daq.id)}}" method="POST">
+                           
+                           <div class="mb-3 px-3 py-3">
+                             <label for="exampleFormControlTextarea1" class="form-label">Detalles</label>
+                             <textarea name="detalles" class="form-control" id="detalles" rows="3" required></textarea>
+                             <small id="TextAreaHelpBlock" class="form-text text-muted">El texto ingresado no debe exceder los 500 caracteres de longitud.</small>
+                           </div>
+                        </form>
+                        <div class="modal-footer">
+                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                           <button type="button" id="nuevo-mantenimiento-btn" class="btn btn-success">Actualizar</button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+         </div>
+   </div>
+</div>
+{% endblock %}
+{% block customjs %}
+<script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
+<script>
+   $(document).ready(function(){
+   
+   
+       $("#filterInputSensores").on("keyup", function() {
+           var value = $(this).val().toLowerCase();
+           $("#sensores_data tr").filter(function() {
+               $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+           });
+        });
+        
+        $("#filterInputMant").on("keyup", function() {
+           var value = $(this).val().toLowerCase();
+           $("#mantenimiento_data tr").filter(function() {
+               $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+           });
+        });
+        
+        $("#filterInputEstados").on("keyup", function() {
+           var value = $(this).val().toLowerCase();
+           $("#estados_data tr").filter(function() {
+               $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+           });
+        });
+       
+       $('#revision-btn').click(function() {
+            var opS = $('input:radio[name=opRadio]:checked');
+            var manS = $('input:radio[name=manRadio]:checked');
+            $('#op-prev').text(opS.val());
+            $('#man-prev').text(manS.val());
+         });
+   
+       $('#actualizar-btn').click(function(){
+             $('#actualizar-estado').submit();
+       });
+       
+       $('#nuevo-mantenimiento-btn').click(function(){
+             $('#mantenimiento-form').submit();
+       });
+   });
+</script> 
+{% endblock %}
+

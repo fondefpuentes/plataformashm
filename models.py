@@ -49,7 +49,7 @@ class ElementoEstructural(db.Model):
     __table_args__ = {'schema':'inventario_puentes'}
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'), primary_key=True)
-    tipo_zona = db.Column(db.Integer, db.ForeignKey('inventario_puentes.tipos_de_zona.id'))
+    tipo_zona = db.Column(db.Integer, db.ForeignKey('inventario_puentes.tipo_de_elemento.id'))
     material = db.Column(db.String(20))
     descripcion = db.Column(db.String(1000))
         
@@ -117,7 +117,7 @@ class SensorInstalado(db.Model):
     coord_y = db.Column(db.Float)
     coord_z = db.Column(db.Float)
     nombre_tabla = db.Column(db.String(1000))
-    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.zonas_estructura.id','inventario_puentes.zonas_estructura.id_estructura']),{'schema':'inventario_puentes'})  
+    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.elemento_estructural.id','inventario_puentes.elemento_estructural.id_estructura']),{'schema':'inventario_puentes'})  
 
 class DescripcionSensor(db.Model):
     __tablename__ = 'descripciones_de_sensores'
@@ -159,7 +159,7 @@ class DAQPorZona(db.Model):
     id_daq = db.Column(db.Integer,db.ForeignKey('inventario_puentes.daqs.id'), primary_key=True)
     id_zona = db.Column(db.Integer, primary_key=True)
     id_estructura = db.Column(db.Integer, primary_key=True)
-    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.zonas_estructura.id','inventario_puentes.zonas_estructura.id_estructura']),{'schema':'inventario_puentes'})
+    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.elemento_estructural.id','inventario_puentes.elemento_estructural.id_estructura']),{'schema':'inventario_puentes'})
 
 class MantenimientoDAQ(db.Model):
     __tablename__ = 'mantenimiento_de_daq'
@@ -226,7 +226,7 @@ class ConjuntoZona(db.Model):
     id_conjunto = db.Column(db.Integer, db.ForeignKey('inventario_puentes.conjuntos.id'), primary_key=True)
     id_zona = db.Column(db.Integer, primary_key=True)
     id_estructura = db.Column(db.Integer, primary_key=True)
-    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.zonas_estructura.id','inventario_puentes.zonas_estructura.id_estructura']),{'schema':'inventario_puentes'})
+    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.elemento_estructural.id','inventario_puentes.elemento_estructural.id_estructura']),{'schema':'inventario_puentes'})
 
 class ConjuntoSensorInstalado(db.Model):
     __tablename__ = 'conjuntos_sensores'
@@ -240,7 +240,8 @@ class EstadoEstructura(db.Model):
     id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'), primary_key=True)
     fecha_estado = db.Column(db.DateTime, primary_key=True)
     estado = db.Column(db.String(50))
-    seguridad = db.Column(db.String(50))
+    seguridad = db.Column(db.String(100))
+    detalles = db.Column(db.String(500))
 
 class VisualizacionBIM(db.Model):
     __tablename__ = 'visualizaciones_bim'
@@ -272,7 +273,7 @@ class InformeZona(db.Model):
     id_informe = db.Column(db.Integer, db.ForeignKey('inventario_puentes.informes_monitoreo_visual.id_informe'), primary_key=True)
     id_zona = db.Column(db.Integer, primary_key=True)
     id_estructura = db.Column(db.Integer, primary_key=True)
-    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.zonas_estructura.id','inventario_puentes.zonas_estructura.id_estructura']),{'schema':'inventario_puentes'})
+    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.elemento_estructural.id','inventario_puentes.elemento_estructural.id_estructura']),{'schema':'inventario_puentes'})
 
 class HallazgoVisual(db.Model):
     __tablename__ = 'hallazgos_visuales'
@@ -286,7 +287,7 @@ class HallazgoVisual(db.Model):
     coord_z = db.Column(db.Float)
     id_zona = db.Column(db.Integer)
     id_estructura = db.Column(db.Integer)
-    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.zonas_estructura.id','inventario_puentes.zonas_estructura.id_estructura']),{'schema':'inventario_puentes'})
+    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.elemento_estructural.id','inventario_puentes.elemento_estructural.id_estructura']),{'schema':'inventario_puentes'})
 
 class HallazgoInforme(db.Model):
     __tablename__ = 'hallazgos_por_informes'
@@ -312,7 +313,7 @@ class CamaraMonitoreo(db.Model):
     coord_z = db.Column(db.Float)
     id_zona = db.Column(db.Integer)
     id_estructura = db.Column(db.Integer)
-    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.zonas_estructura.id','inventario_puentes.zonas_estructura.id_estructura']),{'schema':'inventario_puentes'})
+    __table_args__ = (db.ForeignKeyConstraint(['id_zona','id_estructura'],['inventario_puentes.elemento_estructural.id','inventario_puentes.elemento_estructural.id_estructura']),{'schema':'inventario_puentes'})
     
 class GrupoDefinidoUsuario(db.Model):
     __tablename__ = 'grupos_definidos_por_usuario'

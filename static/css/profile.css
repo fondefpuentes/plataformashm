@@ -1,8 +1,8 @@
 #map {
-    min-height: 450px;
-    max-height: 600px;
-    height: 100%;
-    border-radius:15px;
+    min-height: 640px;
+    max-height: 480px;
+    height: 75%;
+    border-radius:5px;
 }
 body, html{
     height: 100%;
@@ -59,4 +59,11 @@ h1{
 
 .box{
     margin-bottom: 100px;
+}
+
+.table{
+    display: inline-block;
+    height: 600px;
+    width: 100%;
+    overflow-y: scroll;
 }

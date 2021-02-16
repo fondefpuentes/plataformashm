@@ -1,9 +1,17 @@
 <!-- templates/tiemporeal.html -->
 
 {% extends "base.html" %}
-
+{% block customcss %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+{% endblock %}
 {% block content %}
-{% include 'breadcrumb.html' %}
+<div class="container-fluid px-5 py-2">
+        {% include 'breadcrumb.html' %}
+        <h1 class="title">
+            {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
+        </h1>
+
 <div class="embed-container">
    <iframe src="{{datos_puente.dashboard}}" width="100%" frameborder="0" height="900"></iframe>
 </div>
