@@ -8,11 +8,12 @@
 	<link href="{{ url_for('static', filename='css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet">
 	<link href="{{ url_for('static', filename='font-awesome/css/all.css') }}" rel="stylesheet">	
 	<link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
 {% endblock %}
 
 
 {% block content %}
-
+{% include 'breadcrumb.html' %}
 <div class="container-fluid px-5 py-5">
 
 
@@ -114,30 +115,34 @@
 	</div>
 
 
-	<div class="mb-3 mt-5 ml-5 mr-5 d-sm-flex justify-content-left align-items-center  ">
+	<div class="mb-5 row">
 
-		<table class="table table-bordered table-responsive-sm">
-		  <thead>
-		    <tr>
-		    {%for i in header:%}
-		      <th scope="col">{{i}}</th>
-		    {% endfor %}
-		    </tr>
-		  </thead>
-		  <tbody>
-
-		  	{%for i in detalle:%}
-		  		<tr>
-		  		{%for j in header:%}
-					<td> {{i[j]}} </td>
+		<table
+			id="table"
+			data-toggle="table"
+			data-height="460"
+			data-search="true"
+			data-maintain-meta-data="true"
+			data-locale="es-ES">
+			<thead>
+			<tr class="tr-class-1">
+		    	{%for i in header:%}
+	        		<th data-field="{{i}}" data-sortable="true">{{i}}</th>
+		    	{% endfor %}
+			</tr>
+			</thead>
+			<tbody>
+				{%for i in detalle:%}
+			  		<tr>
+			  		{%for j in header:%}
+						<td> {{i[j]}} </td>
+				    {% endfor %}
+				    </tr>
 			    {% endfor %}
-			    </tr>
-		    {% endfor %}
-		    			    <tr>
-			    </tr>
-
-		  </tbody>
+			</tbody>
 		</table>
+
+		
 	</div>
 
 
@@ -158,11 +163,11 @@
 {% block customjs%}
     {{ super() }}
 	<script src="{{ url_for('static', filename='js/tempusdominus-bootstrap-4.min.js')}}"></script>
-
+	<script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
     <script type="text/javascript">
-
-       
-
     </script>
 
 

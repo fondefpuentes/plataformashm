@@ -15,15 +15,26 @@ $(document).ready(function() {
     }); 
 }); 
 
-// Seleccionar todos - ninguno
-$('#selectall').click( function() {
-	if($('#sensor_list option').prop('selected') == true){
-		$('#sensor_list option').prop('selected', false);
-	}
-	else
-		$('#sensor_list option').prop('selected', true);
+//Cambio de texto, consultas por rango
 
-});
+$(document).ready(function() { 
+    $('input[type="radio"]').click(function() { 
+        var inputValue = $(this).attr("value"); 
+        var targetBox1 = document.getElementById("range_text1");
+        var targetBox2 = document.getElementById("range_text2");
+
+        if (inputValue == "todo_entre_las_fechas"){
+            $(targetBox1).text("a las:");
+            $(targetBox2).text("a las:");
+        }
+        else if (inputValue == "horas_por_dia"){
+            $(targetBox1).text("Hora inicio:");
+            $(targetBox2).text("Hora fin:");
+        }
+
+
+    }); 
+}); 
 
 // Desactivar Enter Key
 $("#idform").keypress(function(e) {
@@ -44,8 +55,9 @@ $('#submitBtn').click(function() {
     var fecha_final = $('input[name="fecha_final"]').val();
     var hora_final = $('input[name="hora_final"]').val();
     var lista_sensores = []
-    $("input:checkbox[name=sensor_list]:checked").each(function(){
+    $("input:checkbox[name=sensor_selected]:checked").each(function(){
         lista_sensores.push($(this).val());
+        console.log(lista_sensores)
     });
     var consultas_ejes = []
     $("input:checkbox[name=consultas_ejes]:checked").each(function(){
@@ -77,7 +89,7 @@ $('#submitBtn').click(function() {
         }
     }
 
-    sensor_query=document.getElementsByName("sensor_list");
+    sensor_query=document.getElementsByName("sensor_selected");
     var atLeastOneChecked_sensor=false;
     for (i=0; i<sensor_query.length; i++) {
         if (sensor_query[i].checked === true) {
@@ -87,9 +99,7 @@ $('#submitBtn').click(function() {
     if (atLeastOneChecked_sensor === true) {
         $('#validate_sensor_list').removeClass('d-block')
     } else {
-        for (i=0; i<sensor_query.length; i++) { 
-            $('#validate_sensor_list').addClass('d-block');
-        }
+        $('#validate_sensor_list').addClass('d-block');
     }
 
 	axis_query=document.getElementsByName("consultas_ejes");
@@ -143,7 +153,7 @@ $('#submitBtn').click(function() {
 	var forms = document.getElementsByClassName('needs-validation');
 		var validation = Array.prototype.filter.call(forms, function(form) {
 
-				if (form.checkValidity() === false) {
+				if (form.checkValidity() === false || atLeastOneChecked_sensor === false) {
 					event.preventDefault();
 					event.stopPropagation();
 				}

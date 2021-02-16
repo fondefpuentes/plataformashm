@@ -99,13 +99,13 @@
 				  <div class="p">Consulta a todo horario entre dos fechas</div>
 				  <div class="p">Ejemplo:</div>
 				  <fieldset disabled>
-				  <input type="text" id="disabledTextInput" class="form-control" placeholder="Todo entre [Fecha inicio + Hora inicio] y [Fecha fin + Hora fin]">
+				  <input type="text" id="disabledTextInput" class="form-control" placeholder="Todo entre [Fecha inicio] a las [Hora inicio] y [Fecha fin] a las [Hora fin]">
 				</div>
 				<div class="col-5">
 				  <div class="p">Consulta un rango de horas en cada dia seleccionado</div>
 				  <div class="p">Ejemplo:</div>
 				  <fieldset disabled>
-				  <input type="text" id="disabledTextInput" class="form-control" placeholder="Desde el [Fecha inicio] hasta [Fecha fin] entre los horarios [Hora inicial] y [Hora fin]">
+				  <input type="text" id="disabledTextInput" class="form-control" placeholder="Desde el [Fecha inicio] hasta [Fecha fin] entre los horarios [Hora inicio] y [Hora fin]">
 				</div>
 			</div>
 
@@ -132,7 +132,7 @@
 			    </div>
 			</div>
 			<div class="mt-4 py-1 col-sm-1">
-				<p class="text-center">a las:</p>
+				<p class="text-center" id="range_text1">a las:</p>
 			</div>
 			<div class="mt-4 col-sm-3">
 			    <div class="form-group mb-0">
@@ -170,7 +170,7 @@
 			    </div>
 			</div>
 			<div class="mt-2 col-sm-1">
-				<p class="text-center">a las:</p>
+				<p class="text-center" id="range_text2">a las:</p>
 			</div>
 			<div class="col-sm-3">
 			    <div class="form-group mb-0">
@@ -189,41 +189,46 @@
 
 		<p class="h5">Paso 3: Seleccione sensores y ejes</p>
 		<table
-	id="table"
-	data-toggle="table"
-	data-height="460"
-	data-search="true"
-	data-locale="es-ES"
-	data-click-to-select="true"
-	data-id-field="nombre_sensor"
-	data-select-item-name="sensor_list">
-  <thead>
-    <tr class="tr-class-1">
-      <th data-field="sensor_list" data-checkbox="true"></th>
-      <th data-field="nombre_sensor" data-sortable="true">Sensor</th>
-      <th data-field="tipo_sensor" data-sortable="true">Tipo Sensor</th>
-      <th data-field="modelo_sensor" data-sortable="true">Modelo</th>
-      <th data-field="frecuencia_sensor" data-sortable="true">Frecuencia</th>
-      <th data-field="zona_sensor" data-sortable="true">Zona</th>
-      <th data-field="DAQ_sensor" data-sortable="true">DAQ</th>
-      <th data-field="Estado_sensor" data-sortable="true">Estado</th>
-    </tr>
-  </thead>
-  <tbody>
-  	{%for i in info_sensores:%}
-    <tr class="tr-class-1">
-    	<td></td>
-		<td>{{i["name"]}}</td>
-		<td>Acelerometro</td>
-		<td>Desconocido?</td>
-		<td>Por Agregar</td>
-		<td>Desconocido?</td>
-		<td>DAQ1</td>
-		<td>Por Agregar</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+			id="table"
+			data-toggle="table"
+			data-height="460"
+			data-search="true"
+			data-maintain-meta-data="true"
+			data-locale="es-ES"
+			data-click-to-select="true"
+			data-id-field="sensor_id"
+			data-select-item-name="sensor_selected">
+			<thead>
+			<tr class="tr-class-1">
+			  <th data-field="sensor_selected" data-checkbox="true"></th>
+			  <th data-field="sensor_id" data-visible="false"></th>
+			  <th data-field="nombre_sensor" data-sortable="true">Sensor</th>
+			  <th data-field="tipo_sensor" data-sortable="true">Tipo Sensor</th>
+			  <th data-field="modelo" data-sortable="true">Modelo</th>
+			  <th data-field="frecuencia" data-sortable="true">Frecuencia</th>
+			  <th data-field="zona_sensor" data-sortable="true">Zona</th>
+			  <th data-field="DAQ" data-sortable="true">DAQ</th>
+			  <th data-field="numero_canal" data-sortable="true">Canal</th>
+			  <th data-field="estado_sensor" data-sortable="true">Estado</th>
+			</tr>
+			</thead>
+			<tbody>
+				{%for i in info_sensores:%}
+			<tr class="tr-class-1">
+				<td></td>
+				<td>{{i["name"]}}</td>
+				<td><a href="#">{{i["name"]}}</a></td>
+				<td>{{i["tipo_sensor"]}}</td>
+				<td>{{i["modelo"]}}</td>
+				<td>{{i["frecuencia"]}}</td>
+				<td>{{i["zona_sensor"]}}</td>
+				<td><a href="#">{{i["daq"]}}</a></td>
+				<td>{{i["numero_canal"]}}</td>
+				<td>{{i["estado_sensor"]}}</td>
+			</tr>
+			{% endfor %}
+			</tbody>
+		</table>
 <div id="validate_sensor_list" class="invalid-feedback">
 	Seleccionar un sensor.
 </div>
@@ -292,37 +297,45 @@
 		</div>			
 	</form>
 
-	<div class="mb-3 mt-5 ml-5 d-flex justify-content-left align-items-center  ">
+	<div class="mb-1 mt-5 d-flex justify-content-left align-items-center  ">
 		<p class="h4">Consultas disponibles</p>
 
 	</div>
 
-	<div class="mb-3 mt-5 ml-5 mr-5 d-flex justify-content-left align-items-center  ">
-		<table class="table table-bordered">
-		  <thead>
-		    <tr>
-		      <th scope="col">Fecha Consulta</th>
-		      <th scope="col">Desde</th>
-		      <th scope="col">Hasta</th>
-		      <th scope="col">Detalles</th>
-		    </tr>
-		  </thead>
-		  <tbody>
-		  	{%for i in info_consultas:%}
-			    <tr>
-					<th scope="row"> {{i["fecha_consulta"]}} </th>
-					<td>{{i["fecha_inicial"]}} {{i["hora_inicial"]}}</td>
-					<td>{{i["fecha_final"]}} {{i["hora_final"]}}</td>
-					<td class="pt-3 ">
-						<a class="card-title text-primary m-0 d-flex align-items-center justify-content-between" href="{{url_for('views_api.hdetalles', id = datos_puente.id,filename = i.file_name) }}" >
-							<i class="fas fa-search"></i>
-						</a>
-					</td>
-			    </tr>
-		    {% endfor %}
-		  </tbody>
-		</table>
+	<div class="mb-3">
+		
+	<table
+		id="table"
+		data-toggle="table"
+		data-height="195"
+		data-search="true"
+		data-maintain-meta-data="true"
+		data-locale="es-ES">
+		<thead>
+		<tr class="tr-class-1">
+		  <th data-field="fecha_consulta" data-sortable="true">Fecha Consulta</th>
+		  <th data-field="desde" data-sortable="true">Desde</th>
+		  <th data-field="hasta" data-sortable="true">Hasta</th>
+		  <th data-field="detalles" data-sortable="false">Detalles</th>
+		</tr>
+		</thead>
+		<tbody>
+			{%for i in info_consultas:%}
+		<tr class="tr-class-1">
+			<td>{{i["fecha_consulta"]}}</td>
+			<td>{{i["fecha_inicial"]}} {{i["hora_inicial"]}}</td>
+			<td>{{i["fecha_final"]}} {{i["hora_final"]}}</td>
+			<td>
+				<a class="card-title text-primary m-0 d-flex align-items-center justify-content-between" href="{{url_for('views_api.hdetalles', id = datos_puente.id,filename = i.file_name) }}" >
+						<i class="fas fa-search"></i>
+				</a>
+			</td>
+		</tr>
+		{% endfor %}
+		</tbody>
+	</table>
 	</div>
+
 
 </div>
 {% endblock %}

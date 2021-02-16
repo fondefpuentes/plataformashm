@@ -163,7 +163,7 @@ def query_athena(params,values):
     time_start = time.time()
     ## Creating the Client for Athena
     client = boto3.client('athena')
-    
+    print(values)
     ## This function executes the query and returns the query execution ID
     response_query_execution_id = client.start_query_execution(
         QueryString = build_sql_query(values),
