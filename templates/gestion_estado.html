@@ -1,7 +1,10 @@
 
 
 {% extends "base.html" %}
-
+{% block customcss %}
+<link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
+{% endblock %}
 {% block content %}
 <div class="bg"">
    {% include 'modal_glosario_estados.html'%}
@@ -111,19 +114,25 @@
          </div>
       </div>
       <div class="row py-3">
-         <h1 class="subtitle fs-3">Estados Anteriores</h1>
+         <h1 class="subtitle fs-3">Historial Estados</h1>
          <div class="form-floating mb-3">
             <input type="text" class="form-control" id="filterInput" placeholder="estados">
             <label for="filterInput"><i class="bi bi-search px-3"></i>Filtrar Estados</label>
          </div>
          <div>
-            <table class="table table-bordered table-responsive-md border-1 sortable px-3">
+            <table class="table table-bordered table-responsive-md border-1 sortable px-3"
+            data-toggle="table"
+            data-sortable="true"
+            data-height="400"
+            data-show-columns="true"
+            data-show-export="true"
+            data-locale="es-CL">
                <thead>
                   <tr style="color: var(--bs-purple);">
-                     <th>Fecha Estado</th>
-                     <th>Estado Global</th>
-                     <th>Nivel de Seguridad</th>
-                     <th>Detalles</th>
+                     <th data-sortable="true">Fecha Estado</th>
+                     <th data-sortable="true">Estado Global</th>
+                     <th data-sortable="true">Nivel de Seguridad</th>
+                     <th data-sortable="true">Detalles</th>
                   </tr>
                </thead>
                <tbody id="estados_data">
@@ -145,7 +154,12 @@
    </div>
 </div>
 {% endblock %}
+
 {% block customjs %}
+<script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
 <script>
 
 function asignar_color( strEstado){
@@ -176,7 +190,7 @@ function asignar_color( strEstado){
           });
           $(".modal-content").resizable({
           minWidth: 625,
-          minHeight: 175,
+          minHeight: 300,
           handles: 'n, e, s, w, ne, sw, se, nw',
           });
           

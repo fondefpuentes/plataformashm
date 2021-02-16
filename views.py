@@ -269,9 +269,12 @@ def informacion_estructura(id):
     esta_monitoreada = estructura.en_monitoreo
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
-    sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo, DescripcionSensor.descripcion.label("nombre_sensor")).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id, DescripcionSensor.id_sensor_instalado == SensorInstalado.id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc()).all()
-    daqs = DAQPorZona.query.filter_by(id_estructura = id).all()
+    
+    sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo, DescripcionSensor.descripcion.label("nombre_sensor"),EstadoSensor.fecha_estado.label("fecha123"),EstadoSensor.confiabilidad, EstadoSensor.operatividad, EstadoSensor.mantenimiento,DescripcionDAQ.caracteristicas, DAQPorZona.id_daq).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, EstadoSensor.id_sensor_instalado == SensorInstalado.id,SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DAQPorZona.id_daq, DescripcionDAQ.id_daq == DAQPorZona.id_daq).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc(),EstadoSensor.fecha_estado.desc()).all()
+    
+    daqs = db.session.query(DAQPorZona.id_daq, DAQPorZona.id_zona, DescripcionDAQ.caracteristicas, EstadoDAQ.fecha_estado, EstadoDAQ.operatividad, EstadoDAQ.mantenimiento, ElementoEstructural.descripcion).filter(DAQPorZona.id_estructura == id, DAQPorZona.id_daq == EstadoDAQ.id_daq, DAQPorZona.id_daq == DescripcionDAQ.id_daq,DAQPorZona.id_zona == ElementoEstructural.id).order_by(DAQPorZona.id_daq, EstadoDAQ.fecha_estado.desc()).distinct(DAQPorZona.id_daq).all()
     ultimo_estado = EstadoEstructura.query.filter_by(id_estructura=id).order_by(EstadoEstructura.fecha_estado.desc()).first()
+    
     session['id_puente'] = id
     context = {
         'datos_puente':estructura,
@@ -353,30 +356,127 @@ def gestion_estado(id):
 @views_api.route('/detalle_sensor/<int:id_sensor>', methods=["GET", "POST"])
 @login_required
 def detalle_sensor(id_sensor):
-    if(current_user.permisos == 'Administrador' or current_user.permisos == 'Dueño'):
+    if(current_user.permisos == 'Administrador' or current_user.permisos == 'Dueño' or current_user.permisos == 'Analista'):
         
         if(request.method == "GET"):
-            estructura = Estructura.query.filter_by(id=session['id_puente']).first()
+            
+            #sensor = SensorInstalado.query.filter_by(id=id_sensor).first()
+            info_sensor = db.session.query(Sensor.id, SensorInstalado.id.label("siid"), SensorInstalado.id_estructura, Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, DescripcionSensor.descripcion.label("nombre_sensor"), DescripcionDAQ.caracteristicas, Sensor.uuid_device, Canal.numero_canal, DescripcionDAQ.id_daq).filter(SensorInstalado.id == id_sensor, TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona,  DescripcionSensor.id_sensor_instalado == SensorInstalado.id, SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DescripcionDAQ.id_daq).first()
+            
+            estructura = Estructura.query.filter_by(id=info_sensor.id_estructura).first()
             esta_monitoreada = estructura.en_monitoreo
-            sensor = SensorInstalado.query.filter_by(id=id_sensor).first()
+            
+            estados_sensor = EstadoSensor.query.filter_by(id_sensor_instalado=id_sensor).order_by(EstadoSensor.fecha_estado.desc()).all()
+            mantenimientos = Mantenimiento.query.filter_by(id_sensor_instalado=id_sensor).order_by(Mantenimiento.fecha_mantenimiento.desc()).all()
             #Se guarda momentaneamente el id del puente en la sesión actual
             context = {
-                'id_puente' : session['id_puente'],
+                'id_puente' : estructura.id,
                 'nombre_y_tipo_activo' : obtener_nombre_y_activo(session['id_puente']),
                 'datos_puente' : estructura,
                 'esta_monitoreada':esta_monitoreada,
-                'sensor' : sensor
+                'sensor' : info_sensor,
+                'estados_sensor' : estados_sensor,
+                'mantenimientos' : mantenimientos
             }
             return render_template('detalle_sensor.html',**context)
             
         #En POST se envia lo ingresado via formulario, para guardar en la BD
         elif(request.method == "POST"):
-            estado_global = request.form.get('globalRadio')
-            nivel_seguridad = request.form.get('seguridadRadio')
-            detalles_estado = request.form.get('detalles')
+            operatividad = request.form.get('opRadio')
+            confiabilidad = request.form.get('confRadio')
+            mantenimiento = request.form.get('manRadio')
+            detalles_mantenimiento = request.form.get('detalle_man')
+            try:
+                nuevo_estado = EstadoSensor(id_sensor_instalado=id_sensor,fecha_estado=datetime.now(),operatividad=operatividad,confiabilidad=confiabilidad,mantenimiento=mantenimiento)
+                db.session.add(nuevo_estado)
+                db.session.commit()
+            #En caso de ocurrir un fallo, se hace un rollback()
+            except:
+                db.session.rollback()
+                raise
+            #Finalmente, se redirige al listado de sensores disponibles
+            finally:
+                return redirect(url_for('views_api.detalle_sensor',id_sensor=id_sensor))
+    else:
+        return redirect(url_for('views_api.usuario_no_autorizado'))
+        
+@views_api.route('/mantenimiento_sensor/<int:id_sensor>', methods=["POST"])
+@login_required
+def mantenimiento_sensor(id_sensor):
+    estado = request.form.get('detalleRadio')
+    detalles = request.form.get('detalles')
+    try:
+      nuevo_mantenimiento = Mantenimiento(id_sensor_instalado=id_sensor,fecha_mantenimiento=datetime.now(),estado=estado,detalles=detalles)
+      db.session.add(nuevo_mantenimiento)
+      db.session.commit()
+      #En caso de ocurrir un fallo, se hace un rollback()
+    except:
+      db.session.rollback()
+      raise
+    #Finalmente, se redirige al listado de sensores disponibles
+    finally:
+      return redirect(url_for('views_api.detalle_sensor',id_sensor=id_sensor))
+
+@views_api.route('/detalle_daq/<int:id_daq>',methods=["GET", "POST"])
+@login_required
+def detalle_daq(id_daq):
+    if(current_user.permisos == 'Administrador' or current_user.permisos == 'Dueño'  or current_user.permisos == 'Analista'):
+      if(request.method == "GET"):
+        daq = db.session.query(DAQ.id, DAQ.nro_canales, DescripcionDAQ.caracteristicas).filter(DescripcionDAQ.id_daq == DAQ.id, DAQ.id==id_daq).first()
+        zona = db.session.query(DAQPorZona.id_zona,DAQPorZona.id_estructura,ElementoEstructural.descripcion).filter(DAQPorZona.id_daq==id_daq,DAQPorZona.id_zona==ElementoEstructural.id).first()
+        estructura = Estructura.query.filter_by(id=zona.id_estructura).first()
+        estado_daq = EstadoDAQ.query.filter_by(id_daq = id_daq).order_by(EstadoDAQ.fecha_estado.desc()).all()
+        
+        sensores_conectados = db.session.query(SensorInstalado.id, Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, DescripcionSensor.descripcion.label("nombre_sensor"), Canal.numero_canal,EstadoSensor.operatividad).filter(Canal.id == SensorInstalado.conexion_actual, Canal.id_daq == id_daq,SensorInstalado.id == DescripcionSensor.id_sensor_instalado, SensorInstalado.id_sensor == Sensor.id, TipoSensor.id == Sensor.tipo_sensor, ElementoEstructural.id == SensorInstalado.id_zona, EstadoSensor.id_sensor_instalado == SensorInstalado.id).order_by(Sensor.id,EstadoSensor.fecha_estado.desc()).distinct(Sensor.id).all()
+        
+        mantenimientos = MantenimientoDAQ.query.filter_by(id_daq=id_daq).order_by(MantenimientoDAQ.fecha_mantenimiento.desc()).all()
+        session['id_puente'] = estructura.id   
+        context = {
+            'id_puente' : estructura.id,
+            'nombre_y_tipo_activo' : obtener_nombre_y_activo(session['id_puente']),
+            'esta_monitoreada':estructura.en_monitoreo,
+            'datos_puente' : estructura,
+            'info_daq' : daq,
+            'zona': zona,
+            'estado_daq':estado_daq,
+            'sensores_conectados': sensores_conectados,
+            'mantenimientos': mantenimientos
+        }
+        return render_template('detalle_daq.html',**context)
+        
+      elif(request.method == "POST"):
+        operatividad = request.form.get('opRadio')
+        mantenimiento = request.form.get('manRadio')
+        try:
+          nuevo_estado = EstadoDAQ(id_daq=id_daq,fecha_estado=datetime.now(),operatividad=operatividad,mantenimiento=mantenimiento)
+          db.session.add(nuevo_estado)
+          db.session.commit()
+          #En caso de ocurrir un fallo, se hace un rollback()
+        except:
+          db.session.rollback()
+          raise
+        #Finalmente, se redirige al listado de sensores disponibles
+        finally:
+          return redirect(url_for('views_api.detalle_daq',id_daq=id_daq))
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
 
+@views_api.route('/mantenimiento_daq/<int:id_daq>', methods=["POST"])
+@login_required
+def mantenimiento_daq(id_daq):
+    detalles = request.form.get('detalles')
+    try:
+      nuevo_mantenimiento = MantenimientoDAQ(id_daq=id_daq,fecha_mantenimiento=datetime.now(),detalles=detalles)
+      db.session.add(nuevo_mantenimiento)
+      db.session.commit()
+      #En caso de ocurrir un fallo, se hace un rollback()
+    except:
+      db.session.rollback()
+      raise
+    #Finalmente, se redirige al listado de sensores disponibles
+    finally:
+      return redirect(url_for('views_api.detalle_daq',id_daq=id_daq))
+      
 #PERMISOS = Administrador, dueño
 #Método que permite instalar un nuevo sensor en una estructura
 @views_api.route('/agregar_sensor/<int:id>', methods=["GET", "POST"])

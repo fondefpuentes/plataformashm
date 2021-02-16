@@ -1,4 +1,4 @@
-<nav aria-label="breadcrumb">
+<nav aria-label="breadcrumb" style="--bs-breadcrumb-divider: '>';">
   <ol class="breadcrumb bg-white">
     <li class="breadcrumb-item"><a href="{{url_for('views_api.profile')}}">Estructuras</a></li>
     {% if request.url_rule.endpoint == "views_api.informacion_estructura" %}
@@ -17,7 +17,10 @@
     <li class="breadcrumb-item active" aria-current="page">Descarga de Mediciones Historicas</li>
     {% elif request.url_rule.endpoint == "views_api.detalle_sensor" %}
     <li class="breadcrumb-item text-capitalize"><a href="{{url_for('views_api.informacion_estructura',id=datos_puente.id)}}">{{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Sensor: {{sensor.id}}</li>
+    <li class="breadcrumb-item active" aria-current="page">Detalle Sensor {{sensor.nombre_sensor}}</li>
+    {% elif request.url_rule.endpoint == "views_api.detalle_daq" %}
+    <li class="breadcrumb-item text-capitalize"><a href="{{url_for('views_api.informacion_estructura',id=datos_puente.id)}}">{{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Detalle DAQ {{info_daq.caracteristicas}}</li>
     {% endif %}
   </ol>
 </nav>
