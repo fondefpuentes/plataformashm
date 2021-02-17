@@ -2,6 +2,7 @@
 {% block customcss %}
 {{ super() }}
 <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
 {% endblock %}
 {% block content %}
 <div class="bg">
@@ -58,6 +59,9 @@
 {% endblock %}
 {% block customjs %}
 <script src="{{ url_for('static', filename='js/tabla_estructura.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
 <script>
    showBridgeOnMap({{datos_puente.coord_x}},{{datos_puente.coord_y}});
 </script>

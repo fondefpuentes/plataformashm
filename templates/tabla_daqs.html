@@ -1,24 +1,30 @@
-<table class="table table-bordered table-responsive-md border-1 sortable">
+<table class="table table-bordered table-responsive-md border-1 sortable"
+id="table_daq"
+data-toggle="table"
+data-sortable="true"
+data-height="400"
+data-show-columns="true"
+data-locale="es-CL">
     <thead class="thead-dark">
         <tr>
-            <th>Nombre</th>
-            <th>Modelo</th>
-            <th>Zona</th>
-            <th>Operatividad (1)</th>
-            <th>Mantenimiento (2)</th>
-            <th>Fecha Estados (1,2)</th>
+            <th data-sortable="true">Nombre</th>
+            <th data-sortable="true">Modelo</th>
+            <th data-sortable="true">Zona</th>
+            <th data-sortable="true">Operatividad (1)</th>
+            <th data-sortable="true">Mantenimiento (2)</th>
+            <th data-sortable="true">Fecha Estados (1,2)</th>
         </tr>
     </thead>
     <tbody id="daq_data">
     {%if daqs %}
         {% for daq in daqs %}
         <tr>
-            <td>{{ daq.id_daq }}</td>
+            <td><a href="{{url_for('views_api.detalle_daq',id_daq=daq.id_daq)}}">{{ daq.caracteristicas }}</td>
             <td>[POR DEFINIR]</td>
-            <td>{{ daq.id_zona }}</td>
-            <td>[POR DEFINIR]</td>
-            <td>[POR DEFINIR]</td>
-            <td>[POR DEFINIR]</td>
+            <td>{{ daq.descripcion}}</td>
+            <td>{{ daq.operatividad}}</td>
+            <td>{{ daq.mantenimiento}}</td>
+            <td>{{ daq.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</td>
         </tr>
         {%endfor%}
     {%else%}
