@@ -23,11 +23,11 @@ $(document).ready(function() {
         var targetBox1 = document.getElementById("range_text1");
         var targetBox2 = document.getElementById("range_text2");
 
-        if (inputValue == "todo_entre_las_fechas"){
+        if (inputValue == "rango_completo"){
             $(targetBox1).text("a las:");
             $(targetBox2).text("a las:");
         }
-        else if (inputValue == "horas_por_dia"){
+        else if (inputValue == "rango_por_dia"){
             $(targetBox1).text("Hora inicio:");
             $(targetBox2).text("Hora fin:");
         }
@@ -54,16 +54,17 @@ $('#submitBtn').click(function() {
     var hora_inicial = $('input[name="hora_inicial"]').val();
     var fecha_final = $('input[name="fecha_final"]').val();
     var hora_final = $('input[name="hora_final"]').val();
-    var lista_sensores = []
+    var lista_sensores = [];
+    var consultas_ejes = [];
+    var consultas_sensor = [];
     $("input:checkbox[name=sensor_selected]:checked").each(function(){
         lista_sensores.push($(this).val());
-        console.log(lista_sensores)
     });
-    var consultas_ejes = []
+    
     $("input:checkbox[name=consultas_ejes]:checked").each(function(){
         consultas_ejes.push($(this).val());
     });
-    var consultas_sensor = []
+    
     $("input:checkbox[name=consultas_sensor]:checked").each(function(){
         consultas_sensor.push($(this).val());
     });
@@ -89,10 +90,10 @@ $('#submitBtn').click(function() {
         }
     }
 
-    sensor_query=document.getElementsByName("sensor_selected");
+    sensor_selected=document.getElementsByName("sensor_selected");
     var atLeastOneChecked_sensor=false;
-    for (i=0; i<sensor_query.length; i++) {
-        if (sensor_query[i].checked === true) {
+    for (i=0; i<sensor_selected.length; i++) {
+        if (sensor_selected[i].checked === true) {
             atLeastOneChecked_sensor=true;
         }
     }
@@ -122,7 +123,7 @@ $('#submitBtn').click(function() {
 
 
     //Validacion Rango de consulta
-	if (rango_consulta == "todo_entre_las_fechas"){
+	if (rango_consulta == "rango_completo"){
 		var date_inicial = new Date( fecha_inicial + " " + hora_inicial);
 		var date_final = new Date( fecha_final + " " + hora_final);
 		if (date_final.getTime() - date_inicial.getTime() <= 0){
@@ -135,7 +136,7 @@ $('#submitBtn').click(function() {
 		}
 	}
 
-	else if (rango_consulta == "horas_por_dia"){
+	else if (rango_consulta == "rango_por_dia"){
 		var date_inicial = new Date( "1970-01-01 " + hora_inicial);
 		var date_final = new Date( "1970-01-01 " + hora_final);
 		if (date_final.getTime() - date_inicial.getTime() <= 0){
@@ -165,14 +166,14 @@ $('#submitBtn').click(function() {
 
     // Texto consulta a realizar
     if (destino_consulta == "almacenamiento_programado"){
-    	if (rango_consulta == "todo_entre_las_fechas"){
+    	if (rango_consulta == "rango_completo"){
     		//Todo entre [Fecha inicio a las Hora inicio] y [Fecha fin a las Hora fin]
     		$('#texto_rango').text("Todo entre [" + fecha_inicial + " a las " + hora_inicial + "] y [" + fecha_final + " a las " + hora_final + "]");
     		$('#texto_sensores').text("Sensores: " + lista_sensores);
     		$('#texto_ejes').text("Ejes: " + consultas_ejes);
     		$('#texto_consulta').text("Consultas: " + consultas_sensor);
     	}
-    	else if (rango_consulta == "horas_por_dia"){
+    	else if (rango_consulta == "rango_por_dia"){
     		//Desde el [Fecha inicio] hasta [Fecha fin] entre los horarios [Hora inicial] y [Hora fin]
     		$('#texto_rango').text("Desde el [" + fecha_inicial + "] hasta [" + fecha_final + "] entre los horarios [" + hora_inicial + "] y [" + hora_final + "]");
     		$('#texto_sensores').text("Sensores: " + lista_sensores);
@@ -186,5 +187,5 @@ $('#submitBtn').click(function() {
 		$('#texto_sensores').text("Sensores: " + lista_sensores);
 		$('#texto_ejes').text("Ejes: " + consultas_ejes);
 		$('#texto_consulta').text("Consultas: " + consultas_sensor);
-    }  
+    }
 });

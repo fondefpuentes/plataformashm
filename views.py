@@ -1539,7 +1539,7 @@ def hconsulta(id):
         tipo_sensor = TipoSensor.query.filter_by(id = sensor_query.tipo_sensor).first().nombre
         sensor_instalado = SensorInstalado.query.filter_by(id = sensor_query.id).first()
         id_sensor_instalado = sensor_instalado.id
-        estado_sensor = "None" #EstadoSensor.query.filter_by(id_sensor_instalado = sensor_instalado.id).first().operatividad
+        estado_sensor = EstadoSensor.query.filter_by(id_sensor_instalado = sensor_instalado.id).first().operatividad
         zona_sensor = ElementoEstructural.query.filter_by(id = sensor_instalado.id_zona).first().descripcion
         canal = Canal.query.filter_by(id = sensor_instalado.conexion_actual).first()
         numero_canal = canal.numero_canal
@@ -1657,7 +1657,20 @@ def hdescarga(id):
     info_sensores, info_ejes = swagger.get_sensor_axis(ip_instance)
 
     info_consultas = aws_functions.get_consultas(params)
- 
+
+    for i in info_sensores:
+        sensor_query = Sensor.query.filter_by(uuid_device = i["uuid"]).first()
+        frecuencia = sensor_query.frecuencia
+        modelo = sensor_query.modelo
+        tipo_sensor = TipoSensor.query.filter_by(id = sensor_query.tipo_sensor).first().nombre
+        sensor_instalado = SensorInstalado.query.filter_by(id = sensor_query.id).first()
+        id_sensor_instalado = sensor_instalado.id
+        estado_sensor = EstadoSensor.query.filter_by(id_sensor_instalado = sensor_instalado.id).first().operatividad
+        zona_sensor = ElementoEstructural.query.filter_by(id = sensor_instalado.id_zona).first().descripcion
+        canal = Canal.query.filter_by(id = sensor_instalado.conexion_actual).first()
+        numero_canal = canal.numero_canal
+        daq = DescripcionDAQ.query.filter_by(id_daq = canal.id_daq).first().caracteristicas        
+        i.update({"frecuencia": frecuencia,"modelo": modelo, "tipo_sensor":tipo_sensor, "estado_sensor": estado_sensor, "zona_sensor": zona_sensor, "numero_canal": numero_canal, "daq":daq,"id_sensor_instalado":id_sensor_instalado,"id_daq":canal.id_daq})
 
     if request.method == "POST":
         destino_consulta = request.form["destino_consulta"]
