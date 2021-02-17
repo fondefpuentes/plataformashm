@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="bg"">
+<div class="bg">
    {% include 'modal_glosario_estados.html'%}
    
    <div class="container-fluid px-5 py-2">
@@ -15,20 +15,85 @@
 		 <div class="col-sm-9">
 			 <div class="subtitle fs-3 py-1">Estado General de Sensores</div>
 		   <div class ="box">
-			   <h1>Estado de Alerta</h1>
-		     <div class="button">
-		    	 Ejecutar Anomalía
-		     </div>
+			 <h1></h1>
+			 <form method="post">
+				 <input type="submit" value="Reiniciar Anomalías" /> 
+			 </form>
 		   </div>
 			<div class="subtitle fs-3 py-1">Estados de Sensores</div>
 		   <div class="tab-content">
                <div id="sensores" class="tab-pane fade show active">
-                  {%include 'tabla_sensores.html' %}
+				 <table class="table table-bordered table-responsive border-1 sortable"
+							   id="table_sens"
+							   data-toggle="table"
+							   data-sortable="true"
+							   data-show-columns="true"
+							   data-locale="es-CL"
+							   data-pagination="true"
+							   data-page-size="10">
+				   <thead class="thead-dark">
+					 <tr>
+					   <th data-sortable="true">Nombre</th>
+					   <th data-sortable="true">Tipo</th>
+					   <th data-sortable="true">Zona</th>
+					   <th data-sortable="true">DAQ</th>
+					   <th data-sortable="true">Estado Daño</th>
+					   <th data-sortable="true">Fecha Estado Daño</th>
+					   <th data-sortable="true">Agregar Anomalía</th>
+					 </tr>
+				   </thead>
+				   <tbody id="sensor_data">
+					 {%if sensores %}
+					 {% for element in sensores %}
+					 <tr>
+					   <td><a href="{{url_for('views_api.detalle_sensor',id_sensor=element.si)}}">{{ element.nombre_sensor }}</a></td>
+					   <td>{{ element.nombre}}</td>
+					   <td>{{ element.descripcion }}</td>
+					   <td><a href="{{url_for('views_api.detalle_daq',id_daq=element.id_daq)}}">{{ element.caracteristicas}}</td>
+					   <td>{{ element.estado_dano_sensor }}</td>
+					   <td>{{ element.fecha_dano_sensor }}</td>
+					   <td>
+					   <form action="">
+							   <button class="btn btn-secondary btn-sm">Añadir anomalia</button>
+						   </form>
+						</td>
+					 </tr>
+					 {%endfor%}
+					 {%endif%}
+				   </tbody>
+				 </table>
                </div>
 		   </div>
-		   <div class="subtitle fs-3 py-1">Historial de Estados (O ultima anomalia)</div>
+		   <div class="subtitle fs-3 py-1">Ultima Anomalía por Sensor</div>
 		   <div class="box">
-		   	"Listado de sensores"
+
+			   <table class="table table-bordered table-responsive border-1 sortable"
+					  id="table_sens"
+					  data-toggle="table"
+					  data-sortable="true"
+					  data-show-columns="true"
+					  data-locale="es-CL"
+					  data-pagination="true"
+					  data-page-size="10">
+				   <thead class="thead-dark">
+					 <tr>
+					   <th data-sortable="true">Nombre</th>
+					   <th data-sortable="true">Fecha Anomalía</th>
+					   <th data-sortable="true">Estado Ultima Anomalía</th>
+					 </tr>
+				   </thead>
+				   <tbody id="sensor_data">
+					 {%if anomalias_sensores %}
+					 {% for element in anomalias_sensores %}
+					 <tr>
+					   <td>{{ element.nombre_sensor }}</td>
+					   <td>{{ element.hora_calculo }}</td>
+					   <td>{{ element.anomalia }}</td>
+					 </tr>
+					 {%endfor%}
+					 {%endif%}
+				   </tbody>
+				 </table>
 		   </div>
 		 </div>
 	  </div>

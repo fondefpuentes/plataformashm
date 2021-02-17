@@ -1764,9 +1764,10 @@ def datos_recientes():
 @login_required
 def deteccion_temprana(id_puente):
     if current_user.is_authenticated:
-       if(request.method == "GET"):
+        if(request.method == "GET"):
             estructura = Estructura.query.filter_by(id=id_puente).first()
-            sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc()).all() 
+            sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo, DescripcionSensor.descripcion.label("nombre_sensor"),EstadoSensor.fecha_estado.label("fecha123"),EstadoSensor.confiabilidad, EstadoSensor.operatividad, EstadoSensor.mantenimiento,DescripcionDAQ.caracteristicas, DAQPorZona.id_daq, EstadoDanoSensor.estado.label("estado_dano_sensor"), EstadoDanoSensor.diahora_calculo.label("fecha_dano_sensor")).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, EstadoSensor.id_sensor_instalado == SensorInstalado.id,SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DAQPorZona.id_daq, DescripcionDAQ.id_daq == DAQPorZona.id_daq, EstadoDanoSensor.id_sensor_instalado == SensorInstalado.id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc(),EstadoSensor.fecha_estado.desc()).all()
+            anomalias = db.session.query(DescripcionSensor.descripcion.label("nombre_sensor"), SensorInstalado.id.label("si"), AnomaliaPorHora.hora_calculo, AnomaliaPorHora.anomalia).filter(SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, AnomaliaPorHora.id_sensor_instalado == SensorInstalado.id_sensor, DescripcionSensor.id_sensor_instalado == SensorInstalado.id,).all() 
             esta_monitoreada = estructura.en_monitoreo
             #Se guarda momentaneamente el id del puente en la sesión actual
             session['id_puente'] = id_puente
@@ -1777,8 +1778,11 @@ def deteccion_temprana(id_puente):
                 'datos_puente' : estructura,
                 'esta_monitoreada':esta_monitoreada,
                 'sensores': sensores,
-                # 'historial': estados
+                'anomalias_sensores': anomalias,
             }
             return render_template('deteccion_temprana.html',**context)
+        elif(request.method == "POST"):
+            print("Me apretan") 
+            return redirect(url_for('views_api.deteccion_temprana',id_puente=session['id_puente']))
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
