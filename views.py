@@ -1626,3 +1626,12 @@ def datos_recientes():
         return render_template('template_datos_recientes.html')
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
+
+@views_api.route("/mi_cuenta")
+def mi_cuenta():
+    if current_user.is_authenticated:
+        usuarios = Usuario.query.all()
+        context = {'usuarios':usuarios}
+        return render_template('mi_cuenta.html', **context)
+    else:
+        return redirect(url_for('views_api.usuario_no_autorizado'))
