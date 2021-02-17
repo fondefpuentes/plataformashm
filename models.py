@@ -132,7 +132,6 @@ class EstadoSensor(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'), primary_key=True)
     fecha_estado = db.Column(db.DateTime, primary_key=True)
-    detalles = db.Column(db.String(1000))
     operatividad = db.Column(db.String(100))
     confiabilidad = db.Column(db.String(100))
     mantenimiento = db.Column(db.String(100))
