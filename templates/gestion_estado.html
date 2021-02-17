@@ -6,87 +6,87 @@
 <link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
 {% endblock %}
 {% block content %}
-<div class="bg"">
-   {% include 'modal_glosario_estados.html'%}
-   
+{% include 'modal_glosario_estados.html'%}
    <div class="container-fluid px-5 py-2">
-      {% include 'breadcrumb.html' %}
+      <div class="row">{% include 'breadcrumb.html' %}</div>
       <h1 class="title text-capitalize">
          {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }} :: Estado Estructural
       </h1>
       <div class="row py-3 d-flex flex-sm-row-reverse">
          <div class="col-sm-3 mb-2">{% include 'botones_tabla_estructura.html' %}</div>
          <div class="col-sm-9">
-            <h1 class="subtitle fs-3 py-1">Estado Actual <i type="button" class=" bi bi-info-circle" data-bs-toggle="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Glosario Estados" data-bs-target="#modal_glosario" ></i></h1>
+            <p class="h4 py-3">Estado Actual <i type="button" class=" bi bi-info-circle" data-toggle="modal" data-toggle="tooltip" data-placement="top" title="Glosario Estados" data-target="#modal_glosario" ></i></>
             <div class="card px-3 py-1 my-3">
                <div class="card-body row">
-                  <p class="col fs-5 card-text">Global: <b>{% if historial %}{{historial[0].estado}} {%else%} No Data {%endif%}</b> <i class="bi bi-circle-fill" id="global-circle"></i></p>
-                  <p class="col fs-5 card-text">Seguridad: <b>{% if historial %}{{historial[0].seguridad}}{%else%} No Data {%endif%}</b> <i class="bi bi-circle-fill" id="seg-circle"></i></p>
+                  <p class="col card-text">Global: <b>{% if historial %}{{historial[0].estado}} {%else%} No Data {%endif%}</b> <i class="bi bi-circle-fill" id="global-circle"></i></p>
+                  <p class="col card-text">Seguridad: <b>{% if historial %}{{historial[0].seguridad}}{%else%} No Data {%endif%}</b> <i class="bi bi-circle-fill" id="seg-circle"></i></p>
                </div>
                <div class="card-footer">
                   <small class="text-muted">{% if historial %}Ultima Actualizacion:  {{historial[0].fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}} {%else%} [dd/mm/aa hh:mm:ss] No Data {%endif%}</small>
                </div>
             </div>
-            <h1 class="subtitle fs-3 py-3">Actualizar Estado</h1>
+            <p class="h4 py-3">Actualizar Estado</p>
             <div class="card py-3 my-3">
                <form class="card-body row" id="actualizar-estado" action="{{url_for('views_api.gestion_estado', id=id_puente)}}" method="POST">
                   <div class="col-md-6">
-                     <h1 class="subtitle fs-5">Estado Estructura Global:</h1>
+                     <p class="h5">Estado Estructura Global:</p>
                      <div class="form-check">
                         <input class="form-check-input" type="radio" name="globalRadio" id="pristina" value="Prístina" checked>
-                        <label class="form-check-label" for="pristino"><i class="bi bi-circle-fill" style="color: var(--bs-green);"></i> Prístina</label>
+                        <label class="form-check-label" for="pristino"><i class="bi bi-circle-fill" style="color: green;"></i> Prístina</label>
                      </div>
                      <div class="form-check">
                         <input class="form-check-input" type="radio" name="globalRadio" id="dano" value="Con daño">
-                        <label class="form-check-label" for="dano"><i class="bi bi-circle-fill" style="color: var(--bs-yellow);"></i> Con daño</label>
+                        <label class="form-check-label" for="dano"><i class="bi bi-circle-fill" style="color: yellow;"></i> Con daño</label>
                      </div>
                      <div class="form-check">
                         <input class="form-check-input" type="radio" name="globalRadio" id="falla_leve" value="Falla estructural leve">
-                        <label class="form-check-label" for="falla_leve"><i class="bi bi-circle-fill" style="color: var(--bs-orange);"></i> Falla estructural leve</label>
+                        <label class="form-check-label" for="falla_leve"><i class="bi bi-circle-fill" style="color: orange;"></i> Falla estructural leve</label>
                      </div>
                      <div class="form-check">
                         <input class="form-check-input" type="radio" name="globalRadio" id="falla_grave" value="Falla estructural grave">
-                        <label class="form-check-label" for="falla_grave"><i class="bi bi-circle-fill" style="color: var(--bs-red);"></i> Falla estructural grave</label>
+                        <label class="form-check-label" for="falla_grave"><i class="bi bi-circle-fill" style="color: red;"></i> Falla estructural grave</label>
                      </div>
                      <div class="form-check">
                         <input class="form-check-input" type="radio" name="globalRadio" id="critico" value="Crítico">
-                        <label class="form-check-label" for="critico"><i class="bi bi-circle-fill" style="color: var(--bs-purple);"></i> Crítico</label>
+                        <label class="form-check-label" for="critico"><i class="bi bi-circle-fill" style="color: purple;"></i> Crítico</label>
                      </div>
                   </div>
                   <div class="col-md-6 py-3">
-                     <h1 class="subtitle fs-5">Nivel de Seguridad:</h1>
+                     <p class="h5">Nivel de Seguridad:</p>
                      <div class="form-check">
                         <input class="form-check-input" type="radio" name="seguridadRadio" id="seguro" value="Seguro" checked>
-                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: var(--bs-green);"></i> Seguro</label>
+                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: green;"></i> Seguro</label>
                      </div>
                      <div class="form-check">
                         <input class="form-check-input" type="radio" name="seguridadRadio" id="seg_op" value="Seguro para operar" >
-                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: var(--bs-yellow);"></i> Seguro para operar</label>
+                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: yellow;"></i> Seguro para operar</label>
                      </div>
                      <div class="form-check">
                         <input class="form-check-input" type="radio" name="seguridadRadio" id="inseguro" value="Inseguro para libre circulación">
-                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: var(--bs-red);"></i> Inseguro para libre circulación</label>
+                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: red;"></i> Inseguro para libre circulación</label>
                      </div>
                      <div class="form-check">
                         <input class="form-check-input" type="radio" name="seguridadRadio" id="peligro" value="Peligro">
-                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: var(--bs-purple);"></i> Peligro</label>
+                        <label class="form-check-label" for="exampleRadios1"><i class="bi bi-circle-fill" style="color: purple;"></i> Peligro</label>
                      </div>
                   </div>
-                  <div class="mb-3 px-3 py-3">
+                  <div class="col-md-12 mb-3 px-3 py-3">
                      <label for="exampleFormControlTextarea1" class="form-label">Detalles</label>
                      <textarea name="detalles" class="form-control" id="detalles" rows="3" required></textarea>
                      <small id="TextAreaHelpBlock" class="form-text text-muted">El texto ingresado no debe exceder los 500 caracteres de longitud.</small>
                   </div>
-                  <div class="d-grid justify-content-md-end"><button type="button" id="revision-btn" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#revision_modal">
+                  <div class="col justify-content-end"><button type="button" id="revision-btn" class="btn btn-success btn-lg" data-toggle="modal" data-target="#revision_modal">
                      Revisar
                      </button>
                   </div>
-                  <div class="modal fade" id="revision_modal" tabindex="-1" aria-labelledby="revision_label" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-scrollable">
+                  <div class="modal fade" id="revision_modal" role="dialog" tabindex="-1" aria-labelledby="revision_label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-scrollable" role="document">
                      <div class="modal-content">
                         <div class="modal-header">
-                           <h5 class="modal-title fs-5" id="revision-title">Actualizar Estado</h5>
-                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                           <p class="modal-title h4" id="revision-title">Actualizar Estado</p>
+                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                           </button>
                         </div>
                         <div class="modal-body">
                            <div class="row py-1">
@@ -103,7 +103,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                            <button type="button" id="actualizar-btn" class="btn btn-success">Actualizar</button>
                         </div>
                      </div>
@@ -113,22 +113,21 @@
             </div>
          </div>
       </div>
-      <div class="row py-3">
-         <h1 class="subtitle fs-3">Historial Estados</h1>
+      <div class="py-3">
+         <p class="h4 py-3">Historial Estados</p>
          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="filterInput" placeholder="estados">
-            <label for="filterInput"><i class="bi bi-search px-3"></i>Filtrar Estados</label>
+            <input type="text" class="form-control" id="filterInput" placeholder="Filtrar estados">
          </div>
          <div>
-            <table class="table table-bordered table-responsive-md border-1 sortable px-3"
+            <table class="table table-bordered border-1 sortable px-3"
             data-toggle="table"
             data-sortable="true"
             data-height="400"
             data-show-columns="true"
             data-show-export="true"
             data-locale="es-CL">
-               <thead>
-                  <tr style="color: var(--bs-purple);">
+               <thead class="thead-dark">
+                  <tr style="color: purple;">
                      <th data-sortable="true">Fecha Estado</th>
                      <th data-sortable="true">Estado Global</th>
                      <th data-sortable="true">Nivel de Seguridad</th>
@@ -152,7 +151,6 @@
          </div>
       </div>
    </div>
-</div>
 {% endblock %}
 
 {% block customjs %}
@@ -180,19 +178,10 @@ function asignar_color( strEstado){
           var globString = "{{historial[0].estado}}";
           var segString = "{{historial[0].seguridad}}";
 
-          $('#global-circle').css("color","var(--bs-" + asignar_color(globString) + ")");
-          $('#seg-circle').css("color","var(--bs-" + asignar_color(segString) + ")");
+          $('#global-circle').css("color",asignar_color(globString));
+          $('#seg-circle').css("color",asignar_color(segString));
           {%endif%}
           $('[data-toggle="tooltip"]').tooltip();
-            
-         $(".modal-dialog").draggable({
-              handle: ".modal-header"
-          });
-          $(".modal-content").resizable({
-          minWidth: 625,
-          minHeight: 300,
-          handles: 'n, e, s, w, ne, sw, se, nw',
-          });
           
           $('#revision-btn').click(function() {
              var globalS = $('input:radio[name=globalRadio]:checked');

@@ -270,7 +270,7 @@ def informacion_estructura(id):
     imagenes_estructura = ImagenEstructura.query.filter_by(id_estructura = id).all()
     bim_estructura = VisualizacionBIM.query.filter_by(id_estructura = id).first()
     
-    sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo, DescripcionSensor.descripcion.label("nombre_sensor"),EstadoSensor.fecha_estado.label("fecha123"),EstadoSensor.confiabilidad, EstadoSensor.operatividad, EstadoSensor.mantenimiento,DescripcionDAQ.caracteristicas, DAQPorZona.id_daq).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, EstadoSensor.id_sensor_instalado == SensorInstalado.id,SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DAQPorZona.id_daq, DescripcionDAQ.id_daq == DAQPorZona.id_daq).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc(),EstadoSensor.fecha_estado.desc()).all()
+    sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo, DescripcionSensor.descripcion.label("nombre_sensor"),EstadoSensor.fecha_estado.label("fecha123"),EstadoSensor.confiabilidad, EstadoSensor.operatividad, EstadoSensor.mantenimiento,DescripcionDAQ.caracteristicas, DAQPorZona.id_daq, EstadoDanoSensor.diahora_calculo, EstadoDanoSensor.estado).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, EstadoSensor.id_sensor_instalado == SensorInstalado.id,SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DAQPorZona.id_daq, DescripcionDAQ.id_daq == DAQPorZona.id_daq, EstadoDanoSensor.id_sensor_instalado == SensorInstalado.id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc(),EstadoSensor.fecha_estado.desc(),EstadoDanoSensor.diahora_calculo.desc()).all()
     
     daqs = db.session.query(DAQPorZona.id_daq, DAQPorZona.id_zona, DescripcionDAQ.caracteristicas, EstadoDAQ.fecha_estado, EstadoDAQ.operatividad, EstadoDAQ.mantenimiento, ElementoEstructural.descripcion).filter(DAQPorZona.id_estructura == id, DAQPorZona.id_daq == EstadoDAQ.id_daq, DAQPorZona.id_daq == DescripcionDAQ.id_daq,DAQPorZona.id_zona == ElementoEstructural.id).order_by(DAQPorZona.id_daq, EstadoDAQ.fecha_estado.desc()).distinct(DAQPorZona.id_daq).all()
     ultimo_estado = EstadoEstructura.query.filter_by(id_estructura=id).order_by(EstadoEstructura.fecha_estado.desc()).first()
@@ -367,6 +367,7 @@ def detalle_sensor(id_sensor):
             esta_monitoreada = estructura.en_monitoreo
             
             estados_sensor = EstadoSensor.query.filter_by(id_sensor_instalado=id_sensor).order_by(EstadoSensor.fecha_estado.desc()).all()
+            estado_dano = EstadoDanoSensor.query.filter_by(id_sensor_instalado=id_sensor).order_by(EstadoDanoSensor.diahora_calculo.desc()).first()
             mantenimientos = Mantenimiento.query.filter_by(id_sensor_instalado=id_sensor).order_by(Mantenimiento.fecha_mantenimiento.desc()).all()
             #Se guarda momentaneamente el id del puente en la sesión actual
             context = {
@@ -376,7 +377,8 @@ def detalle_sensor(id_sensor):
                 'esta_monitoreada':esta_monitoreada,
                 'sensor' : info_sensor,
                 'estados_sensor' : estados_sensor,
-                'mantenimientos' : mantenimientos
+                'mantenimientos' : mantenimientos,
+                'estado_dano': estado_dano
             }
             return render_template('detalle_sensor.html',**context)
             

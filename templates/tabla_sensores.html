@@ -1,4 +1,4 @@
-<table class="table table-bordered table-responsive border-1 sortable"
+<table class="table table-bordered border-1 sortable"
 id="table_sens"
 data-toggle="table"
 data-sortable="true"
@@ -28,8 +28,8 @@ data-page-size="10">
             <td>{{ element.nombre}}</td>
             <td>{{ element.descripcion }}</td>
             <td><a href="{{url_for('views_api.detalle_daq',id_daq=element.id_daq)}}">{{ element.caracteristicas}}</td>
-            <td>[POR DEFINIR]</td>
-            <td>[POR DEFINIR]</td>
+            <td>{{ element.estado}}</td>
+            <td>{{ element.diahora_calculo.strftime('%Y-%m-%d %H:%M:%S')}}</td>
             {%if element.fecha123%}
             <td>{{element.operatividad}}</td>
             <td>{{element.confiabilidad}}</td>
