@@ -21,7 +21,9 @@ import collections
 import plotly.express as px
 import dash_bootstrap_components as dbc
 import DatosRecientes.layout as DashLayout
-
+import time
+import atexit
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__, template_folder='templates', static_folder='static', static_url_path='')
 app.config.from_pyfile('config.py')
@@ -32,6 +34,21 @@ app.config.update(
     MAIL_USERNAME = "plataforma.shm.chile@gmail.com",
     MAIL_PASSWORD = "vewtbinxfhhjsfea",
 )
+
+### SCHEDULER ###
+
+def actualizar_anomalias():
+    print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
+
+
+if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true': # Se ejecuta cuando la app no esta en modo debug o en una rama principal (para evitar doble ejecucion)
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=actualizar_anomalias, trigger="interval", seconds=60)
+    scheduler.start()
+    # Shut down the scheduler when exiting the app
+    atexit.register(lambda: scheduler.shutdown())
+
+
 
 ### INTEGRACION DATOS RECIENTES ###
 
@@ -736,4 +753,4 @@ def password_reset():
         return redirect(url_for('views_api.login'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0',debug=True, use_reloader=False)

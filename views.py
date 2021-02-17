@@ -1653,6 +1653,7 @@ def deteccion_temprana(id_puente):
     if current_user.is_authenticated:
        if(request.method == "GET"):
             estructura = Estructura.query.filter_by(id=id_puente).first()
+            sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc()).all() 
             esta_monitoreada = estructura.en_monitoreo
             #Se guarda momentaneamente el id del puente en la sesión actual
             session['id_puente'] = id_puente
@@ -1662,6 +1663,7 @@ def deteccion_temprana(id_puente):
                 'nombre_y_tipo_activo' : obtener_nombre_y_activo(id_puente),
                 'datos_puente' : estructura,
                 'esta_monitoreada':esta_monitoreada,
+                'sensores': sensores,
                 # 'historial': estados
             }
             return render_template('deteccion_temprana.html',**context)
