@@ -1349,17 +1349,19 @@ def agregar_informe_test():
 def obtener_hallazgos(id_puente):
     hallazgos = HallazgoVisual.query.filter_by(id_estructura=id_puente).all()
     res = {}
+    res['data'] = []
     for i in hallazgos:
         imagenes = MaterialAudiovisual.query.filter_by(id_hallazgo=i.id).all()
         print(imagenes)
-        res_img = {}
+        res_img = []
         for j in imagenes:
-            res_img['material_apoyo_'+str(j.id)] = {
+            aux_img = {
                 'id_material_apoyo': j.id,
                 'tipo_material' : j.tipo_material,
-                'ruta_acceso_archivo' : 'http://shm.inf.udec.cl/static/images/'+j.ruta_acceso_archivo
+                'ruta_acceso_archivo' : 'http://54.207.236.190/static/images/'+j.ruta_acceso_archivo
             }
-        res['hallazgo_'+str(i.id)] = {
+            res_img.append(aux_img)
+        aux = {
             'id_hallazgo'       : i.id,
             'id_usuario'        : i.id_usuario,
             'detalle_hallazgo'  : i.detalle_hallazgo,
@@ -1371,6 +1373,7 @@ def obtener_hallazgos(id_puente):
             'id_estructura'     : i.id_estructura,
             'imagenes'          : res_img
         }
+        res['data'].append(aux)
     return res
 
 ####################### INTEGRACION UNITY ####################################

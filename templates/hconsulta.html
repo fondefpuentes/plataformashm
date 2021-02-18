@@ -13,9 +13,8 @@
 
 
 {% block content %}
-{% include 'breadcrumb.html' %}
 <div class="container-fluid px-5 py-1">
-
+  <div class="row">{% include 'breadcrumb.html' %}</div>
 	<h1 class="title">
 	    {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
 	</h1>
@@ -54,37 +53,38 @@
 		{% endwith %}
 	</div>
 	<div class="row py-3 d-flex flex-sm-row-reverse">
-		<div class="col-sm-2 mb-2">
+		<div class="col-sm-3 mb-2">
 			{% include 'botones_tabla_estructura.html' %}
 		</div>
-		<div class="col-sm-10">
+		<div class="col-sm-9">
 			<form id="idform" class="needs-validation" method="post">
-				<p class="h5">Paso 1: Seleccione Tipo de Consulta</p>
+				<p class="h5 border-bottom">Paso 1: Seleccione Tipo de Consulta</p>
+             
 				<div class="mt-4 mb-3 d-flex justify-content-left">
-					<div class="col-5 form-check form-check-inline">
+					<div class="col-6 form-check form-check-inline">
 						<input class="form-check-input" type="radio" name="destino_consulta" id="inlineRadio1" value="almacenamiento_programado" checked>
 						<label class="form-check-label" for="inlineRadio1">Mediciones de Almacenamiento Programado</label>
 					</div>
-					<div class="col-5 form-check form-check-inline">
+					<div class="col-6 form-check form-check-inline">
 						<input class="form-check-input" type="radio" name="destino_consulta" id="inlineRadio2" value="evento_inesperado">
 						<label class="form-check-label" for="inlineRadio2">Mediciones de Eventos Inesperados</label>
 					</div>
 				</div>
 				<div class="mt-1 mb-3 d-flex justify-content-left">
-					<div class="col-5">
+					<div class="col-6">
 						<div class="p">Mediciones almacenadas diariamente en los siguientes bloques:</div>
 						<div class="p">bloque 1: [2:00 - 5:00]</div>
 						<div class="p">bloque 2: [7:00 - 10:00]</div>
 						<div class="p">bloque 3: [13:00 -16:00]</div>
 						<div class="p">bloque 4: [18:00 - 21:00]</div>
 					</div>
-					<div class="col-5">
+					<div class="col-6">
 						<div class="p">Mediciones dentro o fuera de los bloques predefinidos. Almacenados debido a la detecci&oacuten de valores an&oacutemalos</div>
 					</div>
 				</div>
 				<div class = "hidediv">
 					<div class="mt-3 mb-3 d-flex justify-content-left">
-						<div class="col-5 form-check form-check-inline">
+						<div class="col-6 form-check form-check-inline">
 							<input class="form-check-input" type="radio" name="rango_consulta" id="inlineRadio3" value="rango_completo" checked>
 							<label class="form-check-label" for="inlineRadio3">Rango completo</label>
 						</div>
@@ -95,7 +95,7 @@
 					</div>
 
 					<div class="mt-1 mb-3 d-flex justify-content-left">
-						<div class="col-5">
+						<div class="col-6">
 							<div class="p">Consulta a todo horario entre dos fechas</div>
 							<div class="p">Ejemplo:</div>
 							<div class="card w-75">
@@ -104,7 +104,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="col-5">
+						<div class="col-6">
 							<div class="p">Consulta un rango de horas en cada dia seleccionado</div>
 							<div class="p">Ejemplo:</div>
 							<div class="card w-75">
@@ -116,12 +116,12 @@
 					</div>
 
 				</div>
-				<p class="h5">Paso 2: Seleccione Periodo de Consulta</p>
+				<p class="h5 border-bottom">Paso 2: Seleccione Periodo de Consulta</p>
 				<div class="d-flex justify-content-left  mb-3">
-					<div class="mt-4 py-1 col-sm-1">
+					<div class="mt-4 py-1 col-sm-2">
 						<p class="text-center font-weight-bold">Desde</p>
 					</div>
-					<div class="mt-4 py-1 col-sm-1">
+					<div class="mt-4 py-1 col-sm-2">
 						<p class="text-center">Fecha inicio:</p>
 					</div>
 					<div class="mt-4 col-sm-3">
@@ -137,7 +137,7 @@
 					        </div>
 					    </div>
 					</div>
-					<div class="mt-4 py-1 col-sm-1">
+					<div class="mt-4 py-1 col-sm-2">
 						<p class="text-center" id="range_text1">a las:</p>
 					</div>
 					<div class="mt-4 col-sm-3">
@@ -156,10 +156,10 @@
 				</div>
 
 				<div class="d-flex justify-content-left  mb-3">
-					<div class="mt-2 col-sm-1">
+					<div class="mt-2 col-sm-2">
 						<p class="text-center font-weight-bold">Hasta</p>
 					</div>
-					<div class="mt-2 col-sm-1">
+					<div class="mt-2 col-sm-2">
 						<p class="text-center">Fecha fin:</p>
 					</div>
 					<div class="col-sm-3">
@@ -175,7 +175,7 @@
 					        </div>
 					    </div>
 					</div>
-					<div class="mt-2 col-sm-1">
+					<div class="mt-2 col-sm-2">
 						<p class="text-center" id="range_text2">a las:</p>
 					</div>
 					<div class="col-sm-3">
@@ -193,7 +193,7 @@
 					</div>
 				</div>
 
-				<p class="h5">Paso 3: Seleccione sensores y ejes</p>
+				<p class="h5 border-bottom">Paso 3: Seleccione sensores y ejes</p>
 				<table
 					id="table"
 					data-toggle="table"
@@ -204,7 +204,7 @@
 					data-click-to-select="true"
 					data-id-field="sensor_id"
 					data-select-item-name="sensor_selected">
-					<thead>
+					<thead class="thead-dark">
 					<tr class="tr-class-1">
 					  <th data-field="sensor_selected" data-checkbox="true"></th>
 					  <th data-field="sensor_id" data-visible="false"></th>
@@ -258,7 +258,7 @@
 
 					</div>
 				</div>
-				<p class="h5">Paso 4: Seleccione valores a consultar</p>
+				<p class="h5 border-bottom">Paso 4: Seleccione valores a consultar</p>
 				<div class="d-flex justify-content-left align-items-center  mb-3">
 
 					<div class="px-5 form-check form-check-inline">
@@ -317,7 +317,7 @@
 		data-search="true"
 		data-maintain-meta-data="true"
 		data-locale="es-ES">
-		<thead>
+		<thead class="thead-dark">
 		<tr class="tr-class-1">
 		  <th data-field="fecha_consulta" data-sortable="true">Fecha Consulta</th>
 		  <th data-field="desde" data-sortable="true">Desde</th>
