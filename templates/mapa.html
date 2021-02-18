@@ -7,28 +7,30 @@
 
 {% block content %}
 	<div class="bg">  
-		<div class="container py-5">
-			{% include	'botones_profile.html' %}
-			<form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
-				<div class="row no-gutters">
-					<div class="col-9 col-md-10">
-						<input id="autocomplete" type="text" name="autocomplete" placeholder="Buscar estructura" required list="estructuras"/>
-						<datalist id="estructuras">
-							{% for i in puentes %}
-							<option data-value="{{i.id}}">{{i.id}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
-							{% endfor %}    
-						</datalist>
-					</div>
-					<div class="col-3 col-md-2">
-						<button id="searchBtn" onclick="getValue()" type="submit" class="btn btn-primary btn-sm">
-							Buscar
-						</button>
-					</div>
-				</div>
-			</form>
-			<br>
-			<div id="map">
-			</div>
+		<div class="container px-5 py-2">
+       <div class="row">{% include	'botones_profile.html' %}</div>
+       <div class="row">
+			    <form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
+			      <div class="row no-gutters">
+					    <div class="col-9 col-md-10">
+			          <input id="autocomplete" type="text" name="autocomplete" placeholder="Buscar estructura" required list="estructuras"/>
+						    <datalist id="estructuras">
+							    {% for i in puentes %}
+							    <option data-value="{{i.id}}">{{i.id}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
+							    {% endfor %}    
+						    </datalist>
+					    </div>
+					    <div class="col-3 col-md-2">
+						    <button id="searchBtn" onclick="getValue()" type="submit" class="btn btn-primary btn-sm">
+						    Buscar
+						    </button>
+					    </div>
+				    </div>
+			    </form>
+      </div>
+      <div id=" row py-3 mt-4 h-100 w-100 d-inline-block">
+          <div id="map"></div>
+      </div>
 		</div>
 	</div>
 {% endblock %}

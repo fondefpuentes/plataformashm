@@ -6,12 +6,12 @@
     <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
 {% endblock %}
 {% block content %}
-<div class="container-fluid px-5 py-5">
+<div class="container-fluid px-5 py-2">
+        {% include 'breadcrumb.html' %}
         <h1 class="title">
             {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
         </h1>
-	{% include 'botones_tabla_estructura.html' %}
-{% include 'breadcrumb.html' %}
+
 <div class="embed-container">
    <iframe src="{{datos_puente.dashboard}}" width="100%" frameborder="0" height="900"></iframe>
 </div>

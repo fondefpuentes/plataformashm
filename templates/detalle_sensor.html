@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block customcss %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+   <div class="container-fluid px-5 py-2">
+      <div class="row">{% include 'breadcrumb.html' %}</div>
+      <h1 class="title text-capitalize">
+         {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }} :: Detalle Sensor - {{sensor.nombre_sensor}} 
+      </h1>
+      <div class="row py-3 d-flex flex-sm-row-reverse">
+         <div class="col-sm-3 mb-2">{% include 'botones_tabla_estructura.html' %}</div>
+         <div class="col-sm-9">
+            <p class="h4 py-2">Especificaciones </p>
+            <div class="row row-cols-2 g-2 py-3 ">
+               <div class="col-sm-6">
+                  <ul class="list-group list-group-flush">
+                     <li class="list-group-item"><b>Tipo de Sensor: </b>{{sensor.nombre}}</li>
+                     <li class="list-group-item"><b>Marca: </b>[Sin Especificar] </li>
+                     <li class="list-group-item"><b>Modelo: </b>[Sin Especificar]</li>
+                     <li class="list-group-item"><b>UUID: </b> {{sensor.uuid_device}}</li>
+                     <li class="list-group-item mt-4"><b>Fecha Instalacion: </b>{{sensor.fecha_instalacion.strftime('%Y-%m-%d %H:%M:%S')}} </li>
+                     <li class="list-group-item"><b>Frecuencia: </b>{{sensor.frecuencia}}</li>
+                     <li class="list-group-item"><b>Zona: </b>{{sensor.descripcion}}</li>
+                     <li class="list-group-item mt-4"><b>DAQ: </b><a href="{{url_for('views_api.detalle_daq',id_daq=sensor.id_daq)}}">{{sensor.caracteristicas}}</a>, Canal {{sensor.numero_canal}}</li>
+                  </ul>
+               </div>
+               <div class="col-sm-6 px-5"><img src="/static/images/{{sensor.nombre}}.jpg  " class="img-fluid img-thumbnail" alt="..."></div>
+            </div>
+            <p class="h4 py-2">Estado Actual</p>
+            <div class="row row-cols-2 row-cols-md-2 g-5">
+               <div class="col">
+                  <div class="card h-100">
+                     <p class="card-header h5">Estado de Daño</p>
+                     <div class="card-body">
+                        <p class="card-text">{{estado_dano.estado}}</p>
+                     </div>
+                     <div class="card-footer">
+                        <small class="text-muted">Ultima Actualizacion: {{estado_dano.diahora_calculo.strftime('%Y-%m-%d %H:%M:%S')}}</small>
+                     </div>
+                  </div>
+               </div>
+               <div class="col">
+                  <div class="card h-100">
+                     <p class="card-header h5">Estado de Funcionamiento</p>
+                     <div class="card-body">
+                        <p><b>Operatividad: </b>{%if estados_sensor%}{{estados_sensor[0].operatividad}}{%else%}--Sin Registro--{%endif%}</p>
+                        <p><b>Confiabilidad de Datos: </b>{%if estados_sensor%}{{estados_sensor[0].confiabilidad}}{%else%}--Sin Registro--{%endif%}</p>
+                        <p><b>Mantenimiento: </b>{%if estados_sensor%}{{estados_sensor[0].mantenimiento}}{%else%}--Sin Registro--{%endif%}</p>
+                     </div>
+                     <div class="card-footer">
+                        <small class="text-muted">Ultima Actualizacion: {%if estados_sensor%}{{estados_sensor[0].fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}{%else%}--Sin Registro--{%endif%}</small>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <p class="h4 py-2">Actualizar Estado </p>
+      <div>
+         <div class="card">
+            <form class="card-body" id="actualizar-estado" action="{{url_for('views_api.detalle_sensor', id_sensor=sensor.siid)}}" method="POST">
+               <div class="row row-cols-6 py-1">
+                 <p class="col-2"><b>Operatividad:</b></p>
+                  <div class="col-2 form-check form-check-inline" required>
+                     <input class="form-check-input" type="radio" name="opRadio" id="op" value="Operativo" checked>
+                     <label class="form-check-label" for="op"> Operativo</label>
+                  </div>
+                  <div class="col-2 form-check form-check-inline">
+                     <input class="form-check-input" type="radio" name="opRadio" id="no_op" value="No Operativo">
+                     <label class="form-check-label" for="no_op"> No Operativo</label>
+                  </div>
+               </div>
+               <div class="row row-cols-6 py-1">
+                 <p class="col-2"><b>Confiabilidad de Datos:</b></p>
+                  <div class="col-2 form-check form-check-inline" required>
+                     <input class="form-check-input" type="radio" name="confRadio" id="conf" value="Confiables" checked>
+                     <label class="form-check-label" for="conf"> Confiables</label>
+                  </div>
+                  <div class="col-2 form-check form-check-inline">
+                     <input class="form-check-input" type="radio" name="confRadio" id="no_conf" value="No Confiables">
+                     <label class="form-check-label" for="no_conf"> No Confiables</label>
+                  </div>
+               </div>
+               <div class="row row-cols-6 py-1">
+                 <p class="col-2"><b>Mantenimiento:</b></p>
+                  <div class="col-2 form-check form-check-inline" required>
+                     <input class="form-check-input" type="radio" name="manRadio" id="dia" value="Al Dia" checked>
+                     <label class="form-check-label" for="dia"> Al Dia</label>
+                  </div>
+                  <div class="col-2 form-check form-check-inline">
+                     <input class="form-check-input" type="radio" name="manRadio" id="prog" value="Programado">
+                     <label class="form-check-label" for="prog"> Programado</label>
+                  </div>
+                  <div class="col-2 form-check form-check-inline">
+                     <input class="form-check-input" type="radio" name="manRadio" id="pend" value="Pendiente">
+                     <label class="form-check-label" for="pend"> Pendiente</label>
+                  </div>
+                  <div class="col-2 form-check form-check-inline">
+                     <input class="form-check-input" type="radio" name="manRadio" id="corr_nec" value="Correctivo Necesario">
+                     <label class="form-check-label" for="corr_nec"> Correctivo Necesario</label>
+                  </div>
+               </div>
+               <div class="d-flex flex-row-reverse pt-3">
+                 <button type="button" id="revision-btn" class="col-2 btn btn-success btn-md btn-block" data-toggle="modal" data-target="#revision_modal">Revisar</button>
+               </div>
+               <div class="modal fade" id="revision_modal" tabindex="-1" aria-labelledby="revision_label" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-scrollable">
+                     <div class="modal-content">
+                        <div class="modal-header">
+                           <p class="modal-title h4" id="revision-title">Revision Estado Sensor {{sensor.nombre_sensor}}</p>
+                           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                           <div class="row py-1">
+                             <div class="col-4"><b>Operatividad:</b></div> 
+                             <div class="col-6"><p id="op-prev"></p></div>
+                             <span class="border-bottom"></span>
+                           </div>
+                           <div class="row py-1">
+                             <div class="col-4"><b>Confiabilidad de Datos:</b></div> 
+                             <div class="col-6"><p id="conf-prev"></p></div>
+                             <span class="border-bottom"></span>
+                           </div>
+                           <div class="row py-1">
+                             <div class="col-4"><b>Mantenimiento:</b></div> 
+                             <div class="col-6"><p id="man-prev"></p></div>
+                           </div>
+                        </div>
+                        <div class="modal-footer">
+                           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                           <button type="button" id="actualizar-btn" class="btn btn-success">Actualizar</button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </form>
+         </div>
+      </div>
+      <div class="py-5">
+        <p class="h4 py-2">Historial de Estados de Funcionamiento</p>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="filterInput" placeholder="Filtrar Estados">
+         </div>
+         <div>
+            <table class="table table-bordered border-1 px-3" 
+            id="table"
+	          data-toggle="table"
+            data-sortable="true"
+            data-show-export="true"
+            data-pagination="true"
+            data-page-size="10"
+            data-locale="es-CL">
+               <thead class="thead-dark">
+                  <tr style="color: var(--purple);">
+                     <th data-field="Fecha" data-sortable="true">Fecha</th>
+                     <th data-field="Operatividad" data-sortable="true">Operatividad</th>
+                     <th data-field="Confiabilidad" data-sortable="true">Confiabilidad</th>
+                     <th data-field="Mantenimiento  " data-sortable="true">Mantenimiento</th>
+                  </tr>
+               </thead>
+               <tbody id="estados_data">
+                  {%if estados_sensor%}
+                  {%for i in estados_sensor%}
+                  <tr>
+                     <td>{{i.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                     <td>{{i.operatividad}}</td>
+                     <td>{{i.confiabilidad}}</td>
+                     <td>{{i.mantenimiento}}</td>
+                  </tr>
+                  {%endfor%}
+                  {%endif%}
+               </tbody>
+            </table>
+         </div>
+      </div>
+      <div class="py-5">
+        <div class="row py-3">
+          <div class="col-10"><p class="h4 py-3">Mantenimiento</p></div>
+          <div class="col-2 g-0"><button type="button" id="actualizar-btn" class="btn btn-success btn-md btn-block" data-toggle="modal" data-target="#mantenimiento_modal" style="width:100%;">  Anadir Mantenimiento  </button></div>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="filterInputMant" placeholder="Filtrar Mantenimiento">
+         </div>
+         <div>
+            <table class="table table-bordered table-responsive-md border-1 px-3" 
+            id="table"
+	          data-toggle="table"
+            data-sortable="true"
+            data-show-export="true"
+            data-pagination="true"
+            data-page-size="10"
+            data-locale="es-CL">
+               <thead class="thead-dark">
+                  <tr style="color: var(--purple);">
+                     <th data-field="Fecha" data-sortable="true" data-width="200">Fecha</th>
+                     <th data-field="Estado" data-sortable="true" data-width="200">Estado</th>
+                     <th data-field="Detalle" data-sortable="true">Detalle</th>
+                  </tr>
+               </thead>
+               <tbody id="mantenimiento_data">
+                  {%if mantenimientos%}
+                  {%for i in mantenimientos%}
+                  <tr>
+                     <td>{{i.fecha_mantenimiento.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                     <td>{{i.estado}}</td>
+                     <td>{{i.detalles}}</td>
+                  </tr>
+                  {%endfor%}
+                  {%endif%}
+               </tbody>
+            </table>
+            <div class="modal fade" id="mantenimiento_modal" tabindex="-1" aria-labelledby="revision_label" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-scrollable">
+                     <div class="modal-content">
+                        <div class="modal-header">
+                           <p class="modal-title h4" id="revision-title">Nuevo Mantenimiento Sensor {{sensor.nombre_sensor}}</p>
+                           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <form class="modal-body" id="mantenimiento-form" action="{{url_for('views_api.mantenimiento_sensor', id_sensor=sensor.siid)}}" method="POST">
+                           <div class="row row-cols-6 py-1">
+                             <p class="col-4"><b>Estado del Mantenimiento:</b></p>
+                             <div class="col-4 form-check form-check-inline" required>
+                               <input class="form-check-input" type="radio" name="detalleRadio" id="pend" value="Pendiente" checked>
+                               <label class="form-check-label" for="pend"> Pendiente</label>
+                             </div>
+                             <div class="col-4 form-check form-check-inline">
+                               <input class="form-check-input" type="radio" name="detalleRadio" id="real" value="Realizado">
+                               <label class="form-check-label" for="real"> Realizado</label>
+                             </div>
+                           </div>
+                           <div class="mb-3 px-3 py-3">
+                             <label for="exampleFormControlTextarea1" class="form-label">Detalles</label>
+                             <textarea name="detalles" class="form-control" id="detalles" rows="3" required></textarea>
+                             <small id="TextAreaHelpBlock" class="form-text text-muted">El texto ingresado no debe exceder los 500 caracteres de longitud.</small>
+                           </div>
+                        </form>
+                        <div class="modal-footer">
+                           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                           <button type="button" id="nuevo-mantenimiento-btn" class="btn btn-success">Actualizar</button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+         </div>
+      </div>
+   </div>
+{% endblock %}
+{% block customjs %}
+<script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
+<script>
+   
+    $(document).ready(function(){
+    
+    
+        $("#filterInput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#estados_data tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+         });
+         
+         $("#filterInputMant").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#mantenimiento_data tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+         });
+        
+        $('#revision-btn').click(function() {
+             var opS = $('input:radio[name=opRadio]:checked');
+             var confS = $('input:radio[name=confRadio]:checked');
+             var manS = $('input:radio[name=manRadio]:checked');
+             $('#op-prev').text(opS.val());
+             $('#conf-prev').text(confS.val());
+             $('#man-prev').text(manS.val());
+          });
+
+        $('#actualizar-btn').click(function(){
+              $('#actualizar-estado').submit();
+        });
+        
+        $('#nuevo-mantenimiento-btn').click(function(){
+              $('#mantenimiento-form').submit();
+        });
+    });
+</script> 
+{% endblock %}
+
