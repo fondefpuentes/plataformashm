@@ -2,14 +2,112 @@
 
 {% block customcss %}
     {{ super() }}
-    <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
-{% endblock %}
+    {{ super() }}
+	<link href="{{ url_for('static', filename='css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='font-awesome/css/all.css') }}" rel="stylesheet">	
+	<link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">{% endblock %}
 
 {% block content %}
-<div class="bg">
+<div class="container-fluid px-5 py-1">
+	<div class="row">
+		{% include 'breadcrumb.html' %}
+	</div>
+
     <div class="container px-5 py-5">
-        <h1 class="title py-3"></h1>
+        <h1 class="title py-3">{{usuario.nombre}} {{usuario.apellido}}</h1>
 
     </div>
+    <div class="mb-1 mt-5 d-flex justify-content-left align-items-center  ">
+		<p class="h4">Consultas de mediciones históricas disponibles</p>
+	</div>
+
+	<div class="mb-3">
+		
+	<table
+		id="table3"
+		data-toggle="table"
+		data-height="255"
+		data-search="true"
+		data-maintain-meta-data="true"
+		data-locale="es-ES">
+		<thead class="thead-dark">
+		<tr class="tr-class-1">
+			<th data-field="nombre_puente" data-sortable="true">Puente</th>
+			<th data-field="nombre_region" data-sortable="true">Región</th>
+		  <th data-field="fecha_consulta" data-sortable="true">Fecha Solicitud</th>
+		  <th data-field="desde" data-sortable="true">Desde</th>
+		  <th data-field="hasta" data-sortable="true">Hasta</th>
+		  <th data-field="detalles" data-sortable="false">Detalles</th>
+		</tr>
+		</thead>
+		<tbody>
+			{%for i in info_consultas%}
+		<tr class="tr-class-1">
+			<td>MOCHITA</td>
+			<td>Bío Bío</td>
+			<td>{{i["fecha_consulta"]}}</td>
+			<td>{{i["fecha_inicial"]}} {{i["hora_inicial"]}}</td>
+			<td>{{i["fecha_final"]}} {{i["hora_final"]}}</td>
+			<td>
+				<a class="card-title text-primary m-0 d-flex align-items-center justify-content-between" href="{{url_for('views_api.hdetalles', id = 6589,filename = i.file_name) }}" >
+						<i class="fas fa-search"></i>
+				</a>
+			</td>
+		</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	</div>
+	<div class="mb-3">
+    <div class="mb-1 mt-5 d-flex justify-content-left align-items-center  ">
+		<p class="h4">Descargas de mediciones históricas disponibles</p>
+	</div>
+	<table
+		id="table1"
+		data-toggle="table"
+		data-height="255"
+		data-search="true"
+		data-maintain-meta-data="true"
+		data-locale="es-ES">
+		<thead class="thead-dark">
+		<tr>
+			<th data-field="nombre_puente" data-sortable="true">Puente</th>
+			<th data-field="nombre_region" data-sortable="true">Región</th>
+		  <th data-field="fecha_consulta" data-sortable="true">Fecha Solicitud</th>
+		  <th data-field="desde" data-sortable="true">Desde</th>
+		  <th data-field="hasta" data-sortable="true">Hasta</th>
+		  <th data-field="detalles" data-sortable="false">Detalles</th>
+		</tr>
+		</thead>
+		<tbody>
+			{%for i in info_descargas%}
+		<tr class="tr-class-1">
+			<td>MOCHITA</td>
+			<td>Bío Bío</td>
+			<td>{{i["fecha_consulta"]}}</td>
+			<td>{{i["fecha_inicial"]}} {{i["hora_inicial"]}}</td>
+			<td>{{i["fecha_final"]}} {{i["hora_final"]}}</td>
+			<td>
+				<a class="card-title text-primary m-0 d-flex align-items-center justify-content-between" href="{{url_for('views_api.hdetallesdescarga', id = 6589,filename = i.file_name) }}" >
+						<i class="fas fa-search"></i>
+				</a>
+			</td>
+		</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	</div>
 </div>
+{% endblock %}
+{% block customjs%}
+    {{ super() }}
+	<script src="{{ url_for('static', filename='js/tempusdominus-bootstrap-4.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/datetimepicker-custom.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/hdescarga-custom.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>    
+    <script type="text/javascript"></script>
 {% endblock %}
