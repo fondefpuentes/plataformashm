@@ -1790,3 +1790,39 @@ def datos_recientes():
         return render_template('template_datos_recientes.html')
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
+
+@views_api.route('/mi_cuenta')
+def mi_cuenta():
+    if current_user.is_authenticated:
+        usuario = Usuario.query.filter_by(id=current_user.id).first()
+
+        paramsconsultas = {
+        'region' : 'sa-east-1',
+        'database' : 'historical-db',
+        'bucket' : 'shm-historical-temp',
+        'path'  : 'consultas/test',
+        'user_id': current_user.id
+        }
+
+        paramsdescargas = {
+        'region' : 'sa-east-1',
+        'database' : 'historical-db',
+        'bucket' : 'shm-historical-temp',
+        'path'  : 'descargas/test',
+        'path_athena' : 'athena/test',
+        'user_id': current_user.id
+        }
+
+        info_consultas = aws_functions.get_consultas(paramsconsultas)
+        info_descargas = aws_functions.get_consultas(paramsdescargas)
+
+        context = {
+
+        'usuario':usuario,
+        'info_consultas':info_consultas,
+        'info_descargas':info_descargas
+        }
+
+        return render_template('mi_cuenta.html', **context)
+    else:
+        return redirect(url_for('views_api.usuario_no_autorizado'))
