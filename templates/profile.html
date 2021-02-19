@@ -2,39 +2,153 @@
 
 {% block customcss %}
 	{{ super() }}
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+ <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-	<div class="bg">  
-		<div class="container py-5">
-			<form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
-				<div class="row no-gutters">
-					<div class="col-9 col-md-10">
-						<input id="autocomplete" type="text" name="autocomplete" placeholder="Buscar estructura por nombre" required list="estructuras"/>
-						<datalist id="estructuras">
-							{% for i in puentes %}
-							<option data-value="{{i.id}}">{{i.id}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
-							{% endfor %}    
-						</datalist>
-					</div>
-					<div class="col-3 col-md-2">
-						<button id="searchBtn" onclick="getValue()" type="submit" class="btn btn-primary btn-sm">
-							Buscar
-						</button>
-					</div>
-				</div>
-			</form>
-			<br>
-			<div id="map">
-			</div>
-		</div>
+<div class="container-fluid px-5 py-2">
+	<h1 class="title d-flex justify-content-center">Listado de Puentes</h1>
+  <nav>
+    <div class="row border-bottom">
+    <div class="nav nav-pills mb-3 col-9" id="nav-tab" role="tablist">
+      <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="pill" href="#nav-all" role="tab" aria-controls="nav-all" aria-selected="true">Todas</a>
+      <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="pill" href="#nav-monitoreada" role="tab" aria-controls="nav-monitoreada" aria-selected="false">En Monitoreo</a>
+      <a class="nav-item nav-link" id="nav-contact-tab" data-toggle="pill" href="#nav-alerta" role="tab" aria-controls="nav-alerta" aria-selected="false">Bajo Alerta</a>
+    </div>
+    <div class="col-3 d-flex justify-content-end">
+      <form action="{{url_for('views_api.mapa')}}">
+        <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+            <div class="row">
+                <div class="col-2"><i class="bi bi-map"></i></div>
+                <div class="col-10 d-block">Busqueda en Mapa</div>
+            </div>
+        </button>
+      </form>
+    </div>
+    </div>
+  </nav>
+  
+  <div class="tab-content mt-4" id="nav-tabContent">
+    <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab">
+      <form method="POST" action="{{url_for('views_api.buscar_estructura')}}">
+        <table class="table table-hover table-bordered border-1" 
+        id="myTable"
+        data-toggle="table"
+        data-search="true"
+        data-show-columns="true"
+        data-pagination="true"
+        data-page-size="15"
+        data-locale="es-CL"> 
+          <thead class="thead-dark">
+            <tr>
+              <th >Id</th>
+              <th >Nombre</th>
+              <th >Región</th>
+              <th >Estado de Alerta</th>
+              <th >Fecha Estado Alerta</th>
+              <th >Estado Global</th>
+              <th >Estado de Seguridad</th>
+              <th >Fecha Estado Global y Seguridad</th>
+            </tr>
+          </thead>
+          <tbody>
+  		      {%for i in puentes %}
+            <tr class='clickable-row' data-href="{{url_for('views_api.informacion_estructura', id=i.id)}}">
+              <th>{{i.id}}</th>
+              <td><a href="{{url_for('views_api.informacion_estructura', id=i.id)}}">{{i.nombre}}</a></td>
+              <td>{{ i.region }}</td>
+              <td>---</td>
+              <td>---</td>
+              <td>---</td>
+              <td>---</td>
+              <td>---</td>
+            </tr>
+    	      {% endfor %}
+          </tbody>
+        </table>
+      </form>
+    </div>
+    <div class="tab-pane fade" id="nav-monitoreada" role="tabpanel" aria-labelledby="nav-monitoreada-tab">
+    <form method="POST" action="{{url_for('views_api.buscar_estructura')}}">
+        <table class="table table-hover table-bordered border-1 px-3" 
+        id="myTable"
+        data-toggle="table"
+        data-search="true"
+        data-pagination="true"
+        data-page-size="15"
+        data-show-columns="true"
+        data-locale="es-CL"> 
+          <thead class="thead-dark">
+            <tr>
+              <th >Id</th>
+              <th >Nombre</th>
+              <th >Región</th>
+              <th >Estado de Alerta</th>
+              <th >Fecha Estado Alerta</th>
+              <th >Estado Global</th>
+              <th >Estado de Seguridad</th>
+              <th >Fecha Estado Global y Seguridad</th>
+            </tr>
+          </thead>
+          <tbody>
+  		      {%for i in puentes %}
+            {%if i.en_monitoreo%}
+            <tr class='clickable-row' data-href="{{url_for('views_api.informacion_estructura', id=i.id)}}">
+              <th>{{i.id}}</th>
+              <td><a href="{{url_for('views_api.informacion_estructura', id=i.id)}}">{{i.nombre}}</a></td>
+              <td>{{ i.region }}</td>
+              <td>---</td>
+              <td>---</td>
+              <td>---</td>
+              <td>---</td>
+              <td>---</td>
+            </tr>
+            {%endif%}
+    	      {% endfor %}
+          </tbody>
+        </table>
+      </form>
+    </div>
+    <div class="tab-pane fade" id="nav-alerta" role="tabpanel" aria-labelledby="nav-alerta-tab">
+    <form method="POST" action="{{url_for('views_api.buscar_estructura')}}">
+        <table class="table table-hover table-bordered border-1 px-3" 
+        id="myTable"
+        data-toggle="table"
+        data-search="true"
+        data-pagination="true"
+        data-show-columns="true"
+        data-page-size="15"
+        data-locale="es-CL"> 
+          <thead class="thead-dark">
+            <tr>
+              <th >Id</th>
+              <th >Nombre</th>
+              <th >Región</th>
+              <th >Estado de Alerta</th>
+              <th >Fecha Estado Alerta</th>
+              <th >Estado Global</th>
+              <th >Estado de Seguridad</th>
+              <th >Fecha Estado Global y Seguridad</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </form>
+    </div>
+  </div>
 	</div>
+</div>
 {% endblock %}
 
-{% block customjs %}
-	{{ super() }}
-	<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
-	<script>setMarkersOnMap({{ markers|tojson }})</script>
+{% block customjs%}
+    {{ super() }}
+	<script src="{{ url_for('static', filename='js/tempusdominus-bootstrap-4.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/datetimepicker-custom.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/hdescarga-custom.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>    
 {% endblock %}
-

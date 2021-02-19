@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+	{{ super() }}
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}  
+		<div class="container-fluid px-5 py-2">
+       <h1 class="title d-flex justify-content-center">Busqueda en Mapa</h1>
+       <div class="row mb-2">
+         <div class="col-9">
+			    <form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
+			      <div class="form-row ">
+					    <div class="form-group col-9 col-md-10">
+			          <input id="autocomplete" type="text" class="form-control" name="autocomplete" placeholder="Buscar estructura" required list="estructuras"/>
+						    <datalist id="estructuras">
+							    {% for i in puentes %}
+							    <option data-value="{{i.id}}">{{i.id}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
+							    {% endfor %}    
+						    </datalist>
+					    </div>
+					    <div class="form-group col-3 col-md-2">
+						    <button id="searchBtn" onclick="getValue()" type="submit" class="btn btn-primary btn-md">
+						    Buscar
+						    </button>
+					    </div>
+				    </div>
+			    </form>
+        </div>
+        <div class="col-3">
+          <form action="{{url_for('views_api.profile')}}">
+            <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+              <div class="row">
+                <div class="col-2"><i class="bi bi-card-list"></i></div>
+                <div class="col-10">Listado de Puentes</div>
+              </div>
+            </button>
+          </form>
+        </div>
+      </div>  
+      <div id=" row py-3 mt-4 h-100 w-100 d-inline-block">
+          <div id="map"></div>
+      </div>
+		</div>
+{% endblock %}
+
+{% block customjs %}
+	{{ super() }}
+	<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+	<script>setMarkersOnMap({{ markers|tojson }})</script>
+{% endblock %}

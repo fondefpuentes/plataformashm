@@ -1,0 +1,55 @@
+<div class="row row-cols-2 row-cols-md-2 g-5">
+  {% if esta_monitoreada%}
+  <div class="col">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="card-title">Estado de Daño</h2>
+        <p class="card-text">Estado ...</p>
+      </div>
+      <div class="card-footer">
+        <small class="text-muted">Ultima Actualizacion: [dd/mm/aa hh:mm:ss]</small>
+      </div>
+      <a href="#" class="btn btn-outline-primary">Detalles</a>
+    </div>
+  </div>
+  {%endif%}
+  {%if estado%}
+  <div class="col">
+    <div class="card h-200">
+      <div class="card-body row">
+        <div class="col">
+        <h2 class="card-title">Estado Estructura Global</h2>
+        <p class="card-text"><strong>{{estado.estado}} </strong><i class="bi bi-circle-fill" id="global-circle"></i></p>
+        </div>
+        <div class="col">
+        <h2 class="card-title">Nivel de Seguridad</h2>
+        <p class="card-text font-weight-bold"><strong>{{estado.seguridad}} </strong><i class="bi bi-circle-fill" id="seg-circle"></i></p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <small class="text-muted">Ultima Actualizacion: {{estado.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</small>
+      </div>
+      <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
+    </div>
+  </div>
+  {%else%}
+  <div class="col">
+    <div class="card">
+      <div class="card-body row">
+        <div class="col">
+        <h2 class="card-title">Estado Estructura Global</h2>
+        <p class="card-text"><strong>Sin Registro </strong><i class="bi bi-circle-fill" id="global-circle"></i></p>
+        </div>
+        <div class="col">
+        <h2 class="card-title">Nivel de Seguridad</h2>
+        <p class="card-text font-weight-bold"><strong>Sin Registro </strong><i class="bi bi-circle-fill" id="seg-circle"></i></p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <small class="text-muted">Ultima Actualizacion: --/--/-- --:--:-- </small>
+      </div>
+      <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
+    </div>
+  </div>
+  {%endif%}
+</div>

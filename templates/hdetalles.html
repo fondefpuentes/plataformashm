@@ -8,11 +8,12 @@
 	<link href="{{ url_for('static', filename='css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet">
 	<link href="{{ url_for('static', filename='font-awesome/css/all.css') }}" rel="stylesheet">	
 	<link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
 {% endblock %}
 
 
 {% block content %}
-
+{% include 'breadcrumb.html' %}
 <div class="container-fluid px-5 py-5">
 
 
@@ -26,8 +27,6 @@
 	    {% endif %}
 	</h4>
 
-
-	{% include 'botones_tabla_estructura.html' %}
 
 	<div class="container">
 		{% with messages = get_flashed_messages() %}
@@ -45,104 +44,100 @@
 		{% endwith %}
 	</div>
 
+	<div class="row py-3 d-flex flex-sm-row-reverse">
+		<div class="col-sm-2 mb-2">
+			{% include 'botones_tabla_estructura.html' %}
+		</div>
+		<div class="col-sm-10">
+			<div class="mt-3 mb-3 d-flex justify-content-center  ">
+				<div class="panel panel-default">
+				  <div class="panel-heading">
+				    <h1 class="panel-title">Detalles</h1>
+				  </div>
+				  <div class="panel-body">
+					<table class="table table-bordered">
 
+					  <tbody>
+					    <tr>
+					      <th scope="row">
+					      	Destino Consulta
+					      </th>
+					      <td>{{metadata['destino_consulta']}}</td>
+					    </tr>
+					    <tr>
+					      <th scope="row">
+					      	Rango de Consulta
+					      </th>
+					      <td>{{metadata['rango_consulta']}}</td>
+					    </tr>
+					    <tr>
+					      <th scope="row">
+					      	Fecha Inicial
+					      </th>
+					      <td>{{metadata['fecha_inicial']}} {{metadata['hora_inicial']}} UTC</td>
+					    </tr>
+					    <tr>
+					      <th scope="row">
+					      	Fecha Final
+					      </th>
+					      <td>{{metadata['fecha_final']}} {{metadata['hora_final']}} UTC</td>
+					    </tr>
+					    <tr>
+					      <th scope="row">
+					      	Lista de Sensores
+					      </th>
+					      <td>{{metadata['lista_sensores']}}</td>
+					    </tr>
+					    <tr>
+					      <th scope="row">
+					      	Ejes Consultados
+					      </th>
+					      <td>{{metadata['consultas_ejes']}}</td>
+					    </tr>
+					    <tr>
+					      <th scope="row">
+					      	Consultas Sensores
+					      </th>
+					      <td>{{metadata['consultas_sensor']}}</td>
+					    </tr>
+					    <tr>
+					      <th scope="row">
+					      	Tiempo de ejecución
+					      </th>
+					      <td>{{metadata['execution_time']}} segundos</td>
+					    </tr>
+					  </tbody>
+					</table>
+				  </div>
+				</div>
+			</div>
 
-
-
-	<div class="mt-3 mb-3 d-flex justify-content-center  ">
-
-		<div class="panel panel-default">
-		  <div class="panel-heading">
-		    <h1 class="panel-title">Detalles</h1>
-		  </div>
-		  <div class="panel-body">
-			<table class="table table-bordered">
-
-			  <tbody>
-			    <tr>
-			      <th scope="row">
-			      	Destino Consulta
-			      </th>
-			      <td>{{metadata['destino_consulta']}}</td>
-			    </tr>
-			    <tr>
-			      <th scope="row">
-			      	Rango de Consulta
-			      </th>
-			      <td>{{metadata['rango_consulta']}}</td>
-			    </tr>
-			    <tr>
-			      <th scope="row">
-			      	Fecha Inicial
-			      </th>
-			      <td>{{metadata['fecha_inicial']}} {{metadata['hora_inicial']}} UTC</td>
-			    </tr>
-			    <tr>
-			      <th scope="row">
-			      	Fecha Final
-			      </th>
-			      <td>{{metadata['fecha_final']}} {{metadata['hora_final']}} UTC</td>
-			    </tr>
-			    <tr>
-			      <th scope="row">
-			      	Lista de Sensores
-			      </th>
-			      <td>{{metadata['lista_sensores']}}</td>
-			    </tr>
-			    <tr>
-			      <th scope="row">
-			      	Ejes Consultados
-			      </th>
-			      <td>{{metadata['consultas_ejes']}}</td>
-			    </tr>
-			    <tr>
-			      <th scope="row">
-			      	Consultas Sensores
-			      </th>
-			      <td>{{metadata['consultas_sensor']}}</td>
-			    </tr>
-			    <tr>
-			      <th scope="row">
-			      	Tiempo de ejecución
-			      </th>
-			      <td>{{metadata['execution_time']}} segundos</td>
-			    </tr>
-			  </tbody>
+			<table
+				id="table"
+				data-toggle="table"
+				data-height="460"
+				data-search="true"
+				data-maintain-meta-data="true"
+				data-locale="es-ES">
+				<thead>
+				<tr class="tr-class-1">
+			    	{%for i in header:%}
+		        		<th data-field="{{i}}" data-sortable="true">{{i}}</th>
+			    	{% endfor %}
+				</tr>
+				</thead>
+				<tbody>
+					{%for i in detalle:%}
+				  		<tr>
+				  		{%for j in header:%}
+							<td> {{i[j]}} </td>
+					    {% endfor %}
+					    </tr>
+				    {% endfor %}
+				</tbody>
 			</table>
-		  </div>
 		</div>
 	</div>
-
-
-	<div class="mb-3 mt-5 ml-5 mr-5 d-flex justify-content-left align-items-center  ">
-
-		<table class="table table-bordered">
-		  <thead>
-		    <tr>
-		    {%for i in header:%}
-		      <th scope="col">{{i}}</th>
-		    {% endfor %}
-		    </tr>
-		  </thead>
-		  <tbody>
-
-		  	{%for i in detalle:%}
-		  		<tr>
-		  		{%for j in header:%}
-					<td> {{i[j]}} </td>
-			    {% endfor %}
-			    </tr>
-		    {% endfor %}
-		    			    <tr>
-			    </tr>
-
-		  </tbody>
-		</table>
-	</div>
-
-
-
-
 </div>
 
 
@@ -158,11 +153,11 @@
 {% block customjs%}
     {{ super() }}
 	<script src="{{ url_for('static', filename='js/tempusdominus-bootstrap-4.min.js')}}"></script>
-
+	<script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
     <script type="text/javascript">
-
-       
-
     </script>
 
 

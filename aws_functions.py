@@ -4,6 +4,7 @@ import csv
 import time
 import json
 import pytz
+import re
 from datetime import datetime
 
 
@@ -89,7 +90,18 @@ def detalle_descarga(params,filename):
     metadata_content["rango_consulta"] =  metadata_content["rango_consulta"].replace("_"," ")
 
 
-    return metadata_content
+    s3 = boto3.client('s3')
+    paginator = s3.get_paginator('list_objects_v2')
+    pages = paginator.paginate(Bucket=params['bucket'], Prefix=params['path'] + '/' + params['user_id'] + '/' + filename + '/')
+    lista_descargables = []
+    for page in pages:
+        if (page["KeyCount"] == 0):
+            break
+        for obj in page['Contents']:
+            aux = obj['Key'].split("/")
+            lista_descargables.append(aux.pop())
+
+    return metadata_content, lista_descargables
 
 
 
@@ -115,9 +127,9 @@ def build_sql_query(values):
 
     ########## WHERE ##########
 
-    if values['rango_consulta'] == 'todo_entre_las_fechas':
+    if values['rango_consulta'] == 'rango_completo':
         query = query + "WHERE dt >= '" + values['fecha_inicial'] + "' AND dt <= '" + values['fecha_final'] +"' AND ts >= CAST(to_unixtime(CAST('" + values['fecha_inicial'] + " " + values['hora_inicial'] + "' AS timestamp))*1000 AS BIGINT) AND ts <= CAST(to_unixtime(CAST('" + values['fecha_final'] + " " + values['hora_final'] +"' AS timestamp))*1000 AS BIGINT)"
-    elif values['rango_consulta'] == 'horas_por_dia':
+    elif values['rango_consulta'] == 'rango_por_dia':
         query = query + "WHERE dt >= '" + values['fecha_inicial'] + "' AND dt <= '" + values['fecha_final'] +"' AND ts >= CAST(to_unixtime(CAST('" + values['fecha_inicial'] + " " + values['hora_inicial'] + "' AS timestamp)) AS BIGINT) AND ts <= CAST(to_unixtime(CAST('" + values['fecha_final'] + " " + values['hora_final'] +"' AS timestamp)) AS BIGINT) AND date_format(from_unixtime(ts/1000) , '%H:%i:%s')  >= '" + values['hora_inicial'] +"'AND date_format(from_unixtime(ts/1000), '%H:%i:%s')  <= '" + values['hora_final'] +"'"
     ##### sensores #####    
     query = query + " AND ("
@@ -142,7 +154,6 @@ def build_sql_query(values):
 
     query = query + " GROUP BY name, axis"
     query = query + " ORDER BY axis, name"
-    print(query)
     return query
 
 
@@ -152,7 +163,6 @@ def query_athena(params,values):
     time_start = time.time()
     ## Creating the Client for Athena
     client = boto3.client('athena')
-    
     ## This function executes the query and returns the query execution ID
     response_query_execution_id = client.start_query_execution(
         QueryString = build_sql_query(values),
@@ -234,6 +244,14 @@ def query_athena(params,values):
 
 def build_download_sql_query(params,values,now_time):
 
+    n_days = 1
+    dia_inicio = datetime.strptime(values['fecha_inicial'] + ' ' + values['hora_inicial'], "%Y-%m-%d %H:%M")
+    dia_fin = datetime.strptime(values['fecha_final'] + ' ' + values['hora_final'], "%Y-%m-%d %H:%M")
+    delta = dia_fin - dia_inicio
+    n_days = max(1,round(delta.total_seconds()/86400))
+    user_formatted = re.sub(r'[^a-zA-Z0-9]', '', params['user_id'])
+    time_formatted = re.sub(r'[^a-zA-Z0-9]', '', now_time)
+    table_name = user_formatted + time_formatted
     ##### SELECT #####
     query = "SELECT ts, name, axis, type, dbl_v"
 
@@ -244,9 +262,9 @@ def build_download_sql_query(params,values,now_time):
         query = query + " FROM " + "test_eventos_inesperados " 
 
     ##### WHERE #####   
-    if values['rango_consulta'] == 'todo_entre_las_fechas':
+    if values['rango_consulta'] == 'rango_completo':
         query = query + "WHERE dt >= '" + values['fecha_inicial'] + "' AND dt <= '" + values['fecha_final'] +"' AND ts >= CAST(to_unixtime(CAST('" + values['fecha_inicial'] + " " + values['hora_inicial'] + "' AS timestamp))*1000 AS BIGINT) AND ts <= CAST(to_unixtime(CAST('" + values['fecha_final'] + " " + values['hora_final'] +"' AS timestamp))*1000 AS BIGINT)"
-    elif values['rango_consulta'] == 'horas_por_dia':
+    elif values['rango_consulta'] == 'rango_por_dia':
         query = query + "WHERE dt >= '" + values['fecha_inicial'] + "' AND dt <= '" + values['fecha_final'] +"' AND ts >= CAST(to_unixtime(CAST('" + values['fecha_inicial'] + " " + values['hora_inicial'] + "' AS timestamp))*1000 AS BIGINT) AND ts <= CAST(to_unixtime(CAST('" + values['fecha_final'] + " " + values['hora_final'] +"' AS timestamp))*1000 AS BIGINT) AND date_format(from_unixtime(ts/1000) , '%H:%i:%s')  >= '" + values['hora_inicial'] +"'AND date_format(from_unixtime(ts/1000), '%H:%i:%s')  <= '" + values['hora_final'] +"'"
     ##### sensores #####    
     query = query + " AND ("
@@ -269,11 +287,9 @@ def build_download_sql_query(params,values,now_time):
             query = query + "OR axis = '" + k + "'"
     query = query + ")"
 
-    query = query + " ORDER BY ts, name, axis ASC"
+    query = "CREATE table " + table_name + " WITH (format='PARQUET', parquet_compression='GZIP', external_location = 's3://" + params['bucket'] + "/descargas/" + "test" + "/" + params['user_id'] + "/" + now_time + "', bucketed_by = ARRAY['ts'], bucket_count ="+ str(n_days) +") AS(" + query + ");"
 
-    query = "CREATE table new_parquet WITH (format='PARQUET', parquet_compression='GZIP', external_location = 's3://" + params['bucket'] + "/descargas/" + "test" + "/" + params['user_id'] + "/" + now_time + "', bucketed_by = ARRAY['ts'], bucket_count = 1) AS(" + query + ");"
-
-    query_droptable = "DROP TABLE new_parquet;"
+    query_droptable = "DROP TABLE " + table_name + ";"
 
     return query, query_droptable
 
@@ -331,20 +347,23 @@ def download_query_athena(params,values):
             s3 = boto3.client('s3')
             paginator = s3.get_paginator('list_objects_v2')
             pages = paginator.paginate(Bucket=params['bucket'], Prefix=params['path'] + '/' + params['user_id'] + '/' + now_time)
-            s3 = boto3.resource('s3')
+            total_size = 0
             for page in pages:
+                count = 0
                 if (page["KeyCount"] == 0):
                     break
                 for obj in page['Contents']:
+                    total_size += obj['Size']/ pow(1024,2)
+                    s3 = boto3.resource('s3')
                     queryLoc = params['bucket'] + "/" + obj['Key']
-                    s3.Object(params['bucket'], params['path'] + '/' + params['user_id'] + '/' + now_time + '.gz.parquet').copy_from(CopySource = queryLoc)
+                    s3.Object(params['bucket'], params['path'] + '/' + params['user_id'] + '/' + now_time + '/' + now_time + "-" + str(count) + '.gz.parquet').copy_from(CopySource = queryLoc)
                     s3 = boto3.client('s3')
                     #deletes Athena generated file
                     response = s3.delete_object(
                         Bucket=params['bucket'],
                         Key= obj['Key']
                     )
-
+                    count += 1
 
             # Drop CTAS Table
             s3 = boto3.resource('s3')
@@ -365,7 +384,7 @@ def download_query_athena(params,values):
             s3 = boto3.resource('s3')
             values["fecha_consulta"] = now.strftime("%Y-%m-%d %H:%M:%S")
             values["file_name"] = now_time
-            values["size"] = round(s3.Bucket(params['bucket'] ).Object(params['path'] + '/' + params['user_id'] + '/' + now_time + '.gz.parquet').content_length / pow(1024,2),1)
+            values["size"] = round(total_size,1)
             time_end = time.time()
             values["execution_time"] = round(time_end - time_start)
             object_metadata = s3.Object( params['bucket'] , params['path'] + '/' + params['user_id'] +'/metadata/' + now_time + '.json')
@@ -379,4 +398,5 @@ def download_query_athena(params,values):
 
 def get_attachment_url(params,filename):
     s3 = boto3.client('s3')
-    return s3.generate_presigned_url('get_object', Params={'Bucket': params['bucket'], "Key": params['path'] + '/' + params['user_id'] + '/' + filename + '.gz.parquet'}, ExpiresIn=60)
+    folder = filename.split('.')[0]
+    return s3.generate_presigned_url('get_object', Params={'Bucket': params['bucket'], "Key": params['path'] + '/' + params['user_id'] + '/' + folder[:-2] + '/' + filename}, ExpiresIn=60)

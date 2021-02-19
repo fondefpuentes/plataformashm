@@ -1,0 +1,23 @@
+<div class="btn-toolbar py-3">
+    
+    <form action="{{url_for('views_api.profile')}}">
+        <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                <div class="row row-cols-2">
+                <div class="col-auto"><i class="bi bi-card-list"></i></div>
+                <div class="col-lg">Listado Estructuras</div>
+            </div>
+        </button>
+    </form>
+
+    &nbsp;
+    
+    <form action="{{url_for('views_api.mapa')}}">
+        <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                <div class="row row-cols-2">
+                <div class="col-auto"><i class="bi bi-map"></i></div>
+                <div class="col-lg">Busqueda en mapa</div>
+            </div>
+        </button>
+    </form>
+
+</div>
