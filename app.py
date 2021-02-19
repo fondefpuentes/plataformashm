@@ -4,7 +4,7 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from flask_table import Table, Col
 from views import views_api
-from models import db, Usuario
+from models import db, Usuario, AnomaliaPorHora, EstadoDanoSensor, SensorInstalado
 from flask_login import LoginManager
 from flask_mail import Mail, Message
 import os
@@ -37,13 +37,23 @@ app.config.update(
 
 ### SCHEDULER ###
 
-def actualizar_anomalias():
-    print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
-
+def actualizar_estados():
+    print(time.strftime("%d. %B %Y %H:%M:%S"))
+    with app.app_context():
+        sensores_instalados = SensorInstalado.query.all()
+        for sensor in sensores_instalados:
+            dano_sensor = EstadoDanoSensor.query.filter_by(id_sensor_instalado = sensor.id_sensor).first()
+            anomalia = AnomaliaPorHora.query.filter_by(id_sensor_instalado = sensor.id_sensor).order_by(AnomaliaPorHora.hora_calculo.desc()).first()
+            if(anomalia and anomalia.anomalia):
+                dano_sensor.estado = "Anomalía Detectada"
+                db.session.commit()
+            elif(anomalia and not anomalia.anomalia and dano_sensor.estado != "No hay daño"):
+                dano_sensor.estado = "No hay daño"
+                db.session.commit()
 
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true': # Se ejecuta cuando la app no esta en modo debug o en una rama principal (para evitar doble ejecucion)
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=actualizar_anomalias, trigger="interval", seconds=60)
+    scheduler.add_job(func=actualizar_estados, trigger="interval", seconds=60)
     scheduler.start()
     # Shut down the scheduler when exiting the app
     atexit.register(lambda: scheduler.shutdown())

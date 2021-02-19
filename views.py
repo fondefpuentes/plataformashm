@@ -1767,7 +1767,7 @@ def deteccion_temprana(id_puente):
         if(request.method == "GET"):
             estructura = Estructura.query.filter_by(id=id_puente).first()
             sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo, DescripcionSensor.descripcion.label("nombre_sensor"),EstadoSensor.fecha_estado.label("fecha123"),EstadoSensor.confiabilidad, EstadoSensor.operatividad, EstadoSensor.mantenimiento,DescripcionDAQ.caracteristicas, DAQPorZona.id_daq, EstadoDanoSensor.estado.label("estado_dano_sensor"), EstadoDanoSensor.diahora_calculo.label("fecha_dano_sensor")).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, EstadoSensor.id_sensor_instalado == SensorInstalado.id,SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DAQPorZona.id_daq, DescripcionDAQ.id_daq == DAQPorZona.id_daq, EstadoDanoSensor.id_sensor_instalado == SensorInstalado.id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc(),EstadoSensor.fecha_estado.desc()).all()
-            anomalias = db.session.query(DescripcionSensor.descripcion.label("nombre_sensor"), SensorInstalado.id.label("si"), AnomaliaPorHora.hora_calculo, AnomaliaPorHora.anomalia).filter(SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, AnomaliaPorHora.id_sensor_instalado == SensorInstalado.id_sensor, DescripcionSensor.id_sensor_instalado == SensorInstalado.id,).all() 
+            anomalias = db.session.query(DescripcionSensor.descripcion.label("nombre_sensor"), SensorInstalado.id.label("si"), AnomaliaPorHora.hora_calculo, AnomaliaPorHora.anomalia).filter(SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, AnomaliaPorHora.id_sensor_instalado == SensorInstalado.id_sensor, DescripcionSensor.id_sensor_instalado == SensorInstalado.id,).order_by(AnomaliaPorHora.hora_calculo.desc()).all() 
             esta_monitoreada = estructura.en_monitoreo
             #Se guarda momentaneamente el id del puente en la sesión actual
             session['id_puente'] = id_puente
@@ -1782,7 +1782,26 @@ def deteccion_temprana(id_puente):
             }
             return render_template('deteccion_temprana.html',**context)
         elif(request.method == "POST"):
-            print("Me apretan") 
+            print("Reiniciando Anomalias")
+            try:
+                num_rows_deleted = db.session.query(AnomaliaPorHora).delete()
+                db.session.commit()
+                print("Filas Eliminadas = " + str(num_rows_deleted))
+                sensores_de_puente = db.session.query(SensorInstalado.id.label("si")).filter(SensorInstalado.id_estructura == id_puente).order_by(SensorInstalado.id.desc())
+                for sensor in sensores_de_puente:
+                    anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = False)
+                    db.session.add(anomalia)
+                db.session.commit()
+            except:
+                db.session.rollback()
             return redirect(url_for('views_api.deteccion_temprana',id_puente=session['id_puente']))
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
+
+@views_api.route("/agregar_anomalia/<int:id_puente>/<int:id_sensor>")
+def agregar_anomalia(id_puente,id_sensor):
+    anomalia = AnomaliaPorHora(id_sensor_instalado = id_sensor, hora_calculo = datetime.now(), anomalia = True)
+    db.session.add(anomalia)
+    db.session.commit()
+    print("Se agrega anomalia al sensor " + str(id_sensor))
+    return redirect(url_for('views_api.deteccion_temprana', id_puente=session['id_puente']))

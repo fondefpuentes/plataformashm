@@ -53,10 +53,10 @@
 					   <td>{{ element.estado_dano_sensor }}</td>
 					   <td>{{ element.fecha_dano_sensor }}</td>
 					   <td>
-					   <form action="">
-							   <button class="btn btn-secondary btn-sm">Añadir anomalia</button>
+						   <form action="{{ url_for('views_api.agregar_anomalia', id_puente=id_puente, id_sensor=element.si) }}">
+						   <button class="btn btn-secondary btn-sm" type="submit">Añadir anomalia</button>
 						   </form>
-						</td>
+					   </td>
 					 </tr>
 					 {%endfor%}
 					 {%endif%}
@@ -64,7 +64,7 @@
 				 </table>
                </div>
 		   </div>
-		   <div class="subtitle fs-3 py-1">Ultima Anomalía por Sensor</div>
+		   <div class="subtitle fs-3 py-1"> Historial de Anomalías </div>
 		   <div class="box">
 
 			   <table class="table table-bordered table-responsive border-1 sortable"
@@ -79,7 +79,7 @@
 					 <tr>
 					   <th data-sortable="true">Nombre</th>
 					   <th data-sortable="true">Fecha Anomalía</th>
-					   <th data-sortable="true">Estado Ultima Anomalía</th>
+					   <th data-sortable="true">Estado Anomalía</th>
 					 </tr>
 				   </thead>
 				   <tbody id="sensor_data">
@@ -100,3 +100,4 @@
    </div>
 </div>
 {% endblock %}
+
