@@ -46,9 +46,11 @@ def actualizar_estados():
             anomalia = AnomaliaPorHora.query.filter_by(id_sensor_instalado = sensor.id_sensor).order_by(AnomaliaPorHora.hora_calculo.desc()).first()
             if(anomalia and anomalia.anomalia):
                 dano_sensor.estado = "Anomalía Detectada"
+                dano_sensor.diahora_calculo = dt.now()
                 db.session.commit()
             elif(anomalia and not anomalia.anomalia and dano_sensor.estado != "No hay daño"):
                 dano_sensor.estado = "No hay daño"
+                dano_sensor.diahora_calculo = dt.now()
                 db.session.commit()
 
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true': # Se ejecuta cuando la app no esta en modo debug o en una rama principal (para evitar doble ejecucion)
