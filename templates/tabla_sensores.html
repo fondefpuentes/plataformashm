@@ -1,32 +1,46 @@
-<table class="table table-bordered table-responsive-md border-1 sortable">
+<table class="table table-bordered border-1 sortable"
+id="table_sens"
+data-toggle="table"
+data-sortable="true"
+data-show-columns="true"
+data-locale="es-CL"
+data-pagination="true"
+data-page-size="10">
     <thead class="thead-dark">
         <tr>
-            <th>Nombre</th>
-            <th>Tipo Sensor</th>
-            <th>Zona</th>
-            <th>DAQ</th>
-            <th>Estado de Daño</th>
-            <th>Fecha Estado Daño</th>
-            <th>Operatividad (1)</th>
-            <th>Confiabilidad (2)</th>
-            <th>Mantenimiento (3)</th>
-            <th>Fecha estados (1,2,3)</th>
+            <th data-sortable="true">Nombre</th>
+            <th data-sortable="true">Tipo</th>
+            <th data-sortable="true">Zona</th>
+            <th data-sortable="true">DAQ</th>
+            <th data-sortable="true">Estado Daño</th>
+            <th data-sortable="true">Fecha Estado Daño</th>
+            <th data-sortable="true">Operatividad(1)</th>
+            <th data-sortable="true">Confiabilidad(2)</th>
+            <th data-sortable="true">Mantenimiento(3)</th>
+            <th data-sortable="true">Fecha Estados(1,2,3)</th>
         </tr>
     </thead>
     <tbody id="sensor_data">
     {%if sensores %}
         {% for element in sensores %}
         <tr>
-            <td><a href="#">{{ element.si }}</a></td>
+            <td><a href="{{url_for('views_api.detalle_sensor',id_sensor=element.si)}}">{{ element.nombre_sensor }}</a></td>
             <td>{{ element.nombre}}</td>
             <td>{{ element.descripcion }}</td>
+            <td><a href="{{url_for('views_api.detalle_daq',id_daq=element.id_daq)}}">{{ element.caracteristicas}}</td>
+            <td>{{ element.estado}}</td>
+            <td>{{ element.diahora_calculo.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+            {%if element.fecha123%}
+            <td>{{element.operatividad}}</td>
+            <td>{{element.confiabilidad}}</td>
+            <td>{{element.mantenimiento}}</td>
+            <td>{{element.fecha123.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+            {%else%}
             <td>[POR DEFINIR]</td>
             <td>[POR DEFINIR]</td>
             <td>[POR DEFINIR]</td>
             <td>[POR DEFINIR]</td>
-            <td>[POR DEFINIR]</td>
-            <td>[POR DEFINIR]</td>
-            <td>[POR DEFINIR]</td>
+            {%endif%}
         </tr>
         {%endfor%}
     {%endif%}

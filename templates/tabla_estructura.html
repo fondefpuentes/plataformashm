@@ -1,89 +1,99 @@
 {% extends "base.html" %}
-
 {% block customcss %}
-    {{ super() }}
-    <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+{{ super() }}
+<link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
 {% endblock %}
-
 {% block content %}
-<div class="bg">
-    {% include 'breadcrumb.html' %}
-    <div class="container-fluid px-5 py-2">
-        <h1 class="title text-capitalize">
-            {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
-        </h1>
-        {% include 'botones_tabla_estructura.html' %}
-        <div class="row py-3">
-            <div class="col-md-6">
-                {% include 'tabla_ubicacion_estructura.html'%}
+
+   <div class="container-fluid px-5 py-2">
+      <div class="row">{% include 'breadcrumb.html' %}</div>
+      <h1 class="title text-capitalize">
+         {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
+      </h1>
+      <div class="row py-3 d-flex flex-sm-row-reverse">
+         <div class="col-sm-3 mb-2">{% include 'botones_tabla_estructura.html' %}</div>
+         <div class="col-sm-9">
+            <div class="row row-cols-2 g-2">
+               <div class="col-sm-6">{% include 'tabla_ubicacion_estructura.html'%}  </div>
+               <div class="col-sm-6">{% include 'tabla_detalles_estructura.html'%}</div>
+               <div class="col-sm-6">{% include 'imagenes_estructura.html' %}</div>
+               <div class="col-sm-6">
+                  <div class="border border-secondary"id="map"></div>
+               </div>
             </div>
-            <div class="col-md-6">
-                {% include 'tabla_detalles_estructura.html'%}
+         </div>
+      </div>
+      
+      <div class="py-3">
+         <p class="h4 py-2">Estado de Diagnóstico</p>
+         <div>{% include 'tabla_estados_estructura.html' %}</div>
+         <br>
+      </div>
+      {% if esta_monitoreada%}
+      <div class="py-3">
+         <p class="h4 py-2">Infraestructura de Monitoreo</p>
+         <div>
+            <ul class="nav nav-tabs mb-3">
+               <li class="active nav-item"><a class ="nav-link active" data-toggle="tab" href="#sensores">Sensores</a></li>
+               <li class="nav-item"><a class = "nav-link" data-toggle="tab" href="#daqs">DAQs</a></li>
+            </ul>
+            <input type="text" class="form-control" id="filterInput" placeholder="Buscar Dispositivos">
+            <div class="tab-content">
+               <div id="sensores" class="tab-pane fade show active">
+                  {%include 'tabla_sensores.html' %}
+               </div>
+               <div id="daqs" class="tab-pane fade">
+                  {%include 'tabla_daqs.html' %}
+               </div>
             </div>
-        </div>
-        <div class="row py-3">
-            <div class="col-md-6">
-                {% include 'imagenes_estructura.html' %}
-            </div>
-            <div class="col-md-6">
-                <div id="map">
-                </div>           
-            </div>
-        </div>
-        {% if esta_monitoreada%}
-        <div class="row py-3">
-            <h1 class="subtitle fs-3">Estado de Diagnóstico</h1>    
-            <div>{% include 'tabla_estados_estructura.html' %}</div>
-            <br>
-        </div>
-        <div class="row py-3">
-            <h1 class="subtitle fs-3">Infraestructura de Monitoreo</h1>
-            <div>
-                <ul class="nav nav-tabs mb-3">
-                    <li class="active nav-item"><a class ="nav-link active" data-toggle="tab" href="#sensores">Sensores</a></li>
-                    <li class="nav-item"><a class = "nav-link" data-toggle="tab" href="#daqs">DAQs</a></li>
-                </ul>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="filterInput" placeholder="Acelerometro">
-                    <label for="filterInput"><i class="bi bi-search px-3"></i>Buscar Dispositivos</label>
-                </div>
-                <div class="tab-content">
-                    <div id="sensores" class="tab-pane fade show active">
-                        {%include 'tabla_sensores.html' %}
-                    </div>
-                    <div id="daqs" class="tab-pane fade">
-                        {%include 'tabla_daqs.html' %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        <br>
-        <div class="row py-3">
-            <br>
-            <br>
-            <br>
-        </div>
-    </div>
+         </div>
+      </div>
+      {% endif %}
 </div>
 {% endblock %}
-
 {% block customjs %}
-    <script src="{{ url_for('static', filename='js/tabla_estructura.js')}}"></script>
-    <script>
-        showBridgeOnMap({{datos_puente.coord_x}},{{datos_puente.coord_y}});
-    </script>
-    <script>
-        $(document).ready(function(){
-            $("#filterInput").on("keyup", function() {
-                var value = $(this).val().toLowerCase();
-                $("#sensor_data tr").filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-                });
-                $("#daq_data tr").filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-                });
-            });
-        });
-    </script> 
+<script src="{{ url_for('static', filename='js/tabla_estructura.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
+<script>
+   showBridgeOnMap({{datos_puente.coord_x}},{{datos_puente.coord_y}});
+</script>
+<script>
+  function asignar_color( strEstado){
+          if( strEstado === 'Prístina'){return ('green');}
+          else if (strEstado === 'Con daño'){return ('yellow');}
+          else if (strEstado === 'Falla estructural leve'){return ('orange');}
+          else if (strEstado === 'Falla estructural grave'){return ('red');}
+          else if (strEstado === 'Crítico'){return ('purple');}
+          else if (strEstado === 'Seguro'){return ('green');}
+          else if (strEstado === 'Seguro para operar'){return ('yellow');}
+          else if (strEstado === 'Inseguro para libre circulación'){return ('red');}
+          else if (strEstado === 'Peligro'){return ('purple');}
+          else{return ('gray');}
+  }
+  
+   $(document).ready(function(){
+   
+       {%if estado%}
+       var globString = "{{estado.estado}}";
+       var segString = "{{estado.seguridad}}";
+
+       $('#global-circle').css("color", asignar_color(globString));
+       $('#seg-circle').css("color",asignar_color(segString));
+       {%endif%}
+   
+       $("#filterInput").on("keyup", function() {
+           var value = $(this).val().toLowerCase();
+           $("#sensor_data tr").filter(function() {
+               $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+           });
+           $("#daq_data tr").filter(function() {
+               $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+           });
+       });
+   });
+</script> 
 {% endblock %}
+
