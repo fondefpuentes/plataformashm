@@ -30,7 +30,6 @@
 		{% endif %}
    {% if not current_user.is_authenticated %}
 			<li class="nav-item">
-				<a class="nav-link px-3 text-right" href="{{ url_for('views_api.mi_cuenta') }}">Mi Cuenta</a>
 				<a class="nav-link px-3" href="{{ url_for('views_api.login') }}">Acceder</a>
 			</li>
 			<li class="nav-item">

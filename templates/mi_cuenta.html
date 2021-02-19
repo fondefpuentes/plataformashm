@@ -9,25 +9,32 @@
 	<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-5 py-1">
+<div class="container-fluid px-5 py-3">
 	<div class="row">
 		{% include 'breadcrumb.html' %}
 	</div>
-
-    <div class="container px-5 py-5">
+  <div class="card h-100 mb-5">
+    <div class="row card-body">
+      <div class="col-6">
         <h1 class="title py-3">{{usuario.nombre}} {{usuario.apellido}}</h1>
-
+        <p>Permiso Actual: <b>{{usuario.permisos}}</b></p>
+      </div>
+      <div class="col-6 d-flex justify-content-end"><img src="/static/images/imagen_no_disponible.png" class="img-fluid img-thumbnail w-25" alt="..."></div>
     </div>
-    <div class="mb-1 mt-5 d-flex justify-content-left align-items-center  ">
+    <div class="card-footer">
+      <small class="text-muted">Nivel de Usuario: [Experto]</small>
+    </div>
+  </div>
+  
+  <div class="border-bottom">
 		<p class="h4">Consultas de mediciones históricas disponibles</p>
-	</div>
-
-	<div class="mb-3">
-		
-	<table
+	</div>		
+	
+  <table
 		id="table3"
 		data-toggle="table"
-		data-height="255"
+		data-pagination="true"
+    data-page-size="10"
 		data-search="true"
 		data-maintain-meta-data="true"
 		data-locale="es-ES">
@@ -58,15 +65,17 @@
 		{% endfor %}
 		</tbody>
 	</table>
-	</div>
-	<div class="mb-3">
-    <div class="mb-1 mt-5 d-flex justify-content-left align-items-center  ">
+ 
+
+	<div class="border-bottom mt-3">
 		<p class="h4">Descargas de mediciones históricas disponibles</p>
 	</div>
+ 
 	<table
 		id="table1"
 		data-toggle="table"
-		data-height="255"
+		data-pagination="true"
+    data-page-size="10"
 		data-search="true"
 		data-maintain-meta-data="true"
 		data-locale="es-ES">
@@ -97,7 +106,7 @@
 		{% endfor %}
 		</tbody>
 	</table>
-	</div>
+ 
 </div>
 {% endblock %}
 {% block customjs%}

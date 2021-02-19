@@ -220,7 +220,7 @@
                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
                         <form class="modal-body" id="mantenimiento-form" action="{{url_for('views_api.mantenimiento_sensor', id_sensor=sensor.siid)}}" method="POST">
-                           <div class="row row-cols-6 py-1">
+                           <div class="row py-1">
                              <p class="col-4"><b>Estado del Mantenimiento:</b></p>
                              <div class="col-4 form-check form-check-inline" required>
                                <input class="form-check-input" type="radio" name="detalleRadio" id="pend" value="Pendiente" checked>
