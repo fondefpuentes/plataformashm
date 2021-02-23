@@ -17,18 +17,18 @@ class Usuario(UserMixin, db.Model):
     permisos = db.Column(db.String(20))
     # validado = db.Column(db.Boolean)
 
-    def verify_email(email):
-        user = Usuario.query.filter_by(id=email).first()
+    def verify_email(self, email):
+        user = self.query.filter_by(id=email).first()
         return user
 
-    def verify_reset_token(token):
+    def verify_reset_token(self, token):
         try:
             username = jwt.decode(token, key=current_app.config['SECRET_KEY'])['reset_password']
             # print(username)
         except Exception as e:
             # print(e)
             return
-        return Usuario.query.filter_by(id=username).first()
+        return self.query.filter_by(id=username).first()
 
     def get_reset_token(self, expires=500):
         print(self.id)
@@ -76,6 +76,9 @@ class Estructura(db.Model):
     dashboard = db.Column(db.String(500))
     ip_instancia = db.Column(db.String(100))
     en_monitoreo = db.Column(db.Boolean)
+    modelo_foto = db.Column(db.String(500))
+    modelo_degrada = db.Column(db.String(500))
+    
 
 class TipoSensor(db.Model):
     __tablename__ = 'tipos_de_sensor'
