@@ -7,15 +7,7 @@
                 <button class="btn btn-secondary btn-sm">Lista de Sensores</button>
             </form-->
         {% if current_user.permisos != 'Visita' %}
-                <!--form action="{{url_for('views_api.historial_monitoreo_estructura', id=datos_puente.id)}}">
-                    <button class="btn btn-secondary btn-sm">Historial de monitoreo</button>
-                </form>
-                <form action="{{url_for('views_api.daqs_de_estructura', id_puente=datos_puente.id)}}">
-                    <button class="btn btn-secondary btn-sm">DAQs</button>
-                </form>
-                <form action="{{url_for('views_api.clusters_estructura', id_puente=datos_puente.id)}}">
-                    <button class="btn btn-secondary btn-sm">Clusters</button>
-                </form-->
+
                 <form action="{{url_for('views_api.show_3d_bim',id_puente=datos_puente.id)}}">
                     <button class="btn btn-outline-primary my-2 btn-lg text-wrap">
                         <div class="row ">
@@ -24,10 +16,7 @@
                         </div>
                     </button>
                 </form>
-                <!--form action="{{url_for('views_api.informes_monitoreo_estructura', id_puente=datos_puente.id)}}">
-                    <button class="btn btn-secondary btn-sm">Informes de monitoreo</button>
-                </form-->
-                
+
                 <form action="{{url_for('views_api.tiempo_real', id=datos_puente.id)}}">
                     <button class="btn btn-outline-primary my-2 btn-lg col-sm text-wrap">
                         <div class="row ">
@@ -37,20 +26,20 @@
                     </button>
                 </form>
                 
-                <form action="{{url_for('views_api.datos_recientes')}}">
+                <!--<form action="{{url_for('views_api.datos_recientes')}}">
                     <button class="btn btn-outline-primary my-2 btn-lg col-sm text-wrap">
                         <div class="row ">
                             <div class="col-1"><i class="bi bi-clipboard-data"></i></div>
                             <div class="col-11"><p class="text-wrap">Análisis de Mediciones Recientes</p></div>
                         </div>
                     </button>
-                </form>
-                
-                <form action="#">
-                    <button class="btn btn-outline-primary my-2 btn-lg col-sm text-wrap">
-                        <div class="row ">
-                            <div class="col-1"><i class="bi bi-display"></i></div>
-                            <div class="col-11"><p class="text-wrap">Detección Temprana de Daños</p></div>
+                </form>-->
+
+                <form action="{{url_for('views_api.deteccion_temprana', id_puente=datos_puente.id)}}">
+                    <button class="btn btn-outline-primary btn-lg col-sm text-wrap">
+                        <div class="row row-cols-2">
+                            <div class="col-auto"><i class="bi bi-display"></i></div>
+                            <div class="col-lg">Detección Temprana de Daños</div>
                         </div>
                     </button>
                 </form>
@@ -72,24 +61,26 @@
                         </div>
                     </button>
                 </form>
-                
-                <form action="#">
-                    <button class="btn btn-outline-primary my-2 btn-lg col-sm text-wrap">
-                        <div class="row ">
-                            <div class="col-1"><i class="bi bi-pie-chart-fill"></i></div>
-                            <div class="col-11">Visualización Modelo Externo 1 </div>
-                        </div>
-                    </button>
-                </form>
-                
-                <form action="https://www.dronedeploy.com/app2/sites/5fff6b913301e685de4313f3/maps/5fff6b553301e685de4313f2">
+                {%if datos_puente.modelo_foto%}
+                <form action="{{datos_puente.modelo_foto}}">
                     <button class="btn btn-outline-primary my-2 btn-lg col-sm text-wrap">
                         <div class="row ">
                             <div class="col-1"><i class="bi bi-camera-fill"></i></div>
-                            <div class="col-11">Visualización Modelo Externo 2 </div>
+                            <div class="col-11">Visualización Modelo Fotogrametrico </div>
                         </div>
                     </button>
                 </form>
+                {%endif%}
+                {%if datos_puente.modelo_degrada%}                
+                <form action="{{datos_puente.modelo_degrada}}">
+                    <button class="btn btn-outline-primary my-2 btn-lg col-sm text-wrap">
+                        <div class="row ">
+                            <div class="col-1"><i class="bi bi-pie-chart-fill"></i></div>
+                            <div class="col-11">Visualización Modelo Degradación </div>
+                        </div>
+                    </button>
+                </form>
+                {%endif%}
         {% endif %}
     {% else %}
         {% if current_user.permisos == 'Administrador' %}
@@ -110,22 +101,25 @@
                         </div>
                     </button>
                 </form>
-                <form action="https://www.dronedeploy.com/app2/sites/5fff6b913301e685de4313f3/maps/5fff6b553301e685de4313f2">
+                {%if datos_puente.modelo_foto%}
+                <form action="{{datos_puente.modelo_foto}}">
                     <button class="btn btn-outline-primary my-2 btn-lg col-sm text-wrap">
                         <div class="row ">
                             <div class="col-1"><i class="bi bi-camera-fill"></i></div>
-                            <div class="col-11">Visualización Modelo Externo 2 </div>
+                            <div class="col-11">Visualización Modelo Fotogrametrico </div>
                         </div>
                     </button>
                 </form>
-                
-                <form action="#">
+                {%endif%}
+                {%if datos_puente.modelo_degrada%}                
+                <form action="{{datos_puente.modelo_degrada}}">
                     <button class="btn btn-outline-primary my-2 btn-lg col-sm text-wrap">
                         <div class="row ">
                             <div class="col-1"><i class="bi bi-pie-chart-fill"></i></div>
-                            <div class="col-11">Visualización Modelo Externo 1 </div>
+                            <div class="col-11">Visualización Modelo Degradación </div>
                         </div>
                     </button>
                 </form>
+                {%endif%}
     {% endif %}
 </div>
