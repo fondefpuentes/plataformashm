@@ -24,7 +24,7 @@ data-locale="es-CL">
             <td>{{ daq.descripcion}}</td>
             <td>{{ daq.operatividad}}</td>
             <td>{{ daq.mantenimiento}}</td>
-            <td>{{ daq.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+            <td>{{ daq.fecha_estado | datetimefilter}}</td>
         </tr>
         {%endfor%}
     {%else%}

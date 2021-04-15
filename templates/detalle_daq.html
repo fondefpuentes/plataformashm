@@ -23,7 +23,7 @@
                      <li class="list-group-item"><b>UUID: </b> [Sin Especificar]</li>
                      <li class="list-group-item mt-4"><b>Fecha Instalacion: </b>[Sin Especificar] </li>
                      <li class="list-group-item"><b>Zona: </b>{{zona.descripcion}}</li>
-                     <li class="list-group-item"><b>Numero de Canales: </b>{{info_daq.nro_canales}}</li>
+                     <li class="list-group-item"><b>Número de Canales: </b>{{info_daq.nro_canales}}</li>
                   </ul>
                </div>
                <div class="col-sm-6 px-5"><img src="/static/images/daq.jpg  " class="img-fluid img-thumbnail" alt="..."></div>
@@ -36,7 +36,7 @@
                      <p><b>Mantenimiento: </b>{%if estado_daq%}{{estado_daq[0].mantenimiento}}{%else%}--Sin Registro--{%endif%}</p>
                   </div>
                   <div class="card-footer">
-                     <small class="text-muted">Ultima Actualizacion: {%if estado_daq%}{{estado_daq[0].fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}{%else%}[dd/mm/aa hh:mm:ss]{%endif%}</small>
+                     <small class="text-muted">Ultima Actualización: {%if estado_daq%}{{estado_daq[0].fecha_estado | datetimefilter}}{%else%}[dd/mm/aa hh:mm:ss]{%endif%}</small>
                   </div>
                </div>
             </div>
@@ -62,8 +62,8 @@
                      <div class="row py-1">
                         <p class="col-2"><b>Mantenimiento:</b></p>
                         <div class="col-2 form-check form-check-inline" required>
-                           <input class="form-check-input" type="radio" name="manRadio" id="dia" value="Al Dia" checked>
-                           <label class="form-check-label" for="dia"> Al Dia</label>
+                           <input class="form-check-input" type="radio" name="manRadio" id="dia" value="Al Día" checked>
+                           <label class="form-check-label" for="dia"> Al Día</label>
                         </div>
                         <div class="col-2 form-check form-check-inline">
                            <input class="form-check-input" type="radio" name="manRadio" id="prog" value="Programado">
@@ -85,7 +85,7 @@
                         <div class="modal-dialog modal-dialog-scrollable">
                            <div class="modal-content">
                               <div class="modal-header">
-                                 <p class="modal-title h5" id="revision-title">Revision Estado DAQ - {{info_daq.caracteristicas}}</p>
+                                 <p class="modal-title h5" id="revision-title">Revisión Estado DAQ - {{info_daq.caracteristicas}}</p>
                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                               </div>
                               <div class="modal-body">
@@ -185,7 +185,7 @@
                   {%if estado_daq%}
                   {%for i in estado_daq%}
                   <tr>
-                     <td>{{i.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                     <td>{{i.fecha_estado | datetimefilter}}</td>
                      <td>{{i.operatividad}}</td>
                      <td>{{i.mantenimiento}}</td>
                   </tr>
@@ -198,7 +198,7 @@
       <div class="py-5">
         <div class="row py-2">
           <div class="col-10"><p class="h4 py-3">Mantenimiento<p></div>
-          <div class="col-2 g-0"><button type="button" id="actualizar-btn" class="btn btn-success btn-md" data-toggle="modal" data-target="#mantenimiento_modal" style="width:100%;">  Anadir Mantenimiento  </button></div>
+          <div class="col-2 g-0"><button type="button" id="actualizar-btn" class="btn btn-success btn-md" data-toggle="modal" data-target="#mantenimiento_modal" style="width:100%;">  Añadir Mantenimiento  </button></div>
         </div>
         <div class="form-floating mb-3">
             <input type="text" class="form-control" id="filterInputMant" placeholder="Filtrar Mantenimientos">
@@ -215,14 +215,14 @@
                <thead class="thead-dark">
                   <tr>
                      <th data-field="Fecha" data-sortable="true" data-width="200">Fecha</th>
-                     <th data-field="Detalle" data-sortable="true">Detalle Revision</th>
+                     <th data-field="Detalle" data-sortable="true">Detalle Revisión</th>
                   </tr>
                </thead>
                <tbody id="mantenimiento_data">
                   {%if mantenimientos%}
                   {%for i in mantenimientos%}
                   <tr>
-                     <td>{{i.fecha_mantenimiento.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                     <td>{{i.fecha_mantenimiento | datetimefilter}}</td>
                      <td>{{i.detalles}}</td>
                   </tr>
                   {%endfor%}

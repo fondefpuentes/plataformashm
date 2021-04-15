@@ -5,48 +5,50 @@
 {% block customcss %}
     {{ super() }}
     <link href="{{ url_for('static', filename='css/profile.css') }}" rel="stylesheet">
-    <style>
-        h1{ 
-            text-align: center; 
-        }
-        .bg{ 
-            min-height:100%; display:flex;
-        }
-    </style>    
 {% endblock %}
 
 {% block content %}
-<div class="bg">
-    <div class="box">
-        <h3 class="title">Registrarse</h3>
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
+<div class="loginbox">
+    <div class="box d-flex justify-content-center h-100">
+      <div class="card">
+			  <div class="card-header">
+          <h3 class="title">Registrarse</h3>
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
             <div class="notification is-danger">
-                {{ messages[0] }}. Go to <a href="{{ url_for('views_api.login') }}">login page</a>.
+                {{ messages[0] }}. Dirigirse a <a href="{{ url_for('views_api.login') }}">Login</a>.
+            </div>  
+          {% endif %}
+          {% endwith %}
+        </div>
+			  <div class="card-body">
+          <form method="POST" action="/signup">
+            
+            <div class="row g-3">
+              <div class="col-md">
+              <div class="form-floating">
+                <input type="text" class="form-control form-control-lg" name="firstname" id="firstname" placeholder="Nombre" required>
+                <label for="firstname">Nombre</label>
+              </div>
+              </div>
+              <div class="col-md">
+              <div class="form-floating">
+                <input type="text" class="form-control form-control-lg" name="lastname"  id="lastname" placeholder="Apellido" required>
+                <label for="lastname">Apellido</label>
+              </div>
+              </div>
             </div>
-        {% endif %}
-        {% endwith %}
-        <form method="POST" action="/signup">
-            <div class="field">
-                <div class="control">
-                    <input class="input is-large" type="text" name="firstname" placeholder="Nombre" autofocus="">
-                </div>
+            
+            <div class="mt-2 form-floating">
+              <input type="email" class="form-control form-control-lg" id="mail" name="mail" placeholder="name@ejemplo.com" required>
+              <label for="mail">Correo</label>
             </div>
-            <div class="field">
-                <div class="control">
-                    <input class="input is-large" type="text" name="lastname" placeholder="Apellido">
-                </div>
+            
+            <div class="mt-2 form-floating">
+              <input type="password" class="form-control form-control-lg" id="mail" name="password" placeholder="Contraseña" required>
+              <label for="mail">Contraseña</label>
             </div>
-            <div class="field">
-                <div class="control">
-                    <input class="input is-large" type="text" name="mail" placeholder="Correo">
-                </div>
-            </div>
-            <div class="field">
-                <div class="control">
-                    <input class="input is-large" type="password" name="password" placeholder="Contraseña">
-                </div>
-            </div>
+            
             <!--div class="field">
                 <select class="custom-select" id="permisos" name="permisos">
                     <option value="" style="display:none;">Permisos</option>
@@ -56,14 +58,19 @@
                     <option value="Visita">Visita</option>
                   </select>
             </div-->
-            <button class="button is-block is-info is-large is-fullwidth">Registrarse</button>
-        </form>
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-2">Registrarse</button>
+          </form>
+       </div>
+       <div class="card-footer">
+				<div class="d-flex justify-content-center">
+					Si ya te encuentras registrado,&nbsp; <a href="/login"> Accede a la plataforma</a>
+				</div>
+			</div>
     </div>
 </div>
 {% endblock %}
 
 {% block customjs %}
-    {{ super() }}
     <script>
         $(function(){
             $(".dropdown-menu a").click(function(){

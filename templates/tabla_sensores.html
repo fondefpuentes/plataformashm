@@ -1,23 +1,23 @@
 <table class="table table-bordered border-1 sortable"
 id="table_sens"
 data-toggle="table"
-data-sortable="true"
 data-show-columns="true"
 data-locale="es-CL"
 data-pagination="true"
-data-page-size="10">
+data-page-size="10"
+data-resizable="true">
     <thead class="thead-dark">
         <tr>
-            <th data-sortable="true">Nombre</th>
-            <th data-sortable="true">Tipo</th>
-            <th data-sortable="true">Zona</th>
-            <th data-sortable="true">DAQ</th>
-            <th data-sortable="true">Estado Daño</th>
-            <th data-sortable="true">Fecha Estado Daño</th>
-            <th data-sortable="true">Operatividad(1)</th>
-            <th data-sortable="true">Confiabilidad(2)</th>
-            <th data-sortable="true">Mantenimiento(3)</th>
-            <th data-sortable="true">Fecha Estados(1,2,3)</th>
+            <th class="border border-left" data-sortable="true">Nombre</th>
+            <th class="border border-left" data-sortable="true">Tipo</th>
+            <th class="border border-left" data-field="Zona" data-sortable="true">Zona</th>
+            <th class="border border-left" data-field="DAQ" data-sortable="true">DAQ</th>
+            <th class="border border-left" data-sortable="true">Estado Daño</th>
+            <th class="border border-left" data-sortable="true">Fecha Estado Daño</th>
+            <th class="border border-left" data-sortable="true">Operatividad(1)</th>
+            <th class="border border-left" data-sortable="true">Confiabilidad(2)</th>
+            <th class="border border-left" data-sortable="true">Mantenimiento(3)</th>
+            <th class="border border-left" data-sortable="true">Fecha Estados(1,2,3)</th>
         </tr>
     </thead>
     <tbody id="sensor_data">
@@ -29,12 +29,12 @@ data-page-size="10">
             <td>{{ element.descripcion }}</td>
             <td><a href="{{url_for('views_api.detalle_daq',id_daq=element.id_daq)}}">{{ element.caracteristicas}}</td>
             <td>{{ element.estado}}</td>
-            <td>{{ element.diahora_calculo.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+            <td>{{ element.diahora_calculo | datetimefilter}}</td>
             {%if element.fecha123%}
             <td>{{element.operatividad}}</td>
             <td>{{element.confiabilidad}}</td>
             <td>{{element.mantenimiento}}</td>
-            <td>{{element.fecha123.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+            <td>{{element.fecha123 | datetimefilter}}</td>
             {%else%}
             <td>[POR DEFINIR]</td>
             <td>[POR DEFINIR]</td>

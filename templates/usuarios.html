@@ -6,11 +6,37 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container-fluid px-5 py-5">
-        <p class="h3 py-1">Gestión de usuarios</p>
-        <div class="py-3 ">
+<!--<div class="row px-1 ">
+<div class="text-light bg-dark">
+  <ul class="nav nav-pills py-2 flex-column">
+    <li class="nav-item border-bottom">
+      <a href="#" class="nav-link active">
+        <p><i class="bi bi-people-fill"></i> Usuarios</p>
+      </a>
+    </li>
+    <li class="nav-item border-bottom">
+      <a href="#" class="nav-link">
+        <p><i class="bi bi-people-fill"></i> Estructuras</p>
+      </a>
+    </li>
+    <li class="nav-item border-bottom">
+      <a href="#" class="nav-link">
+        <p><i class="bi bi-people-fill"></i> Elementos Estructurales</p>
+      </a>
+    </li>
+    <li class="nav-item border-bottom">
+      <a href="#" class="nav-link">
+        <p><i class="bi bi-people-fill"></i> Dispositivos</p>
+      </a>
+    </li>
+  </ul>
+</div>-->
+    <div class="continer-flux px-4 py-2">
+    
+        <p class="h1 py-1">Gestión de usuarios</p>
+        <div class="py-1 ">
             <table class="table table-bordered table-hover clickable-row">
-                <thead class="thead-dark">
+                <thead class="table-dark">
                     <tr>
                         <th>Nombre</th>
                         <th>Apellido</th>
@@ -29,7 +55,7 @@
                                 <form method="POST" action="{{url_for('views_api.cambiar_permisos')}}">
                                     <div class="row">
                                         <div class="col-6">
-                                            <select class="form-control" id="permisos" name="permisos">
+                                            <select class="form-select" id="permisos" name="permisos">
                                                 <option value="Administrador" {% if i.permisos == "Administrador" %}selected{% endif %}>Administrador</option>
                                                 <option value="Dueño" {% if i.permisos == "Dueño" %}selected{% endif %}>Dueño</option>
                                                 <option value="Analista" {% if i.permisos == "Analista" %}selected{% endif %}>Analista</option>
@@ -52,5 +78,6 @@
                 </tbody>
             </table>
         </div>
+    </div>
     </div>
 {% endblock %}
