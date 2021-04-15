@@ -48,7 +48,7 @@ def crear_tabla_sensor(id_sensor_instalado, nombre_nueva_tabla):
     new_table = db.session.execute('CREATE TABLE IF NOT EXISTS '+nombre_nueva_tabla+'(fecha timestamp, lectura double precision, PRIMARY KEY(fecha))')
     new_hypertable = db.session.execute('SELECT create_hypertable(\''+nombre_nueva_tabla+'\', \'fecha\')')
     db.session.commit()
-
+    
 #PERMISOS = TODOS
 #Redirige a la vista de Login (si no inicia sesión), o a la vista del mapa (profile.html, si inició sesión)
 @views_api.route('/')
@@ -81,6 +81,7 @@ def profile():
 @views_api.route('/acceso_restringido')
 def usuario_no_autorizado():
     return render_template('usuario_no_autorizado.html')
+
 
 #PERMISOS = Administrador
 #Crea el schema para el monitoreo de un puente, solo el admin. puede usarla
@@ -284,7 +285,8 @@ def informacion_estructura(id):
         'bim_estructura':bim_estructura,
         'sensores':sensores,
         'daqs' : daqs,
-        'estado': ultimo_estado
+        'estado': ultimo_estado,
+        'title' : "Perfil " + estructura.nombre.capitalize()
     }
     return render_template('tabla_estructura.html', **context)
 
@@ -331,7 +333,8 @@ def gestion_estado(id):
                 'nombre_y_tipo_activo' : obtener_nombre_y_activo(id),
                 'datos_puente' : estructura,
                 'esta_monitoreada':esta_monitoreada,
-                'historial': estados
+                'historial': estados,
+                'title' : "Gestión Estados " + estructura.nombre.capitalize()
             }
             return render_template('gestion_estado.html',**context)
         #En POST se envia lo ingresado via formulario, para guardar en la BD
@@ -457,7 +460,7 @@ def detalle_daq(id_daq):
         except:
           db.session.rollback()
           raise
-        #Finalmente, se redirige al listado de sensores disponibles
+        #Finalmente, se redirige al detalle del daq
         finally:
           return redirect(url_for('views_api.detalle_daq',id_daq=id_daq))
     else:
@@ -475,7 +478,7 @@ def mantenimiento_daq(id_daq):
     except:
       db.session.rollback()
       raise
-    #Finalmente, se redirige al listado de sensores disponibles
+    #Finalmente, se redirige al detalle del daq
     finally:
       return redirect(url_for('views_api.detalle_daq',id_daq=id_daq))
       
@@ -1250,6 +1253,11 @@ def show_3d_bim(id_puente):
         return redirect(url_for('static', filename='bim/'+str(id_puente)+'/index.html'))
         # return render_template('static/bim/'+str(idpuente)+'/index.html')
 
+@views_api.route('/bim/<int:id_puente>')
+def show_bim(id_puente):
+        return send_file('./static/bim/'+str(id_puente)+'/index.html')
+        # return render_template('static/bim/'+str(idpuente)+'/index.html')
+        
 @views_api.route('/static/images/<string:filename>')
 def show_image(filename):
     return send_file('./static/images/'+filename)
@@ -1478,6 +1486,12 @@ def tiempo_real(id):
     return render_template('tiemporeal.html', **context)
 
 
+####################### Inicio CRUD Estructura, Sensores y Usuarios ####################### 
+
+### USUARIOS ###
+
+#PERMISOS = ADMINISTRADOR
+#Ver Usuarios
 @views_api.route('/usuarios', methods=['GET'])
 @login_required
 def administrar_usuarios():
@@ -1503,6 +1517,8 @@ def reset_verified(token):
         return redirect(url_for('views_api.login'))
     return render_template('reset_verified.html')
 
+#PERMISOS = ADMINISTRADOR
+#Editar Usuario
 @views_api.route('/editar_permisos', methods=['POST'])
 def cambiar_permisos():
     if request.method == "POST":
@@ -1514,6 +1530,8 @@ def cambiar_permisos():
         else:
             return redirect(url_for('views_api.usuario_no_autorizado'))
 
+#PERMISOS = ADMINISTRADOR
+#Eliminar Usuario
 @views_api.route('/eliminar_usuario', methods=['POST'])
 def eliminar_usuario():
     if request.method == "POST":
@@ -1524,6 +1542,118 @@ def eliminar_usuario():
         else:
             return redirect(url_for('views_api.usuario_no_autorizado'))
 
+### ESTRUCTURAS ###
+
+#PERMISOS = ADMINISTRADOR
+#Crear Estructura
+@views_api.route('/gestion/estructura', methods=['GET'])
+@login_required
+def admin_panel():
+  if(current_user.permisos == "Administrador"):  
+    puentes = Estructura.query.all()
+    context = {'puentes': puentes}
+    return render_template('panel_gestion_estructura.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+#PERMISOS = ADMINISTRADOR
+#Crear Estructura
+@views_api.route('/gestion/estructura/create', methods=['POST'])
+@login_required
+def crear_estructura():
+  if(current_user.permisos == "Administrador"):
+    try:
+      nuevo_puente = Estructura(nombre=request.form.get("nombre"), 
+                                rol=request.form.get("rol"), 
+                                nombre_camino=request.form.get("nombre_camino"),
+                                cauce_queb = request.form.get("cauce_queb"),
+                                provincia = request.form.get("provincia"),
+                                tipo_activo = "puente",
+                                region = request.form.get("region"),
+                                coord_x = float(request.form.get("coord_x")),
+                                coord_y = float(request.form.get("coord_y")),
+                                largo = int(request.form.get("largo")),
+                                ancho_total = int(request.form.get("ancho_total")),
+                                mat_estrib = request.form.get("mat_estrib"),
+                                piso = request.form.get("piso"),
+                                mat_vigas = request.form.get("mat_vigas"),
+                                num_cepas = request.form.get("num_cepas"),
+                                mat_cepas = request.form.get("mat_cepas"))
+      db.session.add(nuevo_puente)
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.admin_panel'))
+      
+    flash("Puente " + request.form.get("nombre") +" registrado.", 'info')
+    return redirect(url_for('views_api.admin_panel'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+#PERMISOS = ADMINISTRADOR
+#Buscar Estructura AJAX
+@views_api.route('/gestion/estructura/retrieve/<int:id_estructura>', methods=['POST'])
+@login_required
+def buscar_estructura_ajax(id_estructura):
+  if request.method == "POST":
+    estructura = Estructura.query.filter_by(id=id_estructura).first()
+    context = {'estructura' : estructura}
+    return jsonify({'htmlresponse': render_template('editar_estructura.html',estructura=estructura)})
+
+#PERMISOS = ADMINISTRADOR
+#Editar Estructura
+@views_api.route('/gestion/estructura/update/<int:id_estructura>', methods=['POST'])
+@login_required
+def editar_estructura(id_estructura):
+  if(current_user.permisos == "Administrador"):
+    try:
+      puente = Estructura.query.filter_by(id=id_estructura).first()
+      puente.nombre = request.form.get("nombre")
+      puente.tipo_activo = request.form.get("tipo_activo")
+      puente.rol = request.form.get("rol")
+      puente.nombre_camino = request.form.get("nombre_camino")
+      puente.cauce_queb = request.form.get("cauce_queb")
+      puente.provincia = request.form.get("provincia")
+      puente.region = request.form.get("region")
+      puente.coord_x = request.form.get("coord_x")
+      puente.coord_y = request.form.get("coord_y")
+      puente.largo = request.form.get("largo")
+      puente.ancho = request.form.get("ancho_total")
+      puente.mat_estrib = request.form.get("mat_estrib")
+      puente.piso = request.form.get("piso")
+      puente.mat_vigas = request.form.get("mat_vigas")
+      puente.num_cepas = request.form.get("num_cepas")
+      puente.mat_cepas = request.form.get("mat_cepas")
+      db.session.add(puente)
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.admin_panel'))
+      
+    flash("Puente " + request.form.get("nombre") +" actualizado.", 'info')
+    return redirect(url_for('views_api.admin_panel'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+#PERMISOS = ADMINISTRADOR
+#Eliminar Estructura
+@views_api.route('/gestion/estructura/delete/<int:id_estructura>', methods=['POST'])
+@login_required
+def eliminar_estructura(id_estructura):
+  if(current_user.permisos == "Administrador"):
+    try:
+      puente = Estructura.query.filter_by(id=id_estructura).delete()
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.admin_panel'))
+      
+    flash("Puente " + request.form.get("nombre") +" eliminado del registro.", 'info')  
+    return redirect(url_for('views_api.admin_panel'))
+  
 ###################### INTEGRACIÓN ALMACENAMIENTO HISTÓRICO ########################
 @views_api.route('/hconsulta/<int:id>', methods=["POST","GET"])
 def hconsulta(id):
@@ -1808,7 +1938,12 @@ def mapa():
 @views_api.route("/datos_recientes")
 def datos_recientes():
     if current_user.is_authenticated:
-        return render_template('template_datos_recientes.html')
+        estructura = Estructura.query.filter_by(id=session['id_puente']).first()
+        context = {
+                'datos_puente':estructura,
+                'esta_monitoreada':estructura.en_monitoreo
+        }
+        return render_template('template_datos_recientes.html',**context)
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
 

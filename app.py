@@ -20,10 +20,14 @@ import plotly.graph_objects as go
 import collections
 import plotly.express as px
 import dash_bootstrap_components as dbc
-#import DatosRecientes.layout as DashLayout
-import time
+# import DatosRecientes.layout as DashLayout
+from time import time
 import atexit
 from apscheduler.schedulers.background import BackgroundScheduler
+import pytz
+from pytz import timezone
+import tzlocal 
+
 
 app = Flask(__name__, template_folder='templates', static_folder='static', static_url_path='')
 app.config.from_pyfile('config.py')
@@ -743,6 +747,15 @@ login_manager = LoginManager()
 login_manager.login_view = 'views_api.login'
 login_manager.init_app(app)
 
+def datetimefilter(value, format="%Y-%m-%d %H:%M:%S"):
+    tz = pytz.timezone('America/Santiago') # timezone you want to convert to from UTC
+    utc = pytz.timezone('UTC')  
+    value = utc.localize(value, is_dst=None).astimezone(pytz.utc)
+    local_dt = value.astimezone(tz)
+    return local_dt.strftime(format)
+
+app.jinja_env.filters['datetimefilter'] = datetimefilter
+
 @login_manager.user_loader
 def load_user(user_id):
     return Usuario.query.get(user_id)
@@ -752,7 +765,7 @@ def password_reset():
     if request.method == "GET":
         return render_template('password_reset.html')
     if request.method == "POST":
-        email = request.form.get('email')
+        email = request.form.get("email")
         user = Usuario.verify_email(email)
         if user:
             token = user.get_reset_token()
@@ -764,5 +777,9 @@ def password_reset():
             mail.send(msg)
         return redirect(url_for('views_api.login'))
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+    
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',debug=True, use_reloader=False)
+    app.run(host='0.0.0.0',debug=False, use_reloader=False)
