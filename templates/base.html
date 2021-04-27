@@ -19,14 +19,13 @@
 </head>       
 
 <body >	
-	<header>{% include 'navbar.html' %}</header>
+	<header>{% block sidebar%}{% include 'navbar.html' %}{% endblock %}</header>
 	{% block content %}
 	{% endblock %}
 </body>
 
 {% block jslibraries%}
 	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/moment.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}"></script>

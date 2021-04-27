@@ -1,21 +1,33 @@
-<div class="offcanvas offcanvas-start bg-dark" tabindex="-1" id="sidebar" aria-labelledby="sidebar">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="sidebar">Módulos de Gestión</h5>
-    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+<nav class="navbar navbar-expand d-flex flex-column p-3 align-item-start navbar-light bg-light active-nav shadow" id="sidebar">
+  <a class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none " href="{{ url_for('views_api.panel_administracion') }}" >
+    <img src="/static/images/logoSHMchile.png" class="me-2 img-thumbnail d-inline-block align-top" width="40" height="40">
+    <span class="fs-4 lead">Panel de Gestión</span>
+  </a>
+  <hr class="w-100">
+  <ul class="nav nav-tabs flex-column mb-auto w-100 border-0 fs-5 ">
+    <li class="nav-item my-2 rounded">
+      <a href="{{ url_for('views_api.administrar_usuarios') }}" class="nav-link text-dark shadow-sm"><i class="bi bi-people-fill me-3"></i>Usuarios</a>
+    </li>
+    <li class="nav-item my-2 rounded">
+      <a href="{{ url_for('views_api.administrar_estructura') }}" class="nav-link text-dark shadow-sm"><i class="bi bi-building me-3"></i>Estructuras</a>
+    </li>
+    <li class="nav-item my-2 rounded ">
+      <a href="{{ url_for('views_api.administrar_elementos') }}" class="nav-link text-dark shadow-sm"><i class="bi bi-bricks me-3"></i>Elementos Estructurales</a>
+    </li>
+    <li class="nav-item my-2 rounded">
+      <a href="{{ url_for('views_api.administrar_dispositivos') }}" class="nav-link text-dark shadow-sm"><i class="bi bi-cpu-fill me-3"></i>Dispositivos</a>
+    </li>
+  </ul>
+  <hr class="w-100">
+  <div class="dropup w-100">
+    <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+      <img src="/static/images/imagen_no_disponible.png" alt="mdo" class="rounded-circle me-2" width="42" height="42">
+      <strong >{{current_user.nombre}} {{current_user.apellido}}</strong>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-light text-small shadow w-100" aria-labelledby="dropdownUser1">
+      <li><a class="dropdown-item" href="{{ url_for('views_api.index') }}">Salir del Panel</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item" href="{{ url_for('views_api.logout') }}">Cerrar Sesión</a></li>
+    </ul>
   </div>
-  <div class="offcanvas-body">
-    <div>
-      Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
-    </div>
-    <div class="dropdown mt-3">
-      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
-        Dropdown button
-      </button>
-      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <li><a class="dropdown-item" href="#">Action</a></li>
-        <li><a class="dropdown-item" href="#">Another action</a></li>
-        <li><a class="dropdown-item" href="#">Something else here</a></li>
-      </ul>
-    </div>
-  </div>
-</div>
+</nav>

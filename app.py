@@ -11,17 +11,17 @@ import os
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import DatosRecientes.dataframe as datos
+#import DatosRecientes.dataframe as datos
 from dash.dependencies import Input, Output,State
 from datetime import datetime as dt
-from time import time
+import time
 import pandas as pd
 import plotly.graph_objects as go
 import collections
 import plotly.express as px
 import dash_bootstrap_components as dbc
 # import DatosRecientes.layout as DashLayout
-from time import time
+#from time import time
 import atexit
 from apscheduler.schedulers.background import BackgroundScheduler
 import pytz
@@ -40,9 +40,9 @@ app.config.update(
 )
 
 ### SCHEDULER ###
-
+'''
 def actualizar_estados():
-    print(time.strftime("%d. %B %Y %H:%M:%S"))
+    print(time.strftime("%d. %B %Y %H:%M:%S"), time.gmtime())
     with app.app_context():
         sensores_instalados = SensorInstalado.query.all()
         for sensor in sensores_instalados:
@@ -63,7 +63,7 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true': # Se ejecuta 
     scheduler.start()
     # Shut down the scheduler when exiting the app
     atexit.register(lambda: scheduler.shutdown())
-
+'''
 
 
 ### INTEGRACION DATOS RECIENTES ###
@@ -782,4 +782,4 @@ def page_not_found(e):
     return render_template('404.html'), 404
     
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',debug=False, use_reloader=False)
+    app.run(host='0.0.0.0',debug=True, use_reloader=False)

@@ -1,0 +1,71 @@
+<div class="card my-3">
+  <div class="card-header bg-warning"><h5 class="lead float-end"></h5>NOTA</div>
+    <ul class="list-group list-group-flush fs-6">
+      <li class="list-group-item">El símbolo <i class="bi bi-exclamation-triangle-fill text-danger"></i> indica discrepancia con lo registrado en Thingsboard. Actualice la información presionando ese símbolo.</li>
+      <li class="list-group-item">Si la tarjeta del dispositivo aparece en <em class="text-danger">Rojo</em>, el dispositivo no se encuentra registrado en Thingsboard.</li>
+    </ul>
+</div>
+
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="sensor-tab" data-bs-toggle="tab" data-bs-target="#sensores" type="button" role="tab" aria-controls="sensores" aria-selected="true">Sensores</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="daqs-tab" data-bs-toggle="tab" data-bs-target="#daqs" type="button" role="tab" aria-controls="daqs" aria-selected="false">DAQs</button>
+  </li>
+</ul>
+
+<div class="tab-content my-2" id="myTabContent">
+  <div class="tab-pane fade show active" id="sensores" role="tabpanel" aria-labelledby="sensor-tab">
+    <div class="row row-cols-1 row-cols-md-3 g-2">   
+    {%for sensor in sensores_puente%}
+      <div class="col">
+        <div class="card h-100 {%if not dict_uuid[sensor.uuid_device] and not dict_name[sensor.nombre_sensor] %}border-danger{%endif%}">
+          <div class="card-header"><span class="fs-6 badge bg-dark rounded-pill me-3">{{sensor.nombre_sensor}}</span>
+          {%if not dict_name[sensor.nombre_sensor]%}<i class="bi bi-exclamation-triangle-fill text-danger float-end"></i>
+          {%endif%}
+          <h5 class="lead float-end">{{sensor.nombre}}</h5>
+          </div>
+            <ul class="list-group list-group-flush fs-6">  
+              <li class="list-group-item">UUID: {{sensor.uuid_device}}{%if not dict_uuid[sensor.uuid_device]%}<form class="float-end" method="POST" action="{{url_for('views_api.editar_uuid_sensor',id_sensor=sensor.id,uuid = dict_name[sensor.nombre_sensor])}}"><button type="submit" class="btn btn-sm btn-outline-light mb-3"><i class="bi bi-exclamation-triangle-fill text-danger"></i></button></form>{%endif%}</li>
+              <li class="list-group-item">Frecuencia: {{sensor.frecuencia}}</li>
+              <li class="list-group-item">Zona: {{sensor.descripcion}}</li>
+              <li class="list-group-item">Fecha Instalacion: {{sensor.fecha_instalacion}}</li>
+            </ul>
+          <div class="card-body">
+            <div class="row">
+              <form class="d-grid gap-2 col" method="GET" action="{{url_for('views_api.detalle_sensor',id_sensor=sensor.id)}}"><button type="submit" class="btn btn-outline-primary mb-3">Ver Perfil</button></form>
+              <form class="d-grid gap-2 col" method="POST" action="#">
+                <button type="submit" class="btn btn-outline-success mb-3">Actualizar</button>
+              </form>
+              <form class="d-grid gap-2 col"><button type="submit" class="btn btn-outline-danger mb-3">Eliminar</button></form> 
+            </div>  
+          </div>
+        </div>
+      </div>
+    {%endfor%} 
+    </div>
+  </div>
+  <div class="tab-pane fade" id="daqs" role="tabpanel" aria-labelledby="daqs-tab">
+    <div class="row row-cols-1 row-cols-md-3 g-4">   
+    {%for daq in daqs_puente%}
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-header"><span class="fs-5 badge bg-dark rounded-pill me-3">{{daq.caracteristicas}}</span><h5 class="lead float-end">DAQ</h5></div>
+            <ul class="list-group list-group-flush fs-6">
+              <li class="list-group-item">Info 1: ...</li>
+              <li class="list-group-item">Info 2: ...</li>
+            </ul>
+          <div class="card-body">
+            <div class="row">
+              <form class="d-grid gap-2 col" method="GET" action="{{url_for('views_api.detalle_daq',id_daq=daq.id)}}"><button type="submit" class="btn btn-outline-primary mb-3">Ver Perfil</button></form>
+              <form class="d-grid gap-2 col"><button type="submit" class="btn btn-outline-success mb-3">Editar</button></form>
+              <form class="d-grid gap-2 col"><button type="submit" class="btn btn-outline-danger mb-3">Eliminar</button></form> 
+            </div>  
+          </div>
+        </div>
+      </div>
+    {%endfor%} 
+    </div>
+  </div>
+</div>

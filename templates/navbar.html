@@ -1,4 +1,4 @@
-<nav class="shadow-sm navbar navbar-expand navbar-light" style="background: linear-gradient(to right, rgba(255, 255, 255, 0.45), rgba(67,114,196,0.45));">
+<nav class="shadow-sm navbar navbar-expand navbar-light" style="background: linear-gradient(to right, rgba(255, 255, 255, 0.45), rgba(200,200,200,0.45));">
 	<a class="navbar-brand px-3" href="{{ url_for('views_api.index') }}" >
 		<img src="/static/images/logoSHMchile.png" class="img-thumbnail d-inline-block align-top" width="50" height="50">
 	</a>
@@ -19,7 +19,7 @@
 			
 			{% if current_user.permisos == "Administrador" %}
       <li class="nav-item px-1">
-        <a class="btn btn-outline-light text-dark btn-md" role="button" href="{{ url_for('views_api.administrar_usuarios') }}"><i class="bi bi-gear-wide-connected"></i> Panel de Administración</a>
+        <a class="btn btn-outline-light text-dark btn-md" role="button" href="{{ url_for('views_api.administrar_usuarios') }}"><i class="bi bi-gear-wide-connected"></i> Panel de Gestión</a>
       </li>
 			{% endif %}
       <li class="nav-item px-1"> 

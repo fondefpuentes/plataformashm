@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block customcss %}
+    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 
 <!-- Modal for flask msgs -->
@@ -49,7 +53,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div id="map" style="height:500px;"></div>
+        <div id="map" class="ratio ratio-21x9"></div>
       </div>
       <div class="modal-footer">
         <p class="text-muted fs-6">Para asignar las coordenadas, haga click en el lugar donde se encuentra la estructura a ingresar.</p>
@@ -59,136 +63,91 @@
   </div>
 </div>
 
+{% block sidebar%}
+{% endblock %}
 
-<div class="container-fluid px-4 py-2">
-   <h1 class="py-2">Panel de Administración :: Estructuras</h1>
-   <h4>
-   <span class="badge bg-light text-dark border">A</span> Crear Nueva Estructura
-   </h4>
-   <div class="accordion" id="form-accordion">
-      <div class="accordion-item">
-         <h2 class="accordion-header" id="headingOne">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#form-puente" aria-expanded="true" aria-controls="collapse-form">
-            Formulario Nueva Estructura
-            </button>
-         </h2>
-         <div id="form-puente" class="accordion-collapse collapse show fs-5" aria-labelledby="headingOne" data-bs-parent="#form-accordion">
-            <div class="accordion-body">
-               <form id="update_form" class="row py-3" method="POST" action="{{url_for('views_api.crear_estructura')}}">
-                  <div class="col-6">
-                     <h4 class="border-bottom border-2 py-2">Detalles de Estructura</h4>
-                     <div class="mb-1 row">
-                        <label for="nombre" class="col-sm-3 col-form-label col-form-label-md ">Nombre</label>
-                        <div class="col-sm-9">
-                           <input name="nombre" type="text" class="form-control col-sm-9" id="nombre" required/>
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="Rol" class="col-sm-3 col-form-label col-form-label-md ">Rol</label>
-                        <div class="col-sm-9">
-                           <input name="rol" type="text" class="form-control col-sm-9" id="Rol" required/>
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="Largo" class="col-sm-3 col-form-label col-form-label-md ">Largo</label>
-                        <div class="col-sm-9">
-                           <input name="largo" type="number" step="any" class="form-control col-sm-9" value=0 id="Largo" />
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="ancho_total" class="col-sm-3 col-form-label col-form-label-md ">Ancho Total</label>
-                        <div class="col-sm-9">
-                           <input name="ancho_total" type="number" step="any" class="form-control col-sm-9" value=0 id="ancho_total" />
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="mat_estrib" class="col-sm-3 col-form-label col-form-label-md ">Estribo</label>
-                        <div class="col-sm-9">
-                           <input name="mat_estrib" type="text" class="form-control col-sm-9" id="mat_estrib" />
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="piso" class="col-sm-3 col-form-label col-form-label-md ">Piso</label>
-                        <div class="col-sm-9">
-                           <input name="piso" type="text" class="form-control col-sm-9" id="piso" />
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="mat_vigas" class="col-sm-3 col-form-label col-form-label-md ">Vigas</label>
-                        <div class="col-sm-9">
-                           <input name="mat_vigas" type="text" class="form-control col-sm-9" id="mat_vigas" />
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <p class="col-sm-3 col-form-label col-form-label-md ">Cepas</p>
-                        <div class="col-sm-9 row">
-                           <label for="num_cepas" class="col-sm-3 col-form-label col-form-label-md " >Cantidad</label>
-                           <div class="col-sm-9">
-                              <input name="num_cepas" type="number" class="form-control col-sm-9" value=0  id="num_cepas" />
-                           </div>
-                           <label for="mat_cepas" class="col-sm-3 col-form-label col-form-label-md ">Material</label>
-                           <div class="col-sm-9">
-                              <input name="mat_cepas" type="text" class="form-control col-sm-9" id="mat_cepas" />
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-                  <div class="col-6">
-                     <h4 class="border-bottom border-2 py-2">Detalles de Ubicación</h4>
-                     <div class="mb-1 row">
-                        <label for="nombre_camino" class="col-sm-3 col-form-label col-form-label-md ">Camino</label>
-                        <div class="col-sm-9">
-                           <input name="nombre_camino" type="text" class="form-control col-sm-9" id="nombre_camino" />
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="cauce_queb" class="col-sm-3 col-form-label col-form-label-md ">Cauce de quebrada</label>
-                        <div class="col-sm-9">
-                           <input name="cauce_queb" type="text" class="form-control col-sm-9" id="cauce_queb" />
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="region" class="col-sm-3 col-form-label col-form-label-md ">Región</label>
-                        <div class="col-sm-9">
-                           <input name="region" type="text" class="form-control col-sm-9" id="region" required/>
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="provincia" class="col-sm-3 col-form-label col-form-label-md ">Provincia</label>
-                        <div class="col-sm-9">
-                           <input name="provincia" type="text" class="form-control col-sm-9" id="provincia" required/>
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="coord_x" class="col-sm-3 col-form-label col-form-label-md ">Latitud</label>
-                        <div class="col-sm-9">
-                           <input name="coord_x" type="number" step="any"  class="form-control col-sm-9" id="coord_x" readonly required/>
-                        </div>
-                     </div>
-                     <div class="mb-1 row">
-                        <label for="coord_y" class="col-sm-3 col-form-label col-form-label-md ">Longitud</label>
-                        <div class="col-sm-9">
-                           <input name="coord_y" type="number" step="any"  class="form-control col-sm-9" id="coord_y" readonly required/>
-                        </div>
-                     </div>
-                     <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#modal-map">
-                      Asignar Latitud y Longitud
-                     </button>
-                  </div>
-                  <div class="d-grid justify-content-md-end">
-                     <button id="create-btn" type="submit" class="btn btn-outline-success px-4" >Crear Estructura</button>
-                  </div>
-               </form>
-            </div>
-         </div>
-      </div>
+{% include 'sidebar.html'%}
+<section class="my-container active-cont px-3">
+   <div class="d-flex py-2">
+     <button type="button" class="btn btn-primary me-3" id="menu-btn"><i class="bi bi-layout-sidebar"></i></button>
+     <h1 >Gestión de Estructuras</h1>
    </div>
-   <h4 class="py-2 mt-4">
-   <span class="badge bg-light text-dark border">B</span> Modificar Estructura Existente
-   </h4>
-   <h5>Cantidad de registros: {{puentes|count}}</h5>
-   <div class="py-3">
-      <div class="input-group">
+   <div class="p-2 my-3 card">
+     <h4><span class="fs-6 badge bg-dark me-3">A</span> Crear Nueva Estructura</h4>
+     <form id="update_form" class="row py-3" method="POST" action="{{url_for('views_api.crear_estructura')}}">
+       <div class="col-6 ">
+         <h5 class="border-bottom border-2 py-2">Detalles de Estructura</h5>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Nombre</span>
+           <input name="nombre" type="text" class="form-control col-sm-8" id="nombre" placeholder="Bulnes ..." required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Rol</span>
+           <input name="rol" type="text" class="form-control col-sm-8" id="Rol" placeholder="O-20 ..." required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Largo</span>
+           <input name="largo" type="number" step="any" class="form-control col-sm-8" value=0 id="Largo" required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Ancho Total</span>
+           <input name="ancho_total" type="number" step="any" class="form-control col-sm-8" value=0 id="ancho_total" required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Estribo</span>
+           <input name="mat_estrib" type="text" class="form-control col-sm-8" id="mat_estrib" placeholder="Madera ..." required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Pisos</span>
+           <input name="piso" type="text" class="form-control col-sm-8" id="piso" placeholder="Madera ..." required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Material de Cepas</span>
+           <input name="mat_cepas" type="text" class="form-control col-sm-8" id="mat_cepas" placeholder="Madera ..." required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Cantidad de Cepas</span>
+           <input name="num_cepas" type="number" class="form-control col-sm-8" value=0  id="num_cepas" required/>
+         </div>
+       </div>
+       <div class="col-6 ">
+         <h5 class="border-bottom border-2 py-2">Detalles de Ubicación</h5>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Camino</span>
+           <input name="nombre_camino" type="text" class="form-control col-sm-9" id="nombre_camino" placeholder="Ruta ..." required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Cauce de quebrada</span>
+           <input name="cauce_queb" type="text" class="form-control col-sm-9" id="cauce_queb" placeholder="Quebrada ..." required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Región</span>
+           <input name="region" type="text" class="form-control col-sm-9" id="region" placeholder="Región del Bio Bio ..." required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Provincia</span>
+           <input name="provincia" type="text" class="form-control col-sm-9" id="provincia" placeholder="Provincia del Bio Bio..." required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Latitud</span>
+           <input name="coord_x" type="number" step="any"  class="form-control col-sm-9" id="coord_x" readonly required/>
+         </div>
+         <div class="input-group my-2 py-1">
+           <span class="input-group-text col-sm-4">Longitud</span>
+           <input name="coord_y" type="number" step="any"  class="form-control col-sm-9" id="coord_y" readonly required/>
+         </div>
+         <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#modal-map">Asignar Latitud y Longitud</button>
+       </div>
+       <div class="d-grid justify-content-md-end">
+         <button id="create-btn" type="submit" class="btn btn-outline-success px-4" >Crear Estructura</button>
+       </div>
+     </form>
+   </div>
+   <div class="p-2 my-3 card">
+     <h4><span class="fs-6 badge bg-dark me-3">B</span>Modificar Estructura Existente</h4>
+     <h5>Cantidad de registros: {{puentes|count}}</h5>
+     <div class="py-3">
+       <div class="input-group">
          <input id="select_puente" class="form-control" name="autocomplete" placeholder="Buscar estructura" required list="estructuras" aria-label="Seleccion Puente"/>
          <datalist id="estructuras">
             {% for i in puentes %}
@@ -201,7 +160,7 @@
       </div>
       <div class="py-3" id="result"></div>
    </div>
-</div>
+</section>
 
 
 {% endblock %}
@@ -275,6 +234,13 @@
         map.invalidateSize();
     }, 10);
     });
+    
+    $('#menu-btn').click(function(e)
+    {
+      $('#sidebar').toggleClass("active-nav");
+      $('#sidebar').toggleClass("position-fixed")
+      $('.my-container').toggleClass("active-cont");
+    }); 
     
   });
 </script>
