@@ -56,7 +56,7 @@ class ElementoEstructural(db.Model):
 class Estructura(db.Model):
     __tablename__ = 'estructuras'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre = db.Column(db.String(100))
     rol = db.Column(db.String(20))
     nombre_camino = db.Column(db.String(1000))
@@ -76,6 +76,9 @@ class Estructura(db.Model):
     dashboard = db.Column(db.String(500))
     ip_instancia = db.Column(db.String(100))
     en_monitoreo = db.Column(db.Boolean)
+    modelo_foto = db.Column(db.String(500))
+    modelo_degrada = db.Column(db.String(500))
+    
 
 class TipoSensor(db.Model):
     __tablename__ = 'tipos_de_sensor'

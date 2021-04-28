@@ -7,7 +7,7 @@
         <p class="card-text">Estado ...</p>
       </div>
       <div class="card-footer">
-        <small class="text-muted">Ultima Actualizacion: [dd/mm/aa hh:mm:ss]</small>
+        <small class="text-muted">Ultima Actualización: [dd/mm/aa hh:mm:ss]</small>
       </div>
       <a href="#" class="btn btn-outline-primary">Detalles</a>
     </div>
@@ -27,7 +27,7 @@
         </div>
       </div>
       <div class="card-footer">
-        <small class="text-muted">Ultima Actualizacion: {{estado.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</small>
+        <small class="text-muted">Ultima Actualización: {{estado.fecha_estado | datetimefilter}}</small>
       </div>
       <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
     </div>
@@ -46,7 +46,7 @@
         </div>
       </div>
       <div class="card-footer">
-        <small class="text-muted">Ultima Actualizacion: --/--/-- --:--:-- </small>
+        <small class="text-muted">Ultima Actualización: --/--/-- --:--:-- </small>
       </div>
       <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
     </div>

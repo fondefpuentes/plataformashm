@@ -48,7 +48,7 @@ def crear_tabla_sensor(id_sensor_instalado, nombre_nueva_tabla):
     new_table = db.session.execute('CREATE TABLE IF NOT EXISTS '+nombre_nueva_tabla+'(fecha timestamp, lectura double precision, PRIMARY KEY(fecha))')
     new_hypertable = db.session.execute('SELECT create_hypertable(\''+nombre_nueva_tabla+'\', \'fecha\')')
     db.session.commit()
-
+    
 #PERMISOS = TODOS
 #Redirige a la vista de Login (si no inicia sesión), o a la vista del mapa (profile.html, si inició sesión)
 @views_api.route('/')
@@ -81,6 +81,7 @@ def profile():
 @views_api.route('/acceso_restringido')
 def usuario_no_autorizado():
     return render_template('usuario_no_autorizado.html')
+
 
 #PERMISOS = Administrador
 #Crea el schema para el monitoreo de un puente, solo el admin. puede usarla
@@ -284,7 +285,8 @@ def informacion_estructura(id):
         'bim_estructura':bim_estructura,
         'sensores':sensores,
         'daqs' : daqs,
-        'estado': ultimo_estado
+        'estado': ultimo_estado,
+        'title' : "Perfil " + estructura.nombre.capitalize()
     }
     return render_template('tabla_estructura.html', **context)
 
@@ -331,7 +333,8 @@ def gestion_estado(id):
                 'nombre_y_tipo_activo' : obtener_nombre_y_activo(id),
                 'datos_puente' : estructura,
                 'esta_monitoreada':esta_monitoreada,
-                'historial': estados
+                'historial': estados,
+                'title' : "Gestión Estados " + estructura.nombre.capitalize()
             }
             return render_template('gestion_estado.html',**context)
         #En POST se envia lo ingresado via formulario, para guardar en la BD
@@ -371,8 +374,6 @@ def detalle_sensor(id_sensor):
             mantenimientos = Mantenimiento.query.filter_by(id_sensor_instalado=id_sensor).order_by(Mantenimiento.fecha_mantenimiento.desc()).all()
             #Se guarda momentaneamente el id del puente en la sesión actual
             context = {
-                'id_puente' : estructura.id,
-                'nombre_y_tipo_activo' : obtener_nombre_y_activo(session['id_puente']),
                 'datos_puente' : estructura,
                 'esta_monitoreada':esta_monitoreada,
                 'sensor' : info_sensor,
@@ -457,7 +458,7 @@ def detalle_daq(id_daq):
         except:
           db.session.rollback()
           raise
-        #Finalmente, se redirige al listado de sensores disponibles
+        #Finalmente, se redirige al detalle del daq
         finally:
           return redirect(url_for('views_api.detalle_daq',id_daq=id_daq))
     else:
@@ -475,7 +476,7 @@ def mantenimiento_daq(id_daq):
     except:
       db.session.rollback()
       raise
-    #Finalmente, se redirige al listado de sensores disponibles
+    #Finalmente, se redirige al detalle del daq
     finally:
       return redirect(url_for('views_api.detalle_daq',id_daq=id_daq))
       
@@ -1250,6 +1251,11 @@ def show_3d_bim(id_puente):
         return redirect(url_for('static', filename='bim/'+str(id_puente)+'/index.html'))
         # return render_template('static/bim/'+str(idpuente)+'/index.html')
 
+@views_api.route('/bim/<int:id_puente>')
+def show_bim(id_puente):
+        return send_file('./static/bim/'+str(id_puente)+'/index.html')
+        # return render_template('static/bim/'+str(idpuente)+'/index.html')
+        
 @views_api.route('/static/images/<string:filename>')
 def show_image(filename):
     return send_file('./static/images/'+filename)
@@ -1432,6 +1438,27 @@ def actualizar_si(id_si):
   else:
     return make_response(jsonify({"message": "No es un JSON valido"}), 400)
 
+@views_api.route('/actualizar_hallazgo/<int:id_hallazgo>', methods=["POST"])
+def actualizar_hallazgo(id_hallazgo):
+  if request.is_json:
+    req = request.get_json()
+    hallazgo_a_actualizar = HallazgoVisual.query.filter_by(id = id_hallazgo).first()
+    try:
+      hallazgo_a_actualizar.coord_x = req.get("x")
+      hallazgo_a_actualizar.coord_y = req.get("y")
+      hallazgo_a_actualizar.coord_z = req.get("z")
+      db.session.add(hallazgo_a_actualizar)
+      db.session.commit()
+      response_body = {
+      "message": "Aceptado" 
+      }
+      res = make_response(jsonify(response_body), 200)
+      return res
+    except:
+      db.session.rollback()
+      return make_response(jsonify({"message": "Error al Actualizar"}), 400)
+  else:
+    return make_response(jsonify({"message": "No es un JSON valido"}), 400)
 ####################### INTEGRACIÓN CON THINGSBOARD #########################
 @views_api.route('/tiemporeal/<int:id>')
 def tiempo_real(id):
@@ -1457,6 +1484,23 @@ def tiempo_real(id):
     return render_template('tiemporeal.html', **context)
 
 
+####################### Inicio CRUD Estructura, Sensores y Usuarios ####################### 
+
+### VISTA PRINCIPAL ###
+#PERMISOS = ADMINISTRADOR
+#Ver Panel
+@views_api.route('/gestion', methods=['GET'])
+@login_required
+def panel_administracion():
+    if(current_user.permisos == "Administrador"):
+        return render_template('panel_gestion.html')
+    else:
+        return redirect(url_for('views_api.usuario_no_autorizado'))
+
+### USUARIOS ###
+
+#PERMISOS = ADMINISTRADOR
+#Ver Usuarios
 @views_api.route('/usuarios', methods=['GET'])
 @login_required
 def administrar_usuarios():
@@ -1482,6 +1526,8 @@ def reset_verified(token):
         return redirect(url_for('views_api.login'))
     return render_template('reset_verified.html')
 
+#PERMISOS = ADMINISTRADOR
+#Editar Usuario
 @views_api.route('/editar_permisos', methods=['POST'])
 def cambiar_permisos():
     if request.method == "POST":
@@ -1493,6 +1539,8 @@ def cambiar_permisos():
         else:
             return redirect(url_for('views_api.usuario_no_autorizado'))
 
+#PERMISOS = ADMINISTRADOR
+#Eliminar Usuario
 @views_api.route('/eliminar_usuario', methods=['POST'])
 def eliminar_usuario():
     if request.method == "POST":
@@ -1503,6 +1551,445 @@ def eliminar_usuario():
         else:
             return redirect(url_for('views_api.usuario_no_autorizado'))
 
+### ESTRUCTURAS ###
+
+#PERMISOS = ADMINISTRADOR
+#Cargar Estructuras
+@views_api.route('/gestion/estructura', methods=['GET'])
+@login_required
+def administrar_estructura():
+  if(current_user.permisos == "Administrador"):  
+    puentes = Estructura.query.all()
+    context = {'puentes': puentes}
+    return render_template('panel_gestion_estructura.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+#PERMISOS = ADMINISTRADOR
+#Crear Estructura
+@views_api.route('/gestion/estructura/create', methods=['POST'])
+@login_required
+def crear_estructura():
+  if(current_user.permisos == "Administrador"):
+    try:
+      nuevo_puente = Estructura(nombre=request.form.get("nombre"), 
+                                rol=request.form.get("rol"), 
+                                nombre_camino=request.form.get("nombre_camino"),
+                                cauce_queb = request.form.get("cauce_queb"),
+                                provincia = request.form.get("provincia"),
+                                tipo_activo = "puente",
+                                region = request.form.get("region"),
+                                coord_x = request.form.get("coord_x"),
+                                coord_y = request.form.get("coord_y"),
+                                largo = request.form.get("largo"),
+                                ancho_total = request.form.get("ancho_total"),
+                                mat_estrib = request.form.get("mat_estrib"),
+                                piso = request.form.get("piso"),
+                                mat_vigas = request.form.get("mat_vigas"),
+                                num_cepas = request.form.get("num_cepas"),
+                                mat_cepas = request.form.get("mat_cepas"))
+      db.session.add(nuevo_puente)
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_estructura'))
+      
+    flash("Puente " + request.form.get("nombre") +" registrado.", 'info')
+    return redirect(url_for('views_api.administrar_estructura'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+#PERMISOS = ADMINISTRADOR
+#Buscar Estructura AJAX
+@views_api.route('/gestion/estructura/retrieve/<int:id_estructura>', methods=['POST'])
+@login_required
+def buscar_estructura_ajax(id_estructura):
+  if request.method == "POST":
+    estructura = Estructura.query.filter_by(id=id_estructura).first()
+    context = {'estructura' : estructura}
+    return jsonify({'htmlresponse': render_template('editar_estructura.html',estructura=estructura)})
+
+#PERMISOS = ADMINISTRADOR
+#Editar Estructura
+@views_api.route('/gestion/estructura/update/<int:id_estructura>', methods=['POST'])
+@login_required
+def editar_estructura(id_estructura):
+  if(current_user.permisos == "Administrador"):
+    try:
+      estructura = Estructura.query.filter_by(id=id_estructura).first()
+      estructura.nombre=request.form.get("nombre")
+      estructura.nombre_camino=request.form.get("nombre_camino")
+      estructura.cauce_queb = request.form.get("cauce_queb")
+      estructura.provincia = request.form.get("provincia")
+      estructura.region = request.form.get("region")
+      estructura.coord_x = request.form.get("coord_x")
+      estructura.coord_y = request.form.get("coord_y")
+      estructura.largo = request.form.get("largo")
+      estructura.ancho_total = request.form.get("ancho_total")
+      estructura.mat_estrib = request.form.get("mat_estrib")
+      estructura.piso = request.form.get("piso")
+      estructura.mat_vigas = request.form.get("mat_vigas")
+      estructura.num_cepas = request.form.get("num_cepas")
+      estructura.mat_cepas = request.form.get("mat_cepas")
+      db.session.add(estructura)
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_estructura'))
+            
+    flash("Puente " + estructura.nombre + " Actualizado.", 'info')
+    return redirect(url_for('views_api.administrar_estructura'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+#PERMISOS = ADMINISTRADOR
+#Eliminar Estructura
+@views_api.route('/gestion/estructura/delete/<int:id_estructura>', methods=['POST'])
+@login_required
+def eliminar_estructura(id_estructura):
+  if(current_user.permisos == "Administrador"):
+    try:
+      estructura = Estructura.query.filter_by(id=id_estructura).delete()
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_estructura'))
+      
+    flash("Puente" + estructura.nombre + " eliminado del registro.", 'info')  
+    return redirect(url_for('views_api.administrar_estructura'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+### ELEMENTOS ESTRUCTURALES ###
+
+#PERMISOS = ADMINISTRADOR
+#Cargar de estructuras a filtar y Tipos de Elementos Estructurales
+@views_api.route('/gestion/elementos', methods=['GET'])
+@login_required
+def administrar_elementos():
+  if(current_user.permisos == "Administrador"):  
+    puentes = Estructura.query.all()
+    tipos = TipoElemento.query.all()
+    context = {'puentes': puentes,
+               'tipos_elem': tipos}
+    return render_template('panel_gestion_elementos.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+#PERMISOS = ADMINISTRADOR
+#Crear Tipo Elemento
+@views_api.route('/gestion/elementos/create_tipo', methods=['POST'])
+@login_required
+def crear_tipo_elemento():
+  if(current_user.permisos == "Administrador"):
+    try:
+      nuevo_tipo = TipoElemento(nombre_zona=request.form.get("nombre_zona"))                           
+      db.session.add(nuevo_tipo)
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_elementos'))
+      
+    flash("Tipo de Elemento <" + nuevo_tipo.nombre_zona +"> registrado.", 'info')
+    return redirect(url_for('views_api.administrar_elementos'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+        
+#PERMISOS = ADMINISTRADOR
+#Crear Elemento
+@views_api.route('/gestion/elementos/create', methods=['POST'])
+@login_required
+def crear_elemento():
+  if(current_user.permisos == "Administrador"):
+    try:
+      nuevo_elemento = ElementoEstructural(id_estructura=request.form.get("id_estructura"), 
+                                tipo_zona=request.form.get("tipo_zona"), 
+                                material=request.form.get("material"),
+                                descripcion = request.form.get("descripcion"))                           
+      db.session.add(nuevo_elemento)
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_elementos'))
+      
+    flash("Elemento Estructural <" + nuevo_elemento.descripcion +"> registrado.", 'info')
+    return redirect(url_for('views_api.administrar_elementos'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+#PERMISOS = ADMINISTRADOR
+#Buscar Elementos AJAX
+@views_api.route('/gestion/elementos/retrieve/<int:id_estructura>', methods=['POST'])
+@login_required
+def buscar_elementos_ajax(id_estructura):
+  if request.method == "POST":
+    elementstruct = ElementoEstructural.query.filter_by(id_estructura=id_estructura).all()
+    tipos = TipoElemento.query.all()
+    context = {'elementos' : elementstruct,
+               'tipos': tipos}
+    return jsonify({'htmlresponse': render_template('elementos_de_estructura.html',**context)})
+
+#PERMISOS = ADMINISTRADOR
+#Editar Elemento
+@views_api.route('/gestion/elementos/update/<int:id_elemento>', methods=['POST'])
+@login_required
+def editar_elemento(id_elemento):
+  if(current_user.permisos == "Administrador"):
+    try:
+      elemento = ElementoEstructural.query.filter_by(id=id_elemento).first()
+      elemento.tipo_zona=request.form.get("tipo_zona"), 
+      elemento.material=request.form.get("material"),
+      elemento.descripcion = request.form.get("descripcion")
+      db.session.add(elemento)
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_elementos'))
+            
+    flash("Elemento Estructural Eliminado.", 'info')
+    return redirect(url_for('views_api.administrar_elementos'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+#PERMISOS = ADMINISTRADOR
+#Eliminar Elemento
+@views_api.route('/gestion/elementos/delete/<int:id_elemento>', methods=['POST'])
+@login_required
+def eliminar_elemento(id_elemento):
+  if(current_user.permisos == "Administrador"):
+    try:
+      elemento = ElementoEstructural.query.filter_by(id=id_elemento).delete()
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_elementos'))
+      
+    flash("Elemento Estructural <" + elemento.descripcion + "> eliminado del registro.", 'info')  
+    return redirect(url_for('views_api.administrar_elementos'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+### DISPOSITIVOS ###
+
+#PERMISOS = ADMINISTRADOR
+#Cargar Dispositivos
+@views_api.route('/gestion/dispositivos', methods=['GET'])
+@login_required
+def administrar_dispositivos():
+  if(current_user.permisos == "Administrador"):  
+    puentes = Estructura.query.filter_by(en_monitoreo = True).all()
+    context = {'puentes': puentes}
+    return render_template('panel_gestion_dispositivos.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+#PERMISOS = ADMINISTRADOR
+#Crear Dispositivo
+@views_api.route('/gestion/dispositivos/create', methods=['POST'])
+@login_required
+def crear_dispositivos():
+  if(current_user.permisos == "Administrador"):
+    try:
+      nuevo_puente = Estructura(nombre=request.form.get("nombre"), 
+                                rol=request.form.get("rol"), 
+                                nombre_camino=request.form.get("nombre_camino"),
+                                cauce_queb = request.form.get("cauce_queb"),
+                                provincia = request.form.get("provincia"),
+                                tipo_activo = "puente",
+                                region = request.form.get("region"),
+                                coord_x = request.form.get("coord_x"),
+                                coord_y = request.form.get("coord_y"),
+                                largo = request.form.get("largo"),
+                                ancho_total = request.form.get("ancho_total"),
+                                mat_estrib = request.form.get("mat_estrib"),
+                                piso = request.form.get("piso"),
+                                mat_vigas = request.form.get("mat_vigas"),
+                                num_cepas = request.form.get("num_cepas"),
+                                mat_cepas = request.form.get("mat_cepas"))
+      db.session.add(nuevo_puente)
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_dispositivos'))
+      
+    flash("Puente " + request.form.get("nombre") +" registrado.", 'info')
+    return redirect(url_for('views_api.administrar_dispositivos'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+#PERMISOS = ADMINISTRADOR
+#Buscar Dispositivos de Estructura AJAX
+@views_api.route('/gestion/dispositivos/retrieve/<int:id_estructura>', methods=['POST'])
+@login_required
+def buscar_dispositivos_ajax(id_estructura):
+  if(current_user.permisos == "Administrador"):
+    if request.method == "POST":
+      
+      sensores_actuales = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, Sensor.uuid_device, DescripcionSensor.descripcion.label("nombre_sensor"), DAQPorZona.id_daq).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id_estructura, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DAQPorZona.id_daq, ).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc()).all()
+      
+      daq_actuales = db.session.query(DAQ.id, DAQ.nro_canales, DescripcionDAQ.caracteristicas, EstadoDAQ.detalles, EstadoDAQ.fecha_estado).filter(EstadoDAQ.id_daq == DAQ.id, DescripcionDAQ.id_daq == DAQ.id, DAQPorZona.id_daq == DAQ.id, ElementoEstructural.id == DAQPorZona.id_zona, DAQPorZona.id_estructura == id_estructura).distinct(DAQ.id).order_by(DAQ.id.asc(), EstadoDAQ.fecha_estado.desc()).all()
+      
+      ip_instancia = Estructura.query.filter_by(id=id_estructura).first().ip_instancia
+      
+      if ip_instancia != None:
+        #obtencion API KEY de TB    
+        api_key_url = requests.post(ip_instancia + '/api/auth/login',data='{"username":"tenant@thingsboard.org", "password":"tenant"}', headers={'Content-Type': 'application/json','Accept': 'application/json'})
+        json_response = api_key_url.json()
+        
+        #Generacion de API_KEY para autentificacion en Swagger
+        x_auth = 'Bearer ' + json_response['token']
+        
+        #Peticion a Swagger de DEVICES
+        response = requests.get( ip_instancia + '/api/tenant/deviceInfos?pageSize=20&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth},)
+        json_devices = response.json()
+        
+        dict_uuid={}
+        dict_name={}
+        for device in json_devices['data']:
+          dict_uuid[device['id']['id']] = device['name']
+          dict_name[device['name']] = device['id']['id']
+          
+        context = {
+        'dict_uuid': dict_uuid,
+        'dict_name': dict_name,
+        'sensores_puente' : sensores_actuales,
+        'daqs_puente' : daq_actuales  
+        }
+      
+      else:
+        context = {
+        'sensores_puente' : sensores_actuales,
+        'daqs_puente' : daq_actuales
+        } 
+      return jsonify({'htmlresponse': render_template('dispositivos_de_estructura.html',**context,id_estructura = id_estructura)})
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+#PERMISOS = ADMINISTRADOR
+#Editar Dispositivo
+@views_api.route('/gestion/dispositivos/update_uuid/<int:id_sensor><string:uuid>', methods=['POST'])
+@login_required
+def editar_uuid_sensor(id_sensor, uuid):
+  if(current_user.permisos == "Administrador"):
+    try:
+      sensor = Sensor.query.filter_by(id=id_sensor).first()
+      sensor.uuid_device = uuid
+      db.session.add(sensor)
+      db.session.commit()
+      
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_dispositivos'))
+            
+    flash("UUID actualizado.", 'info')
+    return redirect(url_for('views_api.administrar_dispositivos'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+#PERMISOS = ADMINISTRADOR
+#Editar Dispositivo
+@views_api.route('/gestion/dispositivos/solucionar_discrepancias/<int:id_estructura>', methods=['POST'])
+@login_required
+def solucionar_discrepancias_uuid(id_estructura):
+  
+  uuid_adjust = 0
+  name_adjust = 0  
+
+  if(current_user.permisos == "Administrador"):
+    
+    ip_instancia = Estructura.query.filter_by(id=id_estructura).first().ip_instancia
+      
+    if ip_instancia != None:
+        #obtencion API KEY de TB    
+        api_key_url = requests.post(ip_instancia + '/api/auth/login',data='{"username":"tenant@thingsboard.org", "password":"tenant"}', headers={'Content-Type': 'application/json','Accept': 'application/json'})
+        json_response = api_key_url.json()
+        
+        #Generacion de API_KEY para autentificacion en Swagger
+        x_auth = 'Bearer ' + json_response['token']
+        
+        #Peticion a Swagger de DEVICES
+        response = requests.get( ip_instancia + '/api/tenant/deviceInfos?pageSize=20&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth},)
+        json_devices = response.json()
+        
+        dict_uuid={}
+        dict_name={}
+        for device in json_devices['data']:
+          dict_uuid[device['id']['id']] = device['name']
+          dict_name[device['name']] = device['id']['id']          
+        
+        
+        try:
+          sensores_actuales = SensorInstalado.query.filter_by(id_estructura = id_estructura).all()
+          for element in sensores_actuales:
+            sensor = Sensor.query.filter_by(id=element.id_sensor).first()
+            nombre = DescripcionSensor.query.filter_by(id_sensor_instalado=element.id).first()
+            if not sensor.uuid_device in dict_uuid.keys():
+              sensor.uuid_device = dict_name[nombre.descripcion]
+              db.session.add(sensor)
+              uuid_adjust += 1
+            if not nombre.descripcion in dict_name.keys():
+              nombre.descripcion = dict_uuid[sensor.uuid_device]
+              name_adjust += 1
+          
+          db.session.commit()
+          
+        except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+          db.session.rollback()
+          flash(str(error.orig) + " for parameters" + str(error.params),'error')
+          return redirect(url_for('views_api.administrar_dispositivos'))
+            
+        flash("Se detectaron y corrigieron " + str(uuid_adjust) + " discrepancias de UUID y " + str(name_adjust) + " discrepancias de nombre.", 'info')
+        return redirect(url_for('views_api.administrar_dispositivos'))
+      
+    return redirect(url_for('views_api.administrar_dispositivos'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+#PERMISOS = ADMINISTRADOR
+#Editar Dispositivo
+@views_api.route('/gestion/dispositivos/update/<int:id_device>', methods=['POST'])
+@login_required
+def editar_dispositivo(id_device):
+  if(current_user.permisos == "Administrador"):
+    try:
+      sensor = SensorInstalado.query.filter_by(id=id_device).first()
+      
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_dispositivos'))
+            
+    flash("Sensor actualizado.", 'info')
+    return redirect(url_for('views_api.administrar_dispositivos'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+#PERMISOS = ADMINISTRADOR
+#Eliminar Dispositivo
+@views_api.route('/gestion/dispositivos/delete/<int:id_device>', methods=['POST'])
+@login_required
+def eliminar_dispositivo(id_device):
+  if(current_user.permisos == "Administrador"):
+    try:
+      sensor = SensorInstalado.query.filter_by(id=id_device).delete()
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_dispositivos'))
+      
+    flash("Sensor eliminado del registro.", 'info')  
+    return redirect(url_for('views_api.administrar_dispositivos'))
+  
 ###################### INTEGRACIÓN ALMACENAMIENTO HISTÓRICO ########################
 @views_api.route('/hconsulta/<int:id>', methods=["POST","GET"])
 def hconsulta(id):
@@ -1660,7 +2147,7 @@ def hdescarga(id):
         return redirect(url_for('views_api.informacion_estructura',id = id))
 
     info_sensores, info_ejes = swagger.get_sensor_axis(ip_instance)
-
+    
     info_consultas = aws_functions.get_consultas(params)
 
     for i in info_sensores:
@@ -1787,7 +2274,12 @@ def mapa():
 @views_api.route("/datos_recientes")
 def datos_recientes():
     if current_user.is_authenticated:
-        return render_template('template_datos_recientes.html')
+        estructura = Estructura.query.filter_by(id=session['id_puente']).first()
+        context = {
+                'datos_puente':estructura,
+                'esta_monitoreada':estructura.en_monitoreo
+        }
+        return render_template('template_datos_recientes.html',**context)
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
 
@@ -1826,3 +2318,50 @@ def mi_cuenta():
         return render_template('mi_cuenta.html', **context)
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
+
+@views_api.route("/deteccion_temprana/<int:id_puente>", methods= ['GET', 'POST'])
+@login_required
+def deteccion_temprana(id_puente):
+    if current_user.is_authenticated:
+        if(request.method == "GET"):
+            estructura = Estructura.query.filter_by(id=id_puente).first()
+            sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo, DescripcionSensor.descripcion.label("nombre_sensor"),EstadoSensor.fecha_estado.label("fecha123"),EstadoSensor.confiabilidad, EstadoSensor.operatividad, EstadoSensor.mantenimiento,DescripcionDAQ.caracteristicas, DAQPorZona.id_daq, EstadoDanoSensor.estado.label("estado_dano_sensor"), EstadoDanoSensor.diahora_calculo.label("fecha_dano_sensor")).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, EstadoSensor.id_sensor_instalado == SensorInstalado.id,SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DAQPorZona.id_daq, DescripcionDAQ.id_daq == DAQPorZona.id_daq, EstadoDanoSensor.id_sensor_instalado == SensorInstalado.id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc(),EstadoSensor.fecha_estado.desc()).all()
+            anomalias = db.session.query(DescripcionSensor.descripcion.label("nombre_sensor"), SensorInstalado.id.label("si"), AnomaliaPorHora.hora_calculo, AnomaliaPorHora.anomalia).filter(SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, AnomaliaPorHora.id_sensor_instalado == SensorInstalado.id_sensor, DescripcionSensor.id_sensor_instalado == SensorInstalado.id,).order_by(AnomaliaPorHora.hora_calculo.desc()).all() 
+            esta_monitoreada = estructura.en_monitoreo
+            #Se guarda momentaneamente el id del puente en la sesión actual
+            session['id_puente'] = id_puente
+            # estados = EstadoEstructura.query.filter_by(id_estructura=id_puente).order_by(EstadoEstructura.fecha_estado.desc()).all()
+            context = {
+                'id_puente' : id_puente,
+                'nombre_y_tipo_activo' : obtener_nombre_y_activo(id_puente),
+                'datos_puente' : estructura,
+                'esta_monitoreada':esta_monitoreada,
+                'sensores': sensores,
+                'anomalias_sensores': anomalias,
+            }
+            return render_template('deteccion_temprana.html',**context)
+        elif(request.method == "POST"):
+            print("Reiniciando Anomalias")
+            try:
+                num_rows_deleted = db.session.query(AnomaliaPorHora).delete()
+                db.session.commit()
+                print("Filas Eliminadas = " + str(num_rows_deleted))
+                sensores_de_puente = db.session.query(SensorInstalado.id.label("si")).filter(SensorInstalado.id_estructura == id_puente).order_by(SensorInstalado.id.desc())
+                for sensor in sensores_de_puente:
+                    anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = False)
+                    db.session.add(anomalia)
+                db.session.commit()
+            except:
+                db.session.rollback()
+            return redirect(url_for('views_api.deteccion_temprana',id_puente=session['id_puente']))
+    else:
+        return redirect(url_for('views_api.usuario_no_autorizado'))
+
+@views_api.route("/agregar_anomalia/<int:id_puente>/<int:id_sensor>")
+def agregar_anomalia(id_puente,id_sensor):
+    anomalia = AnomaliaPorHora(id_sensor_instalado = id_sensor, hora_calculo = datetime.now(), anomalia = True)
+    db.session.add(anomalia)
+    db.session.commit()
+    print("Se agrega anomalia al sensor " + str(id_sensor))
+    return redirect(url_for('views_api.deteccion_temprana', id_puente=session['id_puente']))
+

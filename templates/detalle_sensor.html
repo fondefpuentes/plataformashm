@@ -5,8 +5,9 @@
 <link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
 {% endblock %}
 {% block content %}
-   <div class="container-fluid px-5 py-2">
-      <div class="row">{% include 'breadcrumb.html' %}</div>
+{% include 'breadcrumb.html' %}
+   <div class="container-fluid px-4 py-2">
+      
       <h1 class="title text-capitalize">
          {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }} :: Detalle Sensor - {{sensor.nombre_sensor}} 
       </h1>
@@ -21,7 +22,7 @@
                      <li class="list-group-item"><b>Marca: </b>[Sin Especificar] </li>
                      <li class="list-group-item"><b>Modelo: </b>[Sin Especificar]</li>
                      <li class="list-group-item"><b>UUID: </b> {{sensor.uuid_device}}</li>
-                     <li class="list-group-item mt-4"><b>Fecha Instalacion: </b>{{sensor.fecha_instalacion.strftime('%Y-%m-%d %H:%M:%S')}} </li>
+                     <li class="list-group-item mt-4"><b>Fecha Instalacion: </b>{{sensor.fecha_instalacion | datetimefilter}} </li>
                      <li class="list-group-item"><b>Frecuencia: </b>{{sensor.frecuencia}}</li>
                      <li class="list-group-item"><b>Zona: </b>{{sensor.descripcion}}</li>
                      <li class="list-group-item mt-4"><b>DAQ: </b><a href="{{url_for('views_api.detalle_daq',id_daq=sensor.id_daq)}}">{{sensor.caracteristicas}}</a>, Canal {{sensor.numero_canal}}</li>
@@ -38,7 +39,7 @@
                         <p class="card-text">{{estado_dano.estado}}</p>
                      </div>
                      <div class="card-footer">
-                        <small class="text-muted">Ultima Actualizacion: {{estado_dano.diahora_calculo.strftime('%Y-%m-%d %H:%M:%S')}}</small>
+                        <small class="text-muted">Ultima Actualización: {{estado_dano.diahora_calculo | datetimefilter}}</small>
                      </div>
                   </div>
                </div>
@@ -51,7 +52,7 @@
                         <p><b>Mantenimiento: </b>{%if estados_sensor%}{{estados_sensor[0].mantenimiento}}{%else%}--Sin Registro--{%endif%}</p>
                      </div>
                      <div class="card-footer">
-                        <small class="text-muted">Ultima Actualizacion: {%if estados_sensor%}{{estados_sensor[0].fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}{%else%}--Sin Registro--{%endif%}</small>
+                        <small class="text-muted">Ultima Actualización: {%if estados_sensor%}{{estados_sensor[0].fecha_estado | datetimefilter}}{%else%}--Sin Registro--{%endif%}</small>
                      </div>
                   </div>
                </div>
@@ -87,8 +88,8 @@
                <div class="row row-cols-6 py-1">
                  <p class="col-2"><b>Mantenimiento:</b></p>
                   <div class="col-2 form-check form-check-inline" required>
-                     <input class="form-check-input" type="radio" name="manRadio" id="dia" value="Al Dia" checked>
-                     <label class="form-check-label" for="dia"> Al Dia</label>
+                     <input class="form-check-input" type="radio" name="manRadio" id="dia" value="Al Día" checked>
+                     <label class="form-check-label" for="dia"> Al Día</label>
                   </div>
                   <div class="col-2 form-check form-check-inline">
                      <input class="form-check-input" type="radio" name="manRadio" id="prog" value="Programado">
@@ -110,7 +111,7 @@
                   <div class="modal-dialog modal-dialog-scrollable">
                      <div class="modal-content">
                         <div class="modal-header">
-                           <p class="modal-title h4" id="revision-title">Revision Estado Sensor {{sensor.nombre_sensor}}</p>
+                           <p class="modal-title h4" id="revision-title">Revisión Estado Sensor {{sensor.nombre_sensor}}</p>
                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
                         <div class="modal-body">
@@ -165,7 +166,7 @@
                   {%if estados_sensor%}
                   {%for i in estados_sensor%}
                   <tr>
-                     <td>{{i.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                     <td>{{i.fecha_estado | datetimefilter}}</td>
                      <td>{{i.operatividad}}</td>
                      <td>{{i.confiabilidad}}</td>
                      <td>{{i.mantenimiento}}</td>
@@ -179,7 +180,7 @@
       <div class="py-5">
         <div class="row py-3">
           <div class="col-10"><p class="h4 py-3">Mantenimiento</p></div>
-          <div class="col-2 g-0"><button type="button" id="actualizar-btn" class="btn btn-success btn-md btn-block" data-toggle="modal" data-target="#mantenimiento_modal" style="width:100%;">  Anadir Mantenimiento  </button></div>
+          <div class="col-2 g-0"><button type="button" id="actualizar-btn" class="btn btn-success btn-md btn-block" data-toggle="modal" data-target="#mantenimiento_modal" style="width:100%;">  Añadir Mantenimiento  </button></div>
         </div>
         <div class="form-floating mb-3">
             <input type="text" class="form-control" id="filterInputMant" placeholder="Filtrar Mantenimiento">
@@ -204,7 +205,7 @@
                   {%if mantenimientos%}
                   {%for i in mantenimientos%}
                   <tr>
-                     <td>{{i.fecha_mantenimiento.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                     <td>{{i.fecha_mantenimiento | datetimefilter}}</td>
                      <td>{{i.estado}}</td>
                      <td>{{i.detalles}}</td>
                   </tr>
