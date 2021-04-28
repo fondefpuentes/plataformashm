@@ -15,6 +15,9 @@ import aws_functions
 import swagger
 import pytz
 import requests
+from ModeloAR.modelo import *
+from ModeloAR.data import *
+from ModeloAR.visualization import *
 
 views_api = Blueprint('views_api',__name__)
 
@@ -1771,6 +1774,7 @@ def deteccion_temprana(id_puente):
             esta_monitoreada = estructura.en_monitoreo
             #Se guarda momentaneamente el id del puente en la sesión actual
             session['id_puente'] = id_puente
+            lineplot = create_plot("AC01")
             # estados = EstadoEstructura.query.filter_by(id_estructura=id_puente).order_by(EstadoEstructura.fecha_estado.desc()).all()
             context = {
                 'id_puente' : id_puente,
@@ -1779,10 +1783,12 @@ def deteccion_temprana(id_puente):
                 'esta_monitoreada':esta_monitoreada,
                 'sensores': sensores,
                 'anomalias_sensores': anomalias,
+                'plot' : lineplot,
             }
             return render_template('deteccion_temprana.html',**context)
         elif(request.method == "POST"):
             print("Reiniciando Anomalias")
+            # aplicar_modelo(1)
             try:
                 num_rows_deleted = db.session.query(AnomaliaPorHora).delete()
                 db.session.commit()
@@ -1805,3 +1811,14 @@ def agregar_anomalia(id_puente,id_sensor):
     db.session.commit()
     print("Se agrega anomalia al sensor " + str(id_sensor))
     return redirect(url_for('views_api.deteccion_temprana', id_puente=session['id_puente']))
+
+@views_api.route('/bar', methods=['GET', 'POST'])
+def change_features():
+
+    feature = request.args['selected']
+    graphJSON= create_plot(feature)
+
+
+
+
+    return graphJSON

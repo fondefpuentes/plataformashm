@@ -381,14 +381,19 @@ class ReporteDanoAR(db.Model):
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'))
     hora = db.Column(db.DateTime)
+    axis = db.Column(db.Integer)
 
 class ModeloAR(db.Model):
     __tablename__ = 'modelo_ar'
     __table_args__ = {'schema':'inventario_puentes'}
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    id_reporte_dano_ar = db.Column(db.Integer, db.ForeignKey('inventario_puentes.reporte_dano_ar.id'))
+    numero_modelo = db.Column(db.Integer)
     
 class CoeficienteAR(db.Model):
     __tablename__ = 'coeficiente_ar'
     __table_args__ = {'schema':'inventario_puentes'}
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     valor = db.Column(db.Float)
+    id_modelo_ar = db.Column(db.Integer, db.ForeignKey('inventario_puentes.modelo_ar.id'))
+    numero = db.Column(db.Integer)
