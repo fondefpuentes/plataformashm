@@ -1989,7 +1989,19 @@ def eliminar_dispositivo(id_device):
       
     flash("Sensor eliminado del registro.", 'info')  
     return redirect(url_for('views_api.administrar_dispositivos'))
-  
+
+#PERMISOS = ADMINISTRADOR
+#Acceso a Thingsboard
+@views_api.route('/thingsboard', methods=['GET'])
+@login_required
+def administrar_thingsboard():
+  if(current_user.permisos == "Administrador"):  
+    puentes = Estructura.query.all()
+    context = {'puentes': puentes}
+    return render_template('panel_gestion_thingsboard.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
 ###################### INTEGRACIÓN ALMACENAMIENTO HISTÓRICO ########################
 @views_api.route('/hconsulta/<int:id>', methods=["POST","GET"])
 def hconsulta(id):

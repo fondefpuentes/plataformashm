@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+{% include 'sidebar.html'%}
+<section class="my-container active-cont px-3">
+   <div class="p-2 my-3 card">
+<div class="container-fluid px-4 py-4">
+  <div class="tab-pane fade show active" id="nav-monitoreada" role="tabpanel" aria-labelledby="nav-monitoreada-tab">
+    <form method="POST" action="{{url_for('views_api.buscar_estructura')}}">
+      <table class="table table-hover table-bordered border-1 px-3" 
+        id="myTable"
+        data-toggle="table"
+        data-search="true"
+        data-sortable="true"
+        data-pagination="true"
+        data-page-size="15"
+        data-show-columns="true"
+        data-locale="es-CL"> 
+          <thead class="table-dark">
+            <tr>
+              <th data-field="Rol" data-sortable="true">Rol</th>
+              <th data-field="Nombre" data-sortable="true">Nombre</th>
+              <th data-field="Region" data-sortable="true">Región</th>
+            </tr>
+          </thead>
+          <tbody>
+            {%for i in puentes %}
+            {%if i.en_monitoreo%}
+            <tr class='clickable-row' data-href="{{url_for('views_api.informacion_estructura', id=i.id)}}">
+              <th><span class="badge bg-dark">{{i.rol}}</span></th>
+              <td><a href="{{i.ip_instancia}}">{{i.nombre}}</a></td>
+              <td>{{ i.region }}</td>
+            </tr>
+            {%endif%}
+            {% endfor %}
+          </tbody>
+        </table>
+      </form>
+    </div>
+  </div>
+</div>
+   </div>
+</section>
+
+
+{% endblock %}
+
+{% block customjs%}
+    {{ super() }}
+  <script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>  
+  <script>
+{% endblock %}
