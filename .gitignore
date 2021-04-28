@@ -3,3 +3,4 @@ __pycache__/*
 config.py
 ModeloAR/Datos
 ModeloAR/Dataset prueba
+ModeloAR/__pycache__
