@@ -1658,7 +1658,7 @@ def eliminar_estructura(id_estructura):
       flash(str(error.orig) + " for parameters" + str(error.params),'error')
       return redirect(url_for('views_api.administrar_estructura'))
       
-    flash("Puente" + estructura.nombre + " eliminado del registro.", 'info')  
+    flash("Puente eliminado del registro.", 'info')  
     return redirect(url_for('views_api.administrar_estructura'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
@@ -1752,7 +1752,7 @@ def editar_elemento(id_elemento):
       flash(str(error.orig) + " for parameters" + str(error.params),'error')
       return redirect(url_for('views_api.administrar_elementos'))
             
-    flash("Elemento Estructural Eliminado.", 'info')
+    flash("Elemento Estructural <" + elemento.descripcion + "> actualizado.", 'info')
     return redirect(url_for('views_api.administrar_elementos'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
@@ -1771,7 +1771,7 @@ def eliminar_elemento(id_elemento):
       flash(str(error.orig) + " for parameters" + str(error.params),'error')
       return redirect(url_for('views_api.administrar_elementos'))
       
-    flash("Elemento Estructural <" + elemento.descripcion + "> eliminado del registro.", 'info')  
+    flash("Elemento Estructural eliminado del registro.", 'info')  
     return redirect(url_for('views_api.administrar_elementos'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))

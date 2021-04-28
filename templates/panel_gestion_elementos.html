@@ -72,11 +72,11 @@
    
    <div class="p-2 my-3 card">
      <h4><span class="fs-6 badge bg-dark me-3">B</span>Crear Elemento Estructural</h4>
-     <form class="row"method="POST" action="{{url_for('views_api.crear_elemento')}}">
+     <form id="create-form" class="row" method="POST" action="{{url_for('views_api.crear_elemento')}}">
        <div class="mb-3">
-         <label for="estructura" class="form-label">Estructura</label>
-         <input id="estructura" class="form-control" name="id_estructura" placeholder="Buscar estructura" required list="estructuras" aria-label="Seleccion Puente"/>
-         <datalist id="estructuras">
+         <label for="estructura_select" class="form-label">Estructura</label>
+         <input id="estructura_select" class="form-control" name="id_estructura" required placeholder="Buscar estructura" list="estructuras_create" aria-label="Estructura Select" />
+         <datalist id="estructuras_create">
             {% for i in puentes %}
             <option data-value="{{i.id}}">{{i.id}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
             {% endfor %}    
@@ -98,8 +98,8 @@
          <label for="material" class="form-label">Material</label>
          <input type="text" class="form-control" id="material" name="material" placeholder="Madera" required>
        </div>
-       <div class="mb-3 float-end">
-         <button type="submit" class="btn btn-outline-primary">Crear Elemento Estructural</button>
+       <div class="mb-3">
+         <button id="create-btn" class="btn btn-outline-primary">Crear Elemento Estructural</button>
        </div>
      </form>
    </div>
@@ -149,6 +149,15 @@
       var id_puente = $('#select_puente').val();
       var data = id_puente.split(" ",1);
       load_data(data);
+    }); 
+    
+    $('#create-btn').click(function(e)
+    {
+      e.preventDefault();
+      var id_estructura = $('#estructura_select').val();
+      var data_id = id_estructura.split(" ",1);
+      $('#estructura_select').val(data_id);
+      $('#create-form').submit();
     }); 
     
 
