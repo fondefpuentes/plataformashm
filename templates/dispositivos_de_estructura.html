@@ -26,19 +26,36 @@
           {%endif%}
           <h5 class="lead float-end">{{sensor.nombre}}</h5>
           </div>
-            <ul class="list-group list-group-flush fs-6">  
-              <li class="list-group-item">UUID: {{sensor.uuid_device}}{%if not dict_uuid[sensor.uuid_device]%}<form class="float-end" method="POST" action="{{url_for('views_api.editar_uuid_sensor',id_sensor=sensor.id,uuid = dict_name[sensor.nombre_sensor])}}"><button type="submit" class="btn btn-sm btn-outline-light mb-3"><i class="bi bi-exclamation-triangle-fill text-danger"></i></button></form>{%endif%}</li>
-              <li class="list-group-item">Frecuencia: {{sensor.frecuencia}}</li>
-              <li class="list-group-item">Zona: {{sensor.descripcion}}</li>
-              <li class="list-group-item">Fecha Instalacion: {{sensor.fecha_instalacion}}</li>
-            </ul>
+          <div class="my-2 px-3">UUID: {{sensor.uuid_device}}{%if not dict_uuid[sensor.uuid_device]%}
+            <form class="float-end" method="POST" action="{{url_for('views_api.editar_uuid_sensor',id_sensor=sensor.id,uuid = dict_name[sensor.nombre_sensor])}}">
+              <button type="submit" class="btn btn-sm btn-outline-light mb-3"><i class="bi bi-exclamation-triangle-fill text-danger"></i></button>
+            </form>{%endif%}
+          </div>
           <div class="card-body">
-            <div class="row">
-              <form class="d-grid gap-2 col" method="GET" action="{{url_for('views_api.detalle_sensor',id_sensor=sensor.id)}}"><button type="submit" class="btn btn-outline-primary mb-3">Ver Perfil</button></form>
-              <form class="d-grid gap-2 col" method="POST" action="#">
-                <button type="submit" class="btn btn-outline-success mb-3">Actualizar</button>
-              </form>
-            </div>  
+            <form class="d-grid col" method="POST" action="{{url_for('views_api.editar_dispositivo',id_device=sensor.id)}}">
+              <div class="input-group my-1 py-1">
+               <span class="input-group-text col-sm-4">Frecuencia</span>
+               <input name="frecuencia" type="text" class="form-control col-sm-8" id="modelo" value="{{sensor.frecuencia}}" readonly required/>
+              </div>
+              <div class="input-group my-1 py-1">
+               <span class="input-group-text col-sm-4">Zona</span>
+               <input name="descripcion" type="text" class="form-control col-sm-8" id="modelo" value="{{sensor.descripcion}}" readonly required/>
+              </div>
+              <div class="input-group my-1 py-1">
+               <span class="input-group-text col-sm-4">F. Instalación</span>
+               <input name="fecha" type="text" class="form-control col-sm-8" id="fecha" readonly value="{{sensor.fecha_instalacion}}" required/>
+              </div>
+              <div class="input-group my-1 py-1">
+               <span class="input-group-text col-sm-4">Modelo</span>
+               <input name="modelo" type="text" class="form-control col-sm-8" id="modelo" value="{{sensor.modelo}}" required/>
+              </div>
+              <div class="input-group my-1 py-1">
+               <span class="input-group-text col-sm-4">Serial</span>
+               <input name="serial" type="text" class="form-control col-sm-8" id="serial" value="{{sensor.serial}}" required/>
+              </div>
+              <button type="submit" class="btn btn-outline-success mb-3">Actualizar</button>
+            </form>
+            <form class="d-grid gap-2 col" method="GET" action="{{url_for('views_api.detalle_sensor',id_sensor=sensor.id)}}"><button type="submit" class="btn btn-outline-primary mb-3">Ver Perfil</button></form>
           </div>
         </div>
       </div>

@@ -31,28 +31,7 @@
 	  <li class="breadcrumb-item active" aria-current="page">Detección Temprana de Daños</li>
     {% elif request.url_rule.endpoint == "views_api.detalle_sensor" %}
     <li class="breadcrumb-item text-capitalize"><a href="{{url_for('views_api.informacion_estructura',id=datos_puente.id)}}">{{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize()|title  }}</a></li>
-    <!--<li class="breadcrumb-item active" aria-current="page">Detalle Sensor {{sensor.nombre_sensor}}</li>-->
-    <li class="breadcrumb-item active dropdown" aria-current="page">Detalle Sensor 
-            <a href="#" class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                {{sensor.nombre_sensor}}
-            </a>
-            <ul class="dropdown-menu px-2 mx-4" aria-labelledby="dropdownMenuLink">
-                <li><a href="#">AC 02</a></li>
-                <li><a href="#">AC 03</a></li>
-                <li><a href="#">AC 04</a></li>
-                <li><a href="#">AC 05</a></li>
-                <li><a href="#">AC 06</a></li>
-                <li><a href="#">AC 07</a></li>
-                <li><a href="#">AC 08</a></li>
-                <li><a href="#">AC 09</a></li>
-                <li><a href="#">AC 10</a></li>
-                <li><a href="#">AC 11</a></li>
-                <li><a href="#">AC 12</a></li>
-                <li><a href="#">AC 13</a></li>
-                <li><a href="#">AC 14</a></li>
-                <li><a href="#">AC 15</a></li>
-            </ul>
-        </li>
+    <li class="breadcrumb-item active" aria-current="page">Detalle Sensor {{sensor.nombre_sensor}}</li>
     {% elif request.url_rule.endpoint == "views_api.detalle_daq" %}
     <li class="breadcrumb-item text-capitalize"><a href="{{url_for('views_api.informacion_estructura',id=datos_puente.id)}}">{{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">Detalle DAQ {{info_daq.caracteristicas}}</li>

@@ -1833,7 +1833,7 @@ def buscar_dispositivos_ajax(id_estructura):
   if(current_user.permisos == "Administrador"):
     if request.method == "POST":
       
-      sensores_actuales = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, Sensor.uuid_device, DescripcionSensor.descripcion.label("nombre_sensor"), DAQPorZona.id_daq).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id_estructura, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DAQPorZona.id_daq, ).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc()).all()
+      sensores_actuales = db.session.query(Sensor.id, Sensor.modelo, Sensor.serial, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, Sensor.uuid_device, DescripcionSensor.descripcion.label("nombre_sensor"), DAQPorZona.id_daq).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id_estructura, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DAQPorZona.id_daq, ).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc()).all()
       
       daq_actuales = db.session.query(DAQ.id, DAQ.nro_canales, DescripcionDAQ.caracteristicas, EstadoDAQ.detalles, EstadoDAQ.fecha_estado).filter(EstadoDAQ.id_daq == DAQ.id, DescripcionDAQ.id_daq == DAQ.id, DAQPorZona.id_daq == DAQ.id, ElementoEstructural.id == DAQPorZona.id_zona, DAQPorZona.id_estructura == id_estructura).distinct(DAQ.id).order_by(DAQ.id.asc(), EstadoDAQ.fecha_estado.desc()).all()
       
@@ -1961,8 +1961,11 @@ def solucionar_discrepancias_uuid(id_estructura):
 def editar_dispositivo(id_device):
   if(current_user.permisos == "Administrador"):
     try:
-      sensor = SensorInstalado.query.filter_by(id=id_device).first()
-      
+      sensor = Sensor.query.filter_by(id=id_device).first()
+      sensor.modelo = request.form.get("modelo")
+      sensor.serial = request.form.get("serial")
+      db.session.add(sensor)
+      db.session.commit()
     except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
       db.session.rollback()
       flash(str(error.orig) + " for parameters" + str(error.params),'error')
