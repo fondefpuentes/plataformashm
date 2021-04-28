@@ -1671,7 +1671,7 @@ def eliminar_estructura(id_estructura):
 @login_required
 def administrar_elementos():
   if(current_user.permisos == "Administrador"):  
-    puentes = Estructura.query.filter_by(en_monitoreo = True).all()
+    puentes = Estructura.query.all()
     tipos = TipoElemento.query.all()
     context = {'puentes': puentes,
                'tipos_elem': tipos}
@@ -1869,7 +1869,7 @@ def buscar_dispositivos_ajax(id_estructura):
         'sensores_puente' : sensores_actuales,
         'daqs_puente' : daq_actuales
         } 
-      return jsonify({'htmlresponse': render_template('dispositivos_de_estructura.html',**context)})
+      return jsonify({'htmlresponse': render_template('dispositivos_de_estructura.html',**context,id_estructura = id_estructura)})
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
     
@@ -1891,6 +1891,65 @@ def editar_uuid_sensor(id_sensor, uuid):
       return redirect(url_for('views_api.administrar_dispositivos'))
             
     flash("UUID actualizado.", 'info')
+    return redirect(url_for('views_api.administrar_dispositivos'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
+#PERMISOS = ADMINISTRADOR
+#Editar Dispositivo
+@views_api.route('/gestion/dispositivos/solucionar_discrepancias/<int:id_estructura>', methods=['POST'])
+@login_required
+def solucionar_discrepancias_uuid(id_estructura):
+  
+  uuid_adjust = 0
+  name_adjust = 0  
+
+  if(current_user.permisos == "Administrador"):
+    
+    ip_instancia = Estructura.query.filter_by(id=id_estructura).first().ip_instancia
+      
+    if ip_instancia != None:
+        #obtencion API KEY de TB    
+        api_key_url = requests.post(ip_instancia + '/api/auth/login',data='{"username":"tenant@thingsboard.org", "password":"tenant"}', headers={'Content-Type': 'application/json','Accept': 'application/json'})
+        json_response = api_key_url.json()
+        
+        #Generacion de API_KEY para autentificacion en Swagger
+        x_auth = 'Bearer ' + json_response['token']
+        
+        #Peticion a Swagger de DEVICES
+        response = requests.get( ip_instancia + '/api/tenant/deviceInfos?pageSize=20&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth},)
+        json_devices = response.json()
+        
+        dict_uuid={}
+        dict_name={}
+        for device in json_devices['data']:
+          dict_uuid[device['id']['id']] = device['name']
+          dict_name[device['name']] = device['id']['id']          
+        
+        
+        try:
+          sensores_actuales = SensorInstalado.query.filter_by(id_estructura = id_estructura).all()
+          for element in sensores_actuales:
+            sensor = Sensor.query.filter_by(id=element.id_sensor).first()
+            nombre = DescripcionSensor.query.filter_by(id_sensor_instalado=element.id).first()
+            if not sensor.uuid_device in dict_uuid.keys():
+              sensor.uuid_device = dict_name[nombre.descripcion]
+              db.session.add(sensor)
+              uuid_adjust += 1
+            if not nombre.descripcion in dict_name.keys():
+              nombre.descripcion = dict_uuid[sensor.uuid_device]
+              name_adjust += 1
+          
+          db.session.commit()
+          
+        except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+          db.session.rollback()
+          flash(str(error.orig) + " for parameters" + str(error.params),'error')
+          return redirect(url_for('views_api.administrar_dispositivos'))
+            
+        flash("Se detectaron y corrigieron " + str(uuid_adjust) + " discrepancias de UUID y " + str(name_adjust) + " discrepancias de nombre.", 'info')
+        return redirect(url_for('views_api.administrar_dispositivos'))
+      
     return redirect(url_for('views_api.administrar_dispositivos'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))

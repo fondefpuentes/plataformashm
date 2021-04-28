@@ -1,7 +1,7 @@
 <div class="card my-3">
   <div class="card-header bg-warning"><h5 class="lead float-end"></h5>NOTA</div>
     <ul class="list-group list-group-flush fs-6">
-      <li class="list-group-item">El símbolo <i class="bi bi-exclamation-triangle-fill text-danger"></i> indica discrepancia con lo registrado en Thingsboard. Actualice la información presionando ese símbolo.</li>
+      <li class="list-group-item">El símbolo <i class="bi bi-exclamation-triangle-fill text-danger"></i> indica discrepancia con lo registrado en Thingsboard. <form class="float-end" method="POST" action="{{url_for('views_api.solucionar_discrepancias_uuid',id_estructura=id_estructura)}}"><button type="submit" class="btn btn-outline-primary mb-3">Solucionar discrepancias</button></form></li>
       <li class="list-group-item">Si la tarjeta del dispositivo aparece en <em class="text-danger">Rojo</em>, el dispositivo no se encuentra registrado en Thingsboard.</li>
     </ul>
 </div>
@@ -38,7 +38,6 @@
               <form class="d-grid gap-2 col" method="POST" action="#">
                 <button type="submit" class="btn btn-outline-success mb-3">Actualizar</button>
               </form>
-              <form class="d-grid gap-2 col"><button type="submit" class="btn btn-outline-danger mb-3">Eliminar</button></form> 
             </div>  
           </div>
         </div>
@@ -59,8 +58,7 @@
           <div class="card-body">
             <div class="row">
               <form class="d-grid gap-2 col" method="GET" action="{{url_for('views_api.detalle_daq',id_daq=daq.id)}}"><button type="submit" class="btn btn-outline-primary mb-3">Ver Perfil</button></form>
-              <form class="d-grid gap-2 col"><button type="submit" class="btn btn-outline-success mb-3">Editar</button></form>
-              <form class="d-grid gap-2 col"><button type="submit" class="btn btn-outline-danger mb-3">Eliminar</button></form> 
+              <form class="d-grid gap-2 col"><button type="submit" class="btn btn-outline-success mb-3">Editar</button></form> 
             </div>  
           </div>
         </div>
