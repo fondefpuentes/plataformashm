@@ -19,7 +19,7 @@
 			
 			{% if current_user.permisos == "Administrador" %}
       <li class="nav-item px-1">
-        <a class="btn btn-outline-light text-dark btn-md" role="button" href="{{ url_for('views_api.administrar_usuarios') }}"><i class="bi bi-gear-wide-connected"></i> Panel de Gestión</a>
+        <a class="btn btn-outline-light text-dark btn-md" role="button" href="{{ url_for('views_api.panel_administracion') }}"><i class="bi bi-gear-wide-connected"></i> Panel de Gestión</a>
       </li>
 			{% endif %}
       <li class="nav-item px-1"> 

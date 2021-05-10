@@ -1501,13 +1501,13 @@ def panel_administracion():
 
 #PERMISOS = ADMINISTRADOR
 #Ver Usuarios
-@views_api.route('/usuarios', methods=['GET'])
+@views_api.route('/gestion/usuarios', methods=['GET'])
 @login_required
 def administrar_usuarios():
     if(current_user.permisos == "Administrador"):
         usuarios = Usuario.query.all()
         context = {'usuarios':usuarios}
-        return render_template('usuarios.html', **context)
+        return render_template('panel_gestion_usuarios.html', **context)
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
 
@@ -1577,7 +1577,7 @@ def crear_estructura():
                                 nombre_camino=request.form.get("nombre_camino"),
                                 cauce_queb = request.form.get("cauce_queb"),
                                 provincia = request.form.get("provincia"),
-                                tipo_activo = "puente",
+                                tipo_activo = "Puente",
                                 region = request.form.get("region"),
                                 coord_x = request.form.get("coord_x"),
                                 coord_y = request.form.get("coord_y"),
@@ -1896,7 +1896,7 @@ def editar_uuid_sensor(id_sensor, uuid):
     return redirect(url_for('views_api.usuario_no_autorizado'))
     
 #PERMISOS = ADMINISTRADOR
-#Editar Dispositivo
+#Solucionar discpreancias de UUID y nombre repsecto a la información desde Thingsboard
 @views_api.route('/gestion/dispositivos/solucionar_discrepancias/<int:id_estructura>', methods=['POST'])
 @login_required
 def solucionar_discrepancias_uuid(id_estructura):
@@ -1977,7 +1977,7 @@ def editar_dispositivo(id_device):
     return redirect(url_for('views_api.usuario_no_autorizado'))
 
 #PERMISOS = ADMINISTRADOR
-#Eliminar Dispositivo
+#Eliminar Dispositivo. Utilizar solo cuando el sensor no se encuentre representado por información de Thingsboard.
 @views_api.route('/gestion/dispositivos/delete/<int:id_device>', methods=['POST'])
 @login_required
 def eliminar_dispositivo(id_device):
@@ -1992,6 +1992,18 @@ def eliminar_dispositivo(id_device):
       
     flash("Sensor eliminado del registro.", 'info')  
     return redirect(url_for('views_api.administrar_dispositivos'))
+    
+#PERMISOS = ADMINISTRADOR
+#Acceso a Thingsboard
+@views_api.route('/thingsboard', methods=['GET'])
+@login_required
+def administrar_thingsboard():
+  if(current_user.permisos == "Administrador"):  
+    puentes = Estructura.query.all()
+    context = {'puentes': puentes}
+    return render_template('panel_gestion_thingsboard.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
   
 ###################### INTEGRACIÓN ALMACENAMIENTO HISTÓRICO ########################
 @views_api.route('/hconsulta/<int:id>', methods=["POST","GET"])

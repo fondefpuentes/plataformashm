@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+{% include 'sidebar.html'%}
+<section class="my-container active-cont px-3">
+  <div class="d-flex py-2">
+     <button type="button" class="btn btn-primary me-3" id="menu-btn"><i class="bi bi-layout-sidebar"></i></button>
+     <h1 >Gestión de Thingsboard</h1>
+   </div>
+  <div class="p-2 my-3 card">
+    <h4><span class="fs-6 badge bg-dark me-3">A</span>Acceder a Panel de Thingsboard desde Estructura en Monitoreo</h4>
+    <form class="py-1" method="POST" action="#">
+        <table class="table table-hover table-bordered border-1 px-3" > 
+          <thead class="table-dark">
+            <tr>
+              <th data-field="Rol" data-sortable="true">Rol</th>
+              <th data-field="Nombre" data-sortable="true">Nombre</th>
+              <th data-field="Region" data-sortable="true">Region</th>
+            </tr>
+          </thead>
+          <tbody>
+            {%for i in puentes %}
+            {%if i.en_monitoreo%}
+            <tr>
+              <th><span class="badge bg-dark">{{i.rol}}</span></th>
+              <td><a href="{{i.ip_instancia + '/deviceprofiles'}}">{{i.nombre}}</a></td>
+              <td>{{ i.region }}</td>
+            </tr>
+            {%endif%}
+            {% endfor %}
+          </tbody>
+        </table>
+    </form>
+  </div>
+</div>
+</section>
+
+
+{% endblock %}
+
+{% block customjs%}
+    {{ super() }}
+  <script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
+  <script>
+  $(document).ready(function(){
+    
+    $('#menu-btn').click(function(e)
+    {
+      $('#sidebar').toggleClass("active-nav");
+      $('#sidebar').toggleClass("position-fixed")
+      $('.my-container').toggleClass("active-cont");
+    }); 
+    
+  });
+</script>
+  <script>
+{% endblock %}
