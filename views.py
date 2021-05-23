@@ -1774,7 +1774,7 @@ def deteccion_temprana(id_puente):
             esta_monitoreada = estructura.en_monitoreo
             #Se guarda momentaneamente el id del puente en la sesión actual
             session['id_puente'] = id_puente
-            lineplot = create_plot("AC01")
+            lineplot = create_plot("AC05")
             # estados = EstadoEstructura.query.filter_by(id_estructura=id_puente).order_by(EstadoEstructura.fecha_estado.desc()).all()
             context = {
                 'id_puente' : id_puente,
@@ -1788,18 +1788,23 @@ def deteccion_temprana(id_puente):
             return render_template('deteccion_temprana.html',**context)
         elif(request.method == "POST"):
             print("Reiniciando Anomalias")
-            # aplicar_modelo(1)
-            try:
-                num_rows_deleted = db.session.query(AnomaliaPorHora).delete()
-                db.session.commit()
-                print("Filas Eliminadas = " + str(num_rows_deleted))
-                sensores_de_puente = db.session.query(SensorInstalado.id.label("si")).filter(SensorInstalado.id_estructura == id_puente).order_by(SensorInstalado.id.desc())
-                for sensor in sensores_de_puente:
-                    anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = False)
-                    db.session.add(anomalia)
-                db.session.commit()
-            except:
-                db.session.rollback()
+            # aplicar_modelo_total()
+            # dano = getDamage(id_puente, 'AC05', 0)
+            # print(dano)
+            # getCoef(id_puente, 'AC05', 0)
+            resetAllAnomally(id_puente)
+            addAnomallyAll(id_puente)
+            # try:
+            #     num_rows_deleted = db.session.query(AnomaliaPorHora).delete()
+            #     db.session.commit()
+            #     print("Filas Eliminadas = " + str(num_rows_deleted))
+            #     sensores_de_puente = db.session.query(SensorInstalado.id.label("si")).filter(SensorInstalado.id_estructura == id_puente).order_by(SensorInstalado.id.desc())
+            #     for sensor in sensores_de_puente:
+            #         anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = False)
+            #         db.session.add(anomalia)
+            #     db.session.commit()
+            # except:
+            #     db.session.rollback()
             return redirect(url_for('views_api.deteccion_temprana',id_puente=session['id_puente']))
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
@@ -1817,8 +1822,5 @@ def change_features():
 
     feature = request.args['selected']
     graphJSON= create_plot(feature)
-
-
-
 
     return graphJSON

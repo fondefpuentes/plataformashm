@@ -19,7 +19,6 @@ from math import sqrt
 from .peaks import scpa
 from .data import getDataDay
 from models import *
-from sqlalchemy import func
 
 def extraer_coef_total(data):   #Por sensor
     model = []
@@ -60,7 +59,46 @@ def mahalanobisScipy(x=None, data=None, cov=None): # (xi - x_mean)^T * cov^-1 * 
 def aplicar_modelo_total():
     for hora in range(24):
         print("Hora = ", hora)
-        aplicar_modelo(hora)
+        data = getDataDay(hora)
+        time = data['timestamp'].apply(lambda x: datetime.fromtimestamp(x/1e3))
+        
+        for col in data:
+            print("Sensor = ", col)
+            x = []
+            y = []
+            z = []
+            if col == "timestamp":
+                continue
+            else:
+                for row in data[col]:
+                    separados = row.replace("'", "").replace("{","").replace("}","").replace(":","").replace("x","").replace("y","").replace("z","").split(",")
+                    for i,datos in enumerate(separados):
+                        separados[i] = float(datos.strip())
+                    x.append(separados[0])
+                    y.append(separados[1])
+                    z.append(separados[2])
+                x = np.array(x)
+                y = np.array(y)
+                z = np.array(z)
+                series_x = scpa(time, x, 3, 60)
+                series_y = scpa(time, y, 3, 60)
+                series_z = scpa(time, z, 3, 60)
+                sens_x = []
+                sens_y = []
+                sens_z = []
+                for i in range(0,3):
+                    sens_x.append(np.array(x[series_x[i][0]:series_x[i][-1]]))
+                    sens_y.append(np.array(y[series_y[i][0]:series_y[i][-1]]))
+                    sens_z.append(np.array(z[series_z[i][0]:series_z[i][-1]]))
+                x_coef = applyCoef(sens_x)
+                y_coef = applyCoef(sens_y)
+                z_coef = applyCoef(sens_z)
+                # print("x coef = ", x_coef)
+                # print("y coef = ", y_coef)
+                # print("z coef = ", z_coef)
+                saveCoef(time[0], col, x_coef)
+                saveCoef(time[0], col, y_coef)
+                saveCoef(time[0], col, z_coef)
 
 
 def applyCoef(serie):
@@ -136,79 +174,8 @@ def saveCoef(hora, sensor, data, axis = 0):  # Guarda los coeficientes en la bas
         print("Fallo consulta")
         db.session.rollback()
 
-def getCoef(puente_id, nombre_sensor, eje):
-    coeficientes = db.session.query(CoeficienteAR.valor, CoeficienteAR.numero, ModeloAR.numero_modelo, ReporteDanoAR.id.label("reporte_dano_id") ).filter(DescripcionSensor.descripcion == nombre_sensor, ReporteDanoAR.axis == eje, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, SensorInstalado.id == ReporteDanoAR.id_sensor_instalado, ReporteDanoAR.id == ModeloAR.id_reporte_dano_ar, ModeloAR.id == CoeficienteAR.id_modelo_ar)
+def getCoef(puente_id, nombre_sensor):
+    coeficientes = db.session.query(CoeficienteAR.valor, CoeficienteAR.numero).filter(DescripcionSensor.descripcion == nombre_sensor, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, SensorInstalado.id == ReporteDanoAR.id_sensor_instalado, ReporteDanoAR.id == ModeloAR.id_reporte_dano_ar, ModeloAR.id == CoeficienteAR.id_modelo_ar)
     df_coef = pd.read_sql(coeficientes.statement, db.session.bind)
-    # print(df_coef.head())
+    print(df_coef.head())
     return df_coef
-
-def deleteFirstReporteDano():
-    try:
-        subquery = db.session.query(func.min(ReporteDanoAR.hora)).subquery()
-        query = db.session.query(ReporteDanoAR).filter(ReporteDanoAR.hora == subquery).delete()
-        print("Numero de filas eliminadas = ", query)
-    except:
-        db.session.rollback()
-    return
-
-def getDamage(puente_id, nombre_sensor):
-    flag_damage = False
-    for eje in range(3):
-        df = getCoef(puente_id, nombre_sensor, eje)
-        gb = df.groupby('reporte_dano_id')
-        dfs = [gb.get_group(x) for x in gb.groups]
-        coef_sensor = []
-        for i in range(len(dfs)):
-            column = dfs[i]["numero_modelo"]
-            max_value = column.max()
-            for j in range(max_value + 1):
-                df2 = dfs[i][dfs[i]['numero_modelo'] == j].sort_values(by=['numero'])
-                coef_sensor.append(np.array(df2['valor']))
-        coefdf = pd.DataFrame(coef_sensor)
-        mh = mahalanobis(x=coefdf, data=coefdf)
-        if (analizeDamage(mh, 16, 3)):
-            flag_damage = True
-    return flag_damage
-
-def analizeDamage(mahal, umbral_dist, umbral_num):
-    count = 0
-    for dist in mahal:
-        if dist > umbral_dist:
-            count += 1
-    if count > umbral_num:
-        return True
-    else:
-        return False
-
-def addAnomallyAll(id_puente):
-    try:
-        sensores_de_puente = db.session.query(SensorInstalado.id.label("si"), DescripcionSensor.descripcion.label("nombre_sensor")).filter(SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id).order_by(SensorInstalado.id.desc())
-        for sensor in sensores_de_puente:
-            anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = getDamage(id_puente, sensor.nombre_sensor))
-            db.session.add(anomalia)
-            db.session.commit()
-    except:
-        db.session.rollback()
-
-def addAnomally(id_puente, name):
-    try:
-        sensores_de_puente = db.session.query(SensorInstalado.id.label("si"), DescripcionSensor.descripcion.label("nombre_sensor")).filter(SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, DescripcionSensor.descripcion == name).order_by(SensorInstalado.id.desc())
-        for sensor in sensores_de_puente:
-            anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = getDamage(id_puente, sensor.nombre_sensor))
-            db.session.add(anomalia)
-            db.session.commit()
-    except:
-        db.session.rollback()
-
-def resetAllAnomally(id_puente):
-    try:
-        num_rows_deleted = db.session.query(AnomaliaPorHora).delete()
-        db.session.commit()
-        print("Filas Eliminadas = " + str(num_rows_deleted))
-        sensores_de_puente = db.session.query(SensorInstalado.id.label("si")).filter(SensorInstalado.id_estructura == id_puente).order_by(SensorInstalado.id.desc())
-        for sensor in sensores_de_puente:
-            anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = False)
-            db.session.add(anomalia)
-            db.session.commit()
-    except:
-        db.session.rollback()

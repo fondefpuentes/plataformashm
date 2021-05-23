@@ -11,7 +11,7 @@ $('#first_cat').on('change',function(){
         },
         dataType:"json",
         success: function (data) {
-			Plotly.newPlot('lineplot', data, {title: selected} );
+			Plotly.newPlot('lineplot', data);
         }
     });
 })

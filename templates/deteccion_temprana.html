@@ -18,7 +18,7 @@
 		   <div class ="box">
 			 <h1></h1>
 			 <form method="post">
-				 <input type="submit" value="Reiniciar Anomalías" /> 
+				 <input type="submit" value="Botón que hace de todo que no debería estar aquí" /> 
 			 </form>
 		   </div>
 			<div class="subtitle fs-3 py-1">Estados de Sensores</div>
@@ -62,7 +62,6 @@
 					   <th data-sortable="true">DAQ</th>
 					   <th data-sortable="true">Estado Daño</th>
 					   <th data-sortable="true">Fecha Estado Daño</th>
-					   <th data-sortable="true">Agregar Anomalía</th>
 					 </tr>
 				   </thead>
 				   <tbody id="sensor_data">
@@ -75,11 +74,7 @@
 					   <td><a href="{{url_for('views_api.detalle_daq',id_daq=element.id_daq)}}">{{ element.caracteristicas}}</td>
 					   <td>{{ element.estado_dano_sensor }}</td>
 					   <td>{{ element.fecha_dano_sensor }}</td>
-					   <td>
-						   <form action="{{ url_for('views_api.agregar_anomalia', id_puente=id_puente, id_sensor=element.si) }}">
-						   <button class="btn btn-secondary btn-sm" type="submit">Añadir anomalia</button>
-						   </form>
-					   </td>
+
 					 </tr>
 					 {%endfor%}
 					 {%endif%}
