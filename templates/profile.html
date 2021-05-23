@@ -2,8 +2,11 @@
 
 {% block customcss %}
 	{{ super() }}
+ <!--
  <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
  <link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
+ -->
+ <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap5.min.css"/>
 {% endblock %}
 
 {% block content %}
@@ -19,66 +22,30 @@
         <div class="col-3">
             <form class="d-grid gap-2" action="{{url_for('views_api.mapa')}}">
                 <button class="btn btn-outline-primary btn-lg text-wrap h-75">
-                    <p class="text-start"><i class="bi bi-map me-3"></i> Busqueda en Mapa</p>
+                    <p class="text-center lead"><i class="bi bi-map me-3"></i> Busqueda en Mapa</p>
                 </button>
             </form>
         </div>
     </div>
   </nav>
   
-  <div class="tab-content mt-1" id="nav-tabContent">
+  <div class="tab-content my-2" id="nav-tabContent">
     <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab">
-      <form method="POST" action="{{url_for('views_api.buscar_estructura')}}">
-        <table class="table table-hover table-borderless " 
-        id="myTable"
-        data-toggle="table"
-        data-search="true"
-        data-show-columns="true"
-        data-pagination="true"
-        data-sortable="true"
-        data-page-size="15"
-
-        data-locale="es-CL"> 
+        <table class="table table-hover w-100 row-border" 
+        id="myTableGeneral"> 
           <thead class="table-dark">
             <tr>
-              <th data-field="Rol" data-sortable="true">Rol</th>
-              <th data-field="Nombre" data-sortable="true">Nombre</th>
-              <th data-field="Region" data-sortable="true">Región</th>
-              <th data-field="Alerta" data-sortable="true">Estado de Alerta</th>
-              <th data-field="Fecha_alerta" data-sortable="true">Fecha Estado Alerta</th>
-              <th data-field="Global" data-sortable="true">Estado Global</th>
-              <th data-field="Seg" data-sortable="true">Estado de Seguridad</th>
-              <th data-field="Fecha_globseg" data-sortable="true">Fecha Estado Global y Seguridad</th>
+              <th class="col-1" data-field="Rol" data-sortable="true">Rol</th>
+              <th class="col-4" data-field="Nombre" data-sortable="true">Nombre</th>
+              <th class="col-4" data-field="Region" data-sortable="true">Región</th>
+              <th class="col-3" data-field="Provincia" data-sortable="true">Provincia</th>
             </tr>
           </thead>
-          <tbody>
-  		      {%for i in puentes %}
-            <tr class='clickable-row' data-href="{{url_for('views_api.informacion_estructura', id=i.id)}}">
-              <th><span class="badge bg-dark">{{i.rol}}</span></th>
-              <td><a href="{{url_for('views_api.informacion_estructura', id=i.id)}}">{{i.nombre}}</a></td>
-              <td>{{ i.region }}</td>
-              <td>---</td>
-              <td>---</td>
-              <td>---</td>
-              <td>---</td>
-              <td>---</td>
-            </tr>
-    	      {% endfor %}
-          </tbody>
         </table>
-      </form>
     </div>
     <div class="tab-pane fade" id="nav-monitoreada" role="tabpanel" aria-labelledby="nav-monitoreada-tab">
-    <form method="POST" action="{{url_for('views_api.buscar_estructura')}}">
-        <table class="table table-hover table-bordered border-1 px-3" 
-        id="myTable"
-        data-toggle="table"
-        data-search="true"
-        data-sortable="true"
-        data-pagination="true"
-        data-page-size="15"
-        data-show-columns="true"
-        data-locale="es-CL"> 
+        <table class="table table-hover w-100 row-border" 
+        id="myTableMonitoreo"> 
           <thead class="table-dark">
             <tr>
               <th data-field="Nombre" data-sortable="true">Nombre</th>
@@ -98,27 +65,18 @@
               <td>{{ i.region }}</td>
               <td>---</td>
               <td>---</td>
-              <td>---</td>
-              <td>---</td>
-              <td>---</td>
+              <td>{{i.estado}}</td>
+              <td>{{i.seguridad}}</td>
+              <td>{{i.fecha_estado |datetimefilter}}</td>
             </tr>
             {%endif%}
     	      {% endfor %}
           </tbody>
         </table>
-      </form>
     </div>
     <div class="tab-pane fade" id="nav-alerta" role="tabpanel" aria-labelledby="nav-alerta-tab">
-    <form method="POST" action="{{url_for('views_api.buscar_estructura')}}">
-        <table class="table table-hover table-bordered border-1 px-3" 
-        id="myTable"
-        data-toggle="table"
-        data-search="true"
-        data-sortable="true"
-        data-pagination="true"
-        data-show-columns="true"
-        data-page-size="15"
-        data-locale="es-CL"> 
+        <table class="table table-hover w-100 row-border" 
+        id="myTableEstados"> 
           <thead class="table-dark">
             <tr>
               <th data-field="Nombre" data-sortable="true">Nombre</th>
@@ -131,10 +89,19 @@
             </tr>
           </thead>
           <tbody>
-          
+  		      {%for i in puentes %}
+            <tr class='clickable-row' data-href="{{url_for('views_api.informacion_estructura', id=i.id)}}">
+              <td><a href="{{url_for('views_api.informacion_estructura', id=i.id)}}">{{i.nombre}}</a></td>
+              <td>{{ i.region }}</td>
+              <td>---</td>
+              <td>---</td>
+              <td>{{i.estado}}</td>
+              <td>{{i.seguridad}}</td>
+              <td>{{i.fecha_estado |datetimefilter }}</td>
+            </tr>
+    	      {% endfor %}
           </tbody>
         </table>
-      </form>
     </div>
   </div>
 	</div>
@@ -142,10 +109,44 @@
 {% endblock %}
 
 {% block customjs%}
-    {{ super() }}
+ 	<!--
 	<script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
-	<script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
 	<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
-	<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>  
-  <script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
+   -->
+ <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+ <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap5.min.js"></script>
+ <script>
+ $('#myTableGeneral').DataTable( {
+    ajax: "cargar_estructuras",
+    columns: [
+        { data: 'Rol',
+          render: function(data) {
+            return '<span class="fs-6 badge bg-dark me-3">' + data + '</span>';
+          } 
+        },
+        { data: 'Nombre', 
+          render: function ( data, row ) {
+            return '<a href="' + data.ruta + '">' + data.nombre +'</a>';
+          }
+        },
+        { data: 'Region' },
+        { data: 'Provincia'}
+    ],
+    language: {
+        url: "{{ url_for('static', filename='i18n/es_es.json') }}"
+    }
+} );
+  $('#myTableMonitoreo').DataTable({
+    language: {
+        url: "{{ url_for('static', filename='i18n/es_es.json') }}"
+    }
+  });
+  $('#myTableEstados').DataTable({
+    language: {
+        url: "{{ url_for('static', filename='i18n/es_es.json') }}"
+    }
+  });
+ </script>
 {% endblock %}

@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% include 'sidebar.html'%}
-<section class="my-container active-cont px-3">
+<section class="my-container active-cont px-3 py-1">
    <div class="d-flex py-2">
      <button type="button" class="btn btn-primary me-3" id="menu-btn"><i class="bi bi-layout-sidebar"></i></button>
      <h1 >Panel de Gestión</h1>
@@ -84,6 +84,34 @@
            <ul class="list-group list-group-flush">
              <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">A</span>Acceder Panel Thingsboard</li>
              <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">B</span>Editar Alarmas</li>
+           </ul>
+         </div>
+       </div>
+     </div>
+     <div class="col">
+       <div class="card h-100">
+         <div class="card-body text-center">
+           <span class="display-2 fw-bold d-block"><i class="bi bi-binoculars-fill text-primary"></i></span>
+           <a href="{{ url_for('views_api.administrar_monitoreos') }}" class="fs-5 lead text-decoration-none stretched-link mt-2">Gestión de Monitoreos</a>
+         </div>
+         <div class="card-body">
+           <ul class="list-group list-group-flush">
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">A</span>Iniciar Nuevo Monitoreo</li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">B</span>Actualizar Parámetros de Monitoreo Vigente</li>
+           </ul>
+         </div>
+       </div>
+     </div>
+     <div class="col">
+       <div class="card h-100">
+         <div class="card-body text-center">
+           <span class="display-2 fw-bold d-block"><i class="bi bi-sliders text-primary"></i></span>
+           <a href="{{ url_for('views_api.administrar_thingsboard') }}" class="fs-5 lead text-decoration-none stretched-link mt-2">Gestión de Parámetros AR</a>
+         </div>
+         <div class="card-body">
+           <ul class="list-group list-group-flush">
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">A</span>Definición de distancia máxima </li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">B</span>Edición Umbrales de Alerta por Estructura</li>
            </ul>
          </div>
        </div>

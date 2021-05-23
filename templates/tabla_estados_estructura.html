@@ -3,7 +3,7 @@
   <div class="col">
     <div class="card h-100">
       <div class="card-body">
-        <h2 class="card-title">Estado de Daño</h2>
+        <h4 class="card-title">Estado de Daño</h4>
         <p class="card-text">Estado ...</p>
       </div>
       <div class="card-footer">
@@ -15,15 +15,15 @@
   {%endif%}
   {%if estado%}
   <div class="col">
-    <div class="card h-200">
+    <div class="card h-100">
       <div class="card-body row">
         <div class="col">
-        <h2 class="card-title">Estado Estructura Global</h2>
-        <p class="card-text"><strong>{{estado.estado}} </strong><i class="bi bi-circle-fill" id="global-circle"></i></p>
+          <h4 class="card-title">Estado Estructura Global</h4>
+          <p class="card-text"><strong>{{estado.estado}} </strong><i class="bi bi-circle-fill" id="global-circle"></i></p>
         </div>
         <div class="col">
-        <h2 class="card-title">Nivel de Seguridad</h2>
-        <p class="card-text font-weight-bold"><strong>{{estado.seguridad}} </strong><i class="bi bi-circle-fill" id="seg-circle"></i></p>
+          <h4 class="card-title">Nivel de Seguridad</h4>
+          <p class="card-text font-weight-bold"><strong>{{estado.seguridad}} </strong><i class="bi bi-circle-fill" id="seg-circle"></i></p>
         </div>
       </div>
       <div class="card-footer">

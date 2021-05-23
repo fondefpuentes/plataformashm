@@ -63,15 +63,14 @@ def index():
 @views_api.route('/profile')
 @login_required
 def profile():
-    puentes = Estructura.query.all()
-    #Genera los markers para el mapa
-    markers = []
-    for i in puentes:
-        markers.append([i.coord_x, i.coord_y, i.tipo_activo.capitalize()+' '+i.nombre.capitalize(), i.id])
+    #Estructura: id, region, provincia, nombre, en_monitoreo
+    #EstadoDano: fecha y estado,
+    #Estado: fecha_estado,estado,seguridad
+    puentes = db.session.query(Estructura.id, Estructura.nombre, Estructura.region, Estructura.en_monitoreo, EstadoEstructura.fecha_estado, EstadoEstructura.estado, EstadoEstructura.seguridad).filter(EstadoEstructura.id_estructura == Estructura.id).order_by(Estructura.id,EstadoEstructura.fecha_estado.desc()).distinct(Estructura.id).all()
+
     #Variables para el template
     context = {
-        'puentes' : puentes,
-        'markers' : markers
+        'puentes' : puentes
     }
     return render_template('profile.html', **context)
 
@@ -1992,10 +1991,12 @@ def eliminar_dispositivo(id_device):
       
     flash("Sensor eliminado del registro.", 'info')  
     return redirect(url_for('views_api.administrar_dispositivos'))
+
+### THINGSBOARD ###
     
 #PERMISOS = ADMINISTRADOR
 #Acceso a Thingsboard
-@views_api.route('/thingsboard', methods=['GET'])
+@views_api.route('/gestion/thingsboard', methods=['GET'])
 @login_required
 def administrar_thingsboard():
   if(current_user.permisos == "Administrador"):  
@@ -2004,7 +2005,40 @@ def administrar_thingsboard():
     return render_template('panel_gestion_thingsboard.html',**context)
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
-  
+
+### MONITOREOS ###
+
+#PERMISOS = ADMINISTRADOR
+#Acceso a Monitoreos
+@views_api.route('/gestion/monitoreos', methods=['GET'])
+@login_required
+def administrar_monitoreos():
+  if(current_user.permisos == "Administrador"):  
+    puentes = Estructura.query.all()
+    context = {'puentes': puentes}
+    return render_template('panel_gestion_monitoreo.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+
+############################## Prueba JSON BootstrapTable #########################################
+@views_api.route('/cargar_estructuras', methods=['GET'])
+@login_required
+def cargar_estructuras_ajax():
+  if(current_user.permisos == "Administrador"):  
+    puentes = Estructura.query.all()
+    data = []
+    for element in puentes:
+      puente = {'Rol': element.rol,
+                'Nombre': {'nombre': element.nombre, 'ruta': "estructura/" + str(element.id)},
+                'Region': element.region,
+                'Provincia': element.provincia,
+                'Monitoreo': element.en_monitoreo }
+      data.append(puente)
+    return jsonify({'data': data})
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
 ###################### INTEGRACIÓN ALMACENAMIENTO HISTÓRICO ########################
 @views_api.route('/hconsulta/<int:id>', methods=["POST","GET"])
 def hconsulta(id):
@@ -2268,9 +2302,9 @@ def hgetdescarga(file_name):
     return redirect(url, code=302)
 
 
-   ############################### Ultima iteracion ##########################
+############################### Ultima iteracion ##########################
 
-    #Vista de mapa nueva
+#Vista de mapa nueva
 @views_api.route('/mapa')
 @login_required
 def mapa():

@@ -5,13 +5,13 @@
 {% endblock %}
 
 {% block content %}  
-		<div class="container-fluid px-4 py-2">
-       <h1 class="d-flex justify-content-center">Busqueda en Mapa</h1>
-       <div class="row mb-3">
+		<div class="container-fluid px-4 py-4">
+       <h1 class="d-flex justify-content-center py-2">Busqueda en Mapa</h1>
+       <div class="row mb-1">
          <div class="col-9">
 			    <form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
 			      <div class="row">
-					    <div class="input-group">
+					    <div class="input-group input-group-lg">
 			          <input id="autocomplete" type="text" class="form-select" name="autocomplete" placeholder="Buscar estructura" required list="estructuras" aria-label="Seleccion Puente"/>
 						    <datalist id="estructuras">
 							    {% for i in puentes %}
@@ -25,19 +25,16 @@
 				    </div>
 			    </form>
         </div>
-        <div class="col-3 ">
+        <div class="col-3">
           <form class="d-grid gap-2" action="{{url_for('views_api.profile')}}">
-            <button class="btn btn-outline-primary btn-md text-wrap">
-                <i class="bi bi-card-list"></i> Listado de Puentes
+            <button class="btn btn-outline-primary btn-lg text-wrap h-75">
+                <p class="text-center lead"><i class="bi bi-card-list"></i> Listado de Puentes</p>
             </button>
           </form>
         </div>
       </div>  
-      <div class=" row py-3 mt-4 h-100 w-100 d-inline-block">
-          <div id="map" style="min-height: 640px;
-    max-height: 480px;
-    height: 75%;
-    border-radius:5px;"></div>
+      <div class="mt-2 h-75 w-100 d-inline-block">
+          <div id="map" class="ratio ratio-21x9"></div>
       </div>
 		</div>
 {% endblock %}
