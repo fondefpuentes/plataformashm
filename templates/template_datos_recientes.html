@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="bg">
-        <iframe src="/dash" style="width:100vw; height:90vh;"></iframe>
-    </div>
+<div class="container-fluid px-5">
+        <div class="row">{% include 'breadcrumb.html' %}</div>
+        <h1 class="fs-3 mb-2">
+            {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }} :: Análisis de Mediciones Recientes
+        </h1>
+    <div class="ratio ratio-21x9">
+        <iframe  src="/dash" allowfullscreen></iframe>
+    </div>  
+</div>
 {% endblock %}
 

@@ -1,40 +1,39 @@
-<nav class="navbar fixed-top navbar-expand-md navbar-light bg-white">
+<nav class="shadow-sm navbar navbar-expand navbar-light" style="background: linear-gradient(to right, rgba(255, 255, 255, 0.45), rgba(200,200,200,0.45));">
 	<a class="navbar-brand px-3" href="{{ url_for('views_api.index') }}" >
-		<img src="/static/images/logoSHMchile.png" class="img-thumbnail d-inline-block align-top" width="60" height="60">
+		<img src="/static/images/logoSHMchile.png" class="img-thumbnail d-inline-block align-top" width="50" height="50">
 	</a>
-	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".dual-nav" aria-controls="navbarNav">
-		<span class="navbar-toggler-icon"></span>
-	</button>
-
-	<div class="navbar-collapse collapse dual-nav order-4 order-md-4 justify-content-end">
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+  </button>
+	<div class="container-fluid justify-content-end collapse navbar-collapse" id="navbarText"">    
 		<ul class="navbar-nav">
 		{% if current_user.is_authenticated %}
-			<!--li class="nav-item">
+			<!--
+      <li class="nav-item">
 				<a class="nav-link px-3" href="{{url_for('views_api.grupos_usuario')}}">Mis sensores</a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link px-3" href="{{url_for('views_api.informes_monitoreo_usuario')}}">Mis informes</a>
-			</li-->			
+			</li>
+      -->			
 			
 			{% if current_user.permisos == "Administrador" %}
-				<li class="nav-item">
-					<a class="nav-link px-3" href="{{ url_for('views_api.administrar_usuarios') }}">Usuarios</a>
-				</li>
+      <li class="nav-item px-1">
+        <a class="btn btn-outline-light text-dark btn-md" role="button" href="{{ url_for('views_api.panel_administracion') }}"><i class="bi bi-gear-wide-connected"></i> Panel de Gestión</a>
+      </li>
 			{% endif %}
-			<li class="nav-item">
-				<a class="nav-link px-3 " href="{{url_for('views_api.mi_cuenta')}}">Mi Cuenta</a>
+      <li class="nav-item px-1"> 
+			  <a class="btn btn-outline-light text-dark btn-md" role="button" href="{{url_for('views_api.mi_cuenta')}}"><i class="bi bi-person-circle"></i> Mi Cuenta</a>
 			</li>
-			<li class="nav-item">
-			<a class="nav-link px-3" href="{{ url_for('views_api.logout') }}">Cerrar sesión</a>
-			</li>
-		{% endif %}
+      <li class="nav-item px-1">
+        <a class="btn btn-outline-light text-dark btn-md" role="button" href="{{ url_for('views_api.logout') }}"><i class="bi bi-door-open-fill"></i> Cerrar sesión</a>
+	    </li>
+   {% endif %}
+   
    {% if not current_user.is_authenticated %}
-			<li class="nav-item">
-				<a class="nav-link px-3" href="{{ url_for('views_api.login') }}">Acceder</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link px-3" href="{{ url_for('views_api.signup') }}">Registrarse</a>
-			</li>
+      <li class="nav-item px-1">
+        <a class="btn btn-outline-light text-dark btn-md" role="button" href="{{ url_for('views_api.signup') }}"><i class="bi bi-person-plus-fill"></i> Registrarse</a>
+      </li>
 		{% endif%}
 		</ul>
 	</div>

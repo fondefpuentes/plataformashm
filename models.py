@@ -17,18 +17,18 @@ class Usuario(UserMixin, db.Model):
     permisos = db.Column(db.String(20))
     # validado = db.Column(db.Boolean)
 
-    def verify_email(self, email):
-        user = self.query.filter_by(id=email).first()
+    def verify_email(email):
+        user = Usuario.query.filter_by(id=email).first()
         return user
 
-    def verify_reset_token(self, token):
+    def verify_reset_token(token):
         try:
             username = jwt.decode(token, key=current_app.config['SECRET_KEY'])['reset_password']
             # print(username)
         except Exception as e:
             # print(e)
             return
-        return self.query.filter_by(id=username).first()
+        return Usuario.query.filter_by(id=username).first()
 
     def get_reset_token(self, expires=500):
         print(self.id)
@@ -56,7 +56,7 @@ class ElementoEstructural(db.Model):
 class Estructura(db.Model):
     __tablename__ = 'estructuras'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre = db.Column(db.String(100))
     rol = db.Column(db.String(20))
     nombre_camino = db.Column(db.String(1000))

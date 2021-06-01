@@ -9,15 +9,13 @@
 	<link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-5 py-3">
-	<div class="row">
-		{% include 'breadcrumb.html' %}
-	</div>
+{% include 'breadcrumb.html' %}
+<div class="container-fluid px-4 py-2">
   <div class="card h-100 mb-5">
     <div class="row card-body">
       <div class="col-6">
-        <h1 class="title py-3">{{usuario.nombre}} {{usuario.apellido}}</h1>
-        <p>Permiso Actual: <b>{{usuario.permisos}}</b></p>
+        <h1 class="py-2">{{usuario.nombre}} {{usuario.apellido}}</h1>
+        <p class="lead">Permiso Actual: <b>{{usuario.permisos}}</b></p>
       </div>
       <div class="col-6 d-flex justify-content-end"><img src="/static/images/imagen_no_disponible.png" class="img-fluid img-thumbnail w-25" alt="..."></div>
     </div>
@@ -27,7 +25,7 @@
   </div>
   
   <div class="border-bottom">
-		<p class="h4">Consultas de mediciones históricas disponibles</p>
+		<p class="h3">Consultas de mediciones históricas disponibles</p>
 	</div>		
 	
   <table
@@ -38,7 +36,7 @@
 		data-search="true"
 		data-maintain-meta-data="true"
 		data-locale="es-ES">
-		<thead class="thead-dark">
+		<thead class="table-dark">
 		<tr class="tr-class-1">
 			<th data-field="nombre_puente" data-sortable="true">Puente</th>
 			<th data-field="nombre_region" data-sortable="true">Región</th>
@@ -67,8 +65,8 @@
 	</table>
  
 
-	<div class="border-bottom mt-3">
-		<p class="h4">Descargas de mediciones históricas disponibles</p>
+	<div class="border-bottom mt-5">
+		<p class="h3">Descargas de mediciones históricas disponibles</p>
 	</div>
  
 	<table
@@ -79,7 +77,7 @@
 		data-search="true"
 		data-maintain-meta-data="true"
 		data-locale="es-ES">
-		<thead class="thead-dark">
+		<thead class="table-dark">
 		<tr>
 			<th data-field="nombre_puente" data-sortable="true">Puente</th>
 			<th data-field="nombre_region" data-sortable="true">Región</th>

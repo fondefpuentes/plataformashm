@@ -1,0 +1,31 @@
+<div class="row row-cols-1 row-cols-md-2 g-4">
+  {%for elem in elementos%}
+  <div class="col">
+    <div class="card">
+      <div class="card-header"><span class="h3 lead me-3">{{elem.descripcion}}</span></div>
+      <div class="card-body">
+        <form class="d-grid gap-2 col" method="POST" action="{{url_for('views_api.editar_elemento',id_elemento=elem.id)}}">
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombre" name="descripcion" value="{{elem.descripcion}}" required>
+          </div>
+          <div class="mb-3">
+            <label for="material" class="form-label">Material</label>
+            <input type="text" class="form-control" id="material" name="material" value="{{elem.material}}" required>
+          </div>
+          <div class="mb-3">
+            <label for="select_tipo" class="form-label">Tipo de Elemento Estructural</label>
+            <select id="select_tipo" class="form-select" name="tipo_zona" aria-label="Select Tipo" required>
+            {%for tipo in tipos%}
+            <option value="{{tipo.id}}" {%if tipo.id == elem.tipo_zona%}selected{%endif%}>{{tipo.nombre_zona}}</option>
+            {%endfor%}
+            </select>
+          </div>  
+          <button type="submit" class="btn btn-outline-success mb-3">Actualizar</button>
+        </form>
+        <form class="d-grid gap-2 col" method="POST" action="{{url_for('views_api.eliminar_elemento',id_elemento=elem.id)}}"><button type="submit" class="btn btn-outline-danger mb-3">Eliminar</button></form>  
+      </div>
+    </div>
+  </div>
+  {%endfor%}
+</div>

@@ -1,0 +1,59 @@
+<form id="update_form" class="row py-3" method="POST" action="{{url_for('views_api.editar_estructura',id_estructura = estructura.id)}}">
+  <div class="row py-3">
+    <div class="col-8 justify-content-md-start">
+      <h3><span class="badge bg-dark">{{estructura.rol}}</span>  {{estructura.nombre|title}}</h3>
+    </div>
+    <div class="col d-grid gap-2 d-md-flex justify-content-md-end">
+      <a class="btn btn-outline-primary" href="{{url_for('views_api.informacion_estructura',id=estructura.id)}}" role="button">Ver Perfil Estructura</a>
+      <button id="update-btn" type="submit" class="btn btn-outline-success" >Actualizar Estructura</button>
+      <button class="btn btn-outline-danger" formaction="{{url_for('views_api.eliminar_estructura',id_estructura=estructura.id)}}" formmethod="post">Eliminar Estructura</button>
+    </div>
+  </div>
+  <div class="col-6">
+    <h5 class="border-bottom border-2 py-1">Detalles de Estructura</h5>
+    <dl class="row">
+      <dt class="col-sm-3">Nombre</dt>
+      <dd class="col-sm-9"><input name="nombre" type="text" class="form-control" value="{{ estructura.nombre }}" required/></dd>
+      <dt class="col-sm-3">Tipo de Activo</dt>
+      <dd class="col-sm-9"><input name="tipo_activo" type="text" class="form-control" value="{{ estructura.tipo_activo}}" readonly required/></dd>
+      <dt class="col-sm-3">Rol</dt>
+      <dd class="col-sm-9"><input name="rol" type="text" class="form-control" value="{{ estructura.rol }}" required/></dd>
+      <dt class="col-sm-3">Largo</dt>
+      <dd class="col-sm-9"><input name="largo" type="number" step="any" class="form-control" value="{{ estructura.largo }}" required/></dd>
+      <dt class="col-sm-3">Ancho total</dt>
+      <dd class="col-sm-9"><input name="ancho_total" type="number" step="any" class="form-control" value="{{ estructura.ancho_total }}" required/></dd>
+      <dt class="col-sm-3">Estribo</dt>
+      <dd class="col-sm-9"><input name="mat_estrib" type="text" class="form-control" value="{{ estructura.mat_estrib }}" /></dd>
+      <dt class="col-sm-3">Piso</dt>
+      <dd class="col-sm-9"><input name="piso" type="text" class="form-control" value="{{ estructura.piso }}" /></dd>
+      <dt class="col-sm-3">Vigas</dt>
+      <dd class="col-sm-9"><input name="mat_vigas" type="text" class="form-control" value="{{ estructura.mat_vigas }}" /></dd>
+      <dt class="col-sm-3 border-top">Cepas</dt>
+      <dd class="col-sm-9">
+        <dl class="row border-top">
+          <dt class="col-sm-3">Cantidad</dt>
+          <dd class="col-sm-9"><input name="num_cepas" type="number" class="form-control col-6 px-2" value="{{estructura.num_cepas}}"/></dd>
+          <dt class="col-sm-3">Material</dt>
+          <dd class="col-sm-9"><input name="mat_cepas" type="text" class="form-control col-6 px-2" value="{{estructura.mat_cepas}}"/></dd>
+          </dl>
+      </dd>
+    </dl>
+  </div>
+  <div class="col-6">
+    <h5 class="border-bottom border-2 py-1">Detalles de Ubicación</h5>
+    <dl class="row">
+      <dt class="col-sm-3">Camino</dt>
+      <dd class="col-sm-9"><input name="nombre_camino" type="text" class="form-control" value="{{ estructura.nombre_camino }}" required/></dd>
+      <dt class="col-sm-3">Cauce de quebrada</dt>
+      <dd class="col-sm-9"><input name="cauce_queb" type="text" class="form-control" value="{{ estructura.cauce_queb }}" required/></dd>
+      <dt class="col-sm-3">Región</dt>
+      <dd class="col-sm-9"><input name="region" type="text" class="form-control" value="{{ estructura.region| title  }}" required/></dd>
+      <dt class="col-sm-3">Provincia</dt>
+      <dd class="col-sm-9"><input name="provincia" type="text" class="form-control" value="{{ estructura.provincia| title  }}" required/></dd>
+      <dt class="col-sm-3">Latitud</dt>
+      <dd class="col-sm-9"><input name="coord_x" type="number" step="any" class="form-control" value="{{ estructura.coord_x }}" required/></dd>
+      <dt class="col-sm-3">Longitud</dt>
+      <dd class="col-sm-9"><input name="coord_y" type="number" step="any" class="form-control" value="{{ estructura.coord_y }}" required/></dd>
+    </dl>
+  </div>
+</form>
