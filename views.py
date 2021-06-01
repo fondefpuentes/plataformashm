@@ -2020,8 +2020,72 @@ def administrar_monitoreos():
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
 
+#PERMISOS = ADMINISTRADOR
+#Inicio de Monitoreo en una Estructura
+@views_api.route('/gestion/iniciar_monitoreo/<int:id_estructura>', methods=['GET'])
+@login_required
+def iniciar_monitoreo_gestion(id_estructura):
+  if(current_user.permisos == "Administrador"):  
+    puente = Estructura.query.filter_by(id = id_estructura).first()
+    context = {'puente': puente}
+    return render_template('iniciar_monitoreo.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
 
-############################## Prueba JSON BootstrapTable #########################################
+#PERMISOS = ADMINISTRADOR
+#Verificar conexión con Thingsboard
+@views_api.route('/check_thingsboard_instance', methods=['POST'])
+@login_required
+def check_thingsboard_instance():
+  if(current_user.permisos == "Administrador"):  
+    ip_instancia = request.form.get('ip_instancia')
+    username = request.form.get('user')
+    password = request.form.get('passw')
+    if not ip_instancia:
+      return jsonify({'error':render_template('error.html',message = "Por Favor Ingrese una Dirección. ")})
+    try:
+      api_key_url = requests.post(ip_instancia + '/api/auth/login',data='{"username":"' + username +  '" , "password": "'+ password +'" }', headers={'Content-Type': 'application/json','Accept': 'application/json'})
+      json_response = api_key_url.json()
+      
+      if "token" in json_response:
+        #Generacion de API_KEY para autentificacion en Swagger
+        x_auth = 'Bearer ' + json_response['token']
+        
+        #Peticion a Swagger de DEVICES
+        response = requests.get( ip_instancia + '/api/tenant/deviceInfos?pageSize=20&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth},)
+        json_devices = response.json()
+        
+        devices = {}
+        devices['data'] = []
+        for device in json_devices['data']:
+          device = {'uuid' : device['id']['id'],
+                    'name' : device['name'],
+                    'type' : device['type']
+          }
+          devices['data'].append(device)
+        
+        tipos_de_elementos = TipoElemento.query.all()
+        tipos_de_sensor = TipoSensor.query.all()
+        context = {'response': devices,
+                   'tipo_elemento': tipos_de_elementos,
+                   'tipo_sensor': tipos_de_sensor}
+        return jsonify({'htmlresponse':render_template('form_inicio_monitoreo.html',**context)})
+      else:
+        return jsonify({'error':render_template('error.html',message = "Fallo en la Autentificación.")})
+      
+    except requests.exceptions.HTTPError as e:
+      return jsonify({'error':render_template('error.html',message = "Dirección no válida.")})
+    except requests.exceptions.MissingSchema as e:
+      return jsonify({'error':render_template('error.html',message = "Anteponga 'http://' a su dirección.")})
+    except requests.exceptions.InvalidURL as e: 
+      return jsonify({'error':render_template('error.html',message = "Compruebe la Dirección entregada e intente nuevamente.")})
+      
+    except requests.exceptions.ConnectionError as e:
+      return jsonify({'error':render_template('error.html',message = "Dirección no válida, verifique si añadió el puerto.")})
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+############################## Prueba JSON DataTable #########################################
 @views_api.route('/cargar_estructuras', methods=['GET'])
 @login_required
 def cargar_estructuras_ajax():
@@ -2033,7 +2097,8 @@ def cargar_estructuras_ajax():
                 'Nombre': {'nombre': element.nombre, 'ruta': "estructura/" + str(element.id)},
                 'Region': element.region,
                 'Provincia': element.provincia,
-                'Monitoreo': element.en_monitoreo }
+                'Monitoreo': {'monitoreo': element.en_monitoreo, 'ruta': url_for('views_api.iniciar_monitoreo_gestion',id_estructura = element.id)}
+                }
       data.append(puente)
     return jsonify({'data': data})
   else:

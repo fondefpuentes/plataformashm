@@ -100,8 +100,8 @@
         { data: 'Provincia'},
         { data: 'Monitoreo',
           render: function ( data, row ) {
-            if(!data){
-              return  '<div class="d-grid gap-2"><button type="button" class="btn btn-outline-primary">Iniciar Monitoreo</button></div>';
+            if(!data.monitoreo){
+              return  '<div class="d-grid gap-2"><a class="btn btn-outline-primary" href="' + data.ruta + '" role="button">Iniciar Monitoreo</a>';
             }
             else{
               return '<div class="d-grid gap-2"><button type="button" class="btn btn-primary " disabled> En Monitoreo</button></div>';
@@ -113,36 +113,6 @@
         url: "{{ url_for('static', filename='i18n/es_es.json') }}"
     }
   } );
-    function load_data(id_estructura)
-    {
-      $.ajax(
-      {
-        url:"/gestion/elementos/retrieve/" + id_estructura,
-        method:"POST",
-        success:function(data)
-          {
-            $('#result').html(data);
-            $('#result').append(data.htmlresponse);
-          }
-      });
-    }
-    
-    $('#search-btn').click(function(e)
-    {
-      e.preventDefault();
-      var id_puente = $('#select_puente').val();
-      var data = id_puente.split(" ",1);
-      load_data(data);
-    }); 
-    
-    $('#create-btn').click(function(e)
-    {
-      e.preventDefault();
-      var id_estructura = $('#estructura_select').val();
-      var data_id = id_estructura.split(" ",1);
-      $('#estructura_select').val(data_id);
-      $('#create-form').submit();
-    }); 
     
 
     if($('#modal-msg').length){

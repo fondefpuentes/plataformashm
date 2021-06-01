@@ -1,0 +1,33 @@
+{% if response.data %}
+<form class="">
+<div class="p-2 my-3 card">
+  <h4><span class="fs-6 badge bg-dark me-3 mb-3">B</span>Añadir Elementos Estructurales</h4>
+  <div class="input-group mb-3 col-8">
+    <span class="input-group-text">Nombre Elemento</span>
+    <input type="text" name="nombre_elemento[]" class="form-control m-input" placeholder="Tablero - default" autocomplete="off">
+  </div>
+  <div id="newRow"></div>
+  <button id="addRow" type="button" class="btn btn-primary col-2">Add Row</button>
+  
+</div>
+<div class="p-2 my-3 card">
+  <h4><span class="fs-6 badge bg-dark me-3 mb-3">C</span>Añadir DAQs</h4>
+  {%for daq in response.data%}
+    {%if daq.type == "daq" %}
+      {{daq.uuid}}<br>{{daq.name}}
+    {%endif%}
+  {%endfor%}
+</div>
+<div class="p-2 my-3 card">
+  <h4><span class="fs-6 badge bg-dark me-3 mb-3">D</span>Añadir Sensores</h4>
+  {%for device in response.data%}
+    {%if device.type != "daq" %}
+      {{device.uuid}}<br>{{device.name}}<br>{{device.type}}
+    {%endif%}
+  {%endfor%}
+</div>
+{%else%}
+<div class="p-2 my-3 card">
+  {{response}}
+</div>
+{%endif%}
