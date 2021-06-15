@@ -1792,8 +1792,11 @@ def deteccion_temprana(id_puente):
             # dano = getDamage(id_puente, 'AC05', 0)
             # print(dano)
             # getCoef(id_puente, 'AC05', 0)
-            resetAllAnomally(id_puente)
-            addAnomallyAll(id_puente)
+            # resetAllAnomally(id_puente)
+            # addAnomallyAll(id_puente)
+            # deleteFirstReporteDano()
+            # aplicar_modelo(17)
+            propagation() 
             # try:
             #     num_rows_deleted = db.session.query(AnomaliaPorHora).delete()
             #     db.session.commit()
