@@ -14,7 +14,7 @@ from matplotlib import pyplot
 from statsmodels.tsa.ar_model import AutoReg, ar_select_order
 from statsmodels.tsa.api import acf, pacf, graphics
 from sklearn.metrics import mean_squared_error
-from datetime import datetime 
+from datetime import datetime
 from math import sqrt
 from .peaks import scpa
 from .data import getDataDay, getParquetDay
@@ -225,34 +225,38 @@ def propagation():
     try:
         puentes = Estructura.query.filter_by(en_monitoreo = True)
         for puente in puentes:
-            print(puente.nombre)
+            # print(puente.nombre)
             elementos = ElementoEstructural.query.filter_by(id_estructura = puente.id)
             dano_elemento_count = 0
             for elemento in elementos:
-                print(elemento.descripcion)
+                # print(elemento.descripcion)
                 dano_sensor_count = 0
                 sensores = db.session.query(Estructura.id.label('id_puente'), Estructura.nombre.label('nombre_puente'), ElementoEstructural.id.label('id_elemento'), ElementoEstructural.descripcion.label('nombre_elemento'), SensorInstalado.id.label('si'), DescripcionSensor.descripcion.label('nombre')).filter(Estructura.id == puente.id, ElementoEstructural.id == elemento.id ,SensorInstalado.id_zona == elemento.id, SensorInstalado.id == DescripcionSensor.id_sensor_instalado)
                 # print(len(sensores))
-                for sensor in sensores:
-                    print(sensor.id_puente, sensor.nombre_puente, sensor.id_elemento, sensor.nombre_elemento, sensor.si, sensor.nombre)
+                for sensor in sensores:     # Se analiza cada sensor
+                    # print(sensor.id_puente, sensor.nombre_puente, sensor.id_elemento, sensor.nombre_elemento, sensor.si, sensor.nombre)
                     dano_sensor = EstadoDanoSensor.query.filter_by(id_sensor_instalado = sensor.si).first()
                     anomalia = AnomaliaPorHora.query.filter_by(id_sensor_instalado = sensor.si).order_by(AnomaliaPorHora.hora_calculo.desc()).first()
                     if(not anomalia):
                         continue
-                    tiempo_estado = dano_sensor.diahora_calculo - tiempo_ahora
-                    tiempo_anomalia = anomalia.hora_calculo - tiempo_ahora
-                    print(anomalia.anomalia, dano_sensor.estado, dano_sensor_count)
+                    tiempo_estado = tiempo_ahora - dano_sensor.diahora_calculo
+                    tiempo_anomalia = tiempo_ahora - anomalia.hora_calculo
+                    # print("TIEMPO ANOMALIA", tiempo_anomalia.days)
+                    # print(anomalia.anomalia, dano_sensor.estado, dano_sensor_count)
+                    # Anomalia Detectada
                     if(anomalia.anomalia and (dano_sensor.estado != _estados_sensor[1] or dano_sensor.estado != _estados_sensor[3]) and tiempo_estado.days <= 2):
-                        dano_sensor.estado = _estados_sensor[1] 
+                        dano_sensor.estado = _estados_sensor[1]
                         dano_sensor.diahora_calculo = tiempo_ahora
                         db.session.commit()
                         if(flag_estado_sensor == 0):
                             dano_sensor_count += 1
-                    elif(not anomalia.anomalia and dano_sensor.estado != _estados_sensor[0] and tiempo_estado.days >= 2):
+                    # Sin daño
+                    elif(not anomalia.anomalia and dano_sensor.estado != _estados_sensor[0] and tiempo_anomalia.days >= 2):
                         dano_sensor.estado = _estados_sensor[0]
                         dano_sensor.diahora_calculo = tiempo_ahora
                         db.session.commit()
-                    elif(not anomalia.anomalia and dano_sensor.estado != _estados_sensor[2] and tiempo_estado.days <= 2):
+                    # Anomalia Intermitente
+                    elif(not anomalia.anomalia and dano_sensor.estado != _estados_sensor[2] and tiempo_anomalia.days <= 2):
                         dano_sensor.estado = _estados_sensor[2]
                         dano_sensor.diahora_calculo = tiempo_ahora
                         db.session.commit()
@@ -261,6 +265,7 @@ def propagation():
                                 flag_estado_sensor = 1
                                 dano_sensor_count = 0
                             dano_sensor_count += 1
+                    # Daño detectado
                     elif(anomalia.anomalia and dano_sensor.estado != _estados_sensor[3] and tiempo_estado.days >= 2):
                         dano_sensor.estado = _estados_sensor[3]
                         dano_sensor.diahora_calculo = tiempo_ahora
@@ -285,12 +290,12 @@ def propagation():
                     if(dano_sensor_count == 1):
                         estado_elemento.diahora_calculo = tiempo_ahora
                         estado_elemento.estado = _estados_elemento[1]
-                        db.session.commit() 
+                        db.session.commit()
 
                     elif(dano_sensor_count > 1):
                         estado_elemento.diahora_calculo = tiempo_ahora
                         estado_elemento.estado = _estados_elemento[4]
-                        db.session.commit() 
+                        db.session.commit()
 
                     if(flag_estado_elemento == 0):
                         dano_elemento_count += 1
@@ -299,12 +304,12 @@ def propagation():
                     if(dano_sensor_count == 1):
                         estado_elemento.diahora_calculo = tiempo_ahora
                         estado_elemento.estado = _estados_elemento[2]
-                        db.session.commit() 
+                        db.session.commit()
 
                     elif(dano_sensor_count > 1):
                         estado_elemento.diahora_calculo = tiempo_ahora
                         estado_elemento.estado = _estados_elemento[5]
-                        db.session.commit() 
+                        db.session.commit()
 
                     if(flag_estado_elemento <= 1):
                         if(flag_estado_elemento < 1):
@@ -316,12 +321,12 @@ def propagation():
                     if(dano_sensor_count == 1):
                         estado_elemento.diahora_calculo = tiempo_ahora
                         estado_elemento.estado = _estados_elemento[3]
-                        db.session.commit() 
+                        db.session.commit()
 
                     elif(dano_sensor_count > 1):
                         estado_elemento.diahora_calculo = tiempo_ahora
                         estado_elemento.estado = _estados_elemento[6]
-                        db.session.commit() 
+                        db.session.commit()
 
                     if(flag_estado_elemento <= 2):
                         if(flag_estado_elemento < 2):
