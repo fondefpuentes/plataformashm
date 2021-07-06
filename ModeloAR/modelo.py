@@ -16,8 +16,8 @@ from statsmodels.tsa.api import acf, pacf, graphics
 from sklearn.metrics import mean_squared_error
 from datetime import datetime
 from math import sqrt
-from .peaks import scpa
-from .data import getDataDay, getParquetDay
+from .peaks import *
+from .data import getDataDay, getParquetDay, getParquetHourly
 from models import *
 from sqlalchemy import func
 
@@ -57,60 +57,86 @@ def mahalanobisScipy(x=None, data=None, cov=None): # (xi - x_mean)^T * cov^-1 * 
         mahal.append(dist*dist)
     return list(mahal)
 
-def aplicar_modelo_total():
+def aplicar_modelo_total(day, hora, id_puente, sensores, total):
     for hora in range(24):
         print("Hora = ", hora)
-        aplicar_modelo(hora)
+        aplicar_modelo(day, hora, id_puente, sensores, total)
 
 
-def applyCoef(serie):
+def applyCoef(serie, cant_series, lags):
     model = []
-    for i in range(3):
-        model.append(AutoReg(serie[i], lags = [1,2,3,4,5,6], old_names=True))
+    for i in range(cant_series):
+        model.append(AutoReg(serie[i], lags = lags, old_names=True))
     model_fit = []
-    for i in range(3):
+    for i in range(cant_series):
         model_fit.append(model[i].fit())
     coef = [x.params for x in model_fit]
     return coef
 
 
-def aplicar_modelo(hora):
-    sensor = 'AC05'
-    day = datetime(2021, 5, 30, 00, 00)
-    date = str(day.day).zfill(2) + '_' + str(day.month).zfill(2) + '_' + str(day.year)
-    data = getParquetDay(sensor, date, hora)
-    time = data['timestamp']
+def aplicar_modelo(day, hora, id_puente, sensores, total):
     try:
-        x = np.array(data['x'])
+        config = ConfiguracionModeloAR.query.filter_by(id_estructura = id_puente).first()
     except:
-        x = np.array(0)
-    try:
-        y = np.array(data['y'])
-    except:
-        y = np.array(0)
-    try:
-        z = np.array(data['z'])
-    except:
-        z = np.array(0)
-    if x.any(): series_x = scpa(time, x, 3, 60)
-    if y.any(): series_y = scpa(time, y, 3, 60)
-    if z.any(): series_z = scpa(time, z, 3, 60)
-    sens_x = []
-    sens_y = []
-    sens_z = []
-    for i in range(0,3):
-        if x.any(): sens_x.append(np.array(x[series_x[i][0]:series_x[i][-1]]))
-        if y.any(): sens_y.append(np.array(y[series_y[i][0]:series_y[i][-1]]))
-        if z.any(): sens_z.append(np.array(z[series_z[i][0]:series_z[i][-1]]))
-    if x.any(): x_coef = applyCoef(sens_x)
-    if y.any(): y_coef = applyCoef(sens_y)
-    if z.any(): z_coef = applyCoef(sens_z)
-    # print("x coef = ", x_coef)
-    # print("y coef = ", y_coef)
-    # print("z coef = ", z_coef)
-    if x.any(): saveCoef(time[0], sensor, x_coef, axis = 0)
-    if y.any(): saveCoef(time[0], sensor, y_coef, axis = 1)
-    if z.any(): saveCoef(time[0], sensor, z_coef, axis = 2)
+        print("Error en configuración")
+        return
+    for sensor_completo in sensores:
+        sensor = sensor_completo.nombre_sensor
+        if(total == True):
+            data = getParquetDay(sensor, day, hora)
+        else:
+            data = getParquetHourly(sensor, day, hora)
+        if(data.empty):
+            print("Sensor", sensor, "no existe")
+            continue
+        time = data['timestamp']
+        try:
+            x = np.array(data['x'])
+        except:
+            x = np.array(0)
+        try:
+            y = np.array(data['y'])
+        except:
+            y = np.array(0)
+        try:
+            z = np.array(data['z'])
+        except:
+            z = np.array(0)
+        if(config.tipo_peaks == 0):
+            if x.any(): series_x = scpa(time, x, config.numero_peaks, config.tiempo_peaks_segundos)
+            if y.any(): series_y = scpa(time, y, config.numero_peaks, config.tiempo_peaks_segundos)
+            if z.any(): series_z = scpa(time, z, config.numero_peaks, config.tiempo_peaks_segundos)
+        elif(config.tipo_peaks == 1):
+            if x.any(): series_x = sdpa(time, x, config.numero_peaks, config.tiempo_peaks_segundos)
+            if y.any(): series_y = sdpa(time, y, config.numero_peaks, config.tiempo_peaks_segundos)
+            if z.any(): series_z = sdpa(time, z, config.numero_peaks, config.tiempo_peaks_segundos)
+        elif(config.tipo_peaks == 2):
+            if x.any(): series_x = smaxe(time, x, config.numero_peaks, config.tiempo_peaks_segundos)
+            if y.any(): series_y = smaxe(time, y, config.numero_peaks, config.tiempo_peaks_segundos)
+            if z.any(): series_z = smaxe(time, z, config.numero_peaks, config.tiempo_peaks_segundos)
+        elif(config.tipo_peaks == 3):
+            if x.any(): series_x = smine(time, x, config.numero_peaks, config.tiempo_peaks_segundos)
+            if y.any(): series_y = smine(time, y, config.numero_peaks, config.tiempo_peaks_segundos)
+            if z.any(): series_z = smine(time, z, config.numero_peaks, config.tiempo_peaks_segundos)
+        else:
+            print("Error tipo modelo")
+            return
+        sens_x = []
+        sens_y = []
+        sens_z = []
+        for i in range(0,3):
+            if x.any(): sens_x.append(np.array(x[series_x[i][0]:series_x[i][-1]]))
+            if y.any(): sens_y.append(np.array(y[series_y[i][0]:series_y[i][-1]]))
+            if z.any(): sens_z.append(np.array(z[series_z[i][0]:series_z[i][-1]]))
+        if x.any(): x_coef = applyCoef(sens_x, config.numero_peaks, config.cantidad_coeficientes_ar)
+        if y.any(): y_coef = applyCoef(sens_y, config.numero_peaks, config.cantidad_coeficientes_ar)
+        if z.any(): z_coef = applyCoef(sens_z, config.numero_peaks, config.cantidad_coeficientes_ar)
+        # print("x coef = ", x_coef)
+        # print("y coef = ", y_coef)
+        # print("z coef = ", z_coef)
+        if x.any(): saveCoef(time[0], sensor, x_coef, axis = 0)
+        if y.any(): saveCoef(time[0], sensor, y_coef, axis = 1)
+        if z.any(): saveCoef(time[0], sensor, z_coef, axis = 2)
 
 
 def saveCoef(hora, sensor, data, axis = 0):  # Guarda los coeficientes en la base de datos
@@ -168,27 +194,30 @@ def getDamage(puente_id, nombre_sensor):
                 coef_sensor.append(np.array(df2['valor']))
         coefdf = pd.DataFrame(coef_sensor)
         mh = mahalanobis(x=coefdf, data=coefdf)
-        if (analizeDamage(mh, 16, 3)):
+        if (analizeDamage(mh, puente_id)):
             flag_damage = True
     return flag_damage
 
-def analizeDamage(mahal, umbral_dist, umbral_num):
+def analizeDamage(mahal, id_puente):
+    config = ConfiguracionModeloAR.query.filter_by(id_estructura = id_puente).first()
     count = 0
     for dist in mahal:
-        if dist > umbral_dist:
+        if dist > config.umbral_distancia:
             count += 1
-    if count > umbral_num:
+    if count > config.cantidad_umbrales:
         return True
     else:
         return False
 
-def addAnomallyAll(id_puente):
+def addAnomallyAll(id_puente, sensores):
     try:
-        sensores_de_puente = db.session.query(SensorInstalado.id.label("si"), DescripcionSensor.descripcion.label("nombre_sensor")).filter(SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id).order_by(SensorInstalado.id.desc())
-        for sensor in sensores_de_puente:
-            anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = getDamage(id_puente, sensor.nombre_sensor))
-            db.session.add(anomalia)
-            db.session.commit()
+        for sensor in sensores:
+            damage = getDamage(id_puente, sensor.nombre_sensor)
+            anomalia = AnomaliaPorHora.query.filter_by(id_sensor_instalado = sensor.si).first()
+            if(anomalia != damage):
+                anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = damage)
+                db.session.add(anomalia)
+                db.session.commit()
     except:
         db.session.rollback()
 

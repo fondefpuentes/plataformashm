@@ -17,18 +17,18 @@ class Usuario(UserMixin, db.Model):
     permisos = db.Column(db.String(20))
     # validado = db.Column(db.Boolean)
 
-    def verify_email(self, email):
-        user = self.query.filter_by(id=email).first()
+    def verify_email(email):
+        user = Usuario.query.filter_by(id=email).first()
         return user
 
-    def verify_reset_token(self, token):
+    def verify_reset_token(token):
         try:
             username = jwt.decode(token, key=current_app.config['SECRET_KEY'])['reset_password']
             # print(username)
         except Exception as e:
             # print(e)
             return
-        return self.query.filter_by(id=username).first()
+        return Usuario.query.filter_by(id=username).first()
 
     def get_reset_token(self, expires=500):
         print(self.id)
@@ -56,7 +56,7 @@ class ElementoEstructural(db.Model):
 class Estructura(db.Model):
     __tablename__ = 'estructuras'
     __table_args__ = {'schema':'inventario_puentes'}
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre = db.Column(db.String(100))
     rol = db.Column(db.String(20))
     nombre_camino = db.Column(db.String(1000))
@@ -76,6 +76,9 @@ class Estructura(db.Model):
     dashboard = db.Column(db.String(500))
     ip_instancia = db.Column(db.String(100))
     en_monitoreo = db.Column(db.Boolean)
+    modelo_foto = db.Column(db.String(500))
+    modelo_degrada = db.Column(db.String(500))
+    
 
 class TipoSensor(db.Model):
     __tablename__ = 'tipos_de_sensor'
@@ -397,3 +400,16 @@ class CoeficienteAR(db.Model):
     valor = db.Column(db.Float)
     id_modelo_ar = db.Column(db.Integer, db.ForeignKey('inventario_puentes.modelo_ar.id'))
     numero = db.Column(db.Integer)
+    
+class ConfiguracionModeloAR(db.Model):
+    __tablename__ = 'configuracion_modelo_ar'
+    __table_args__ = {'schema':'inventario_puentes'}
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'))
+    cantidad_coeficientes_ar = db.Column(db.Integer)
+    umbral_distancia = db.Column(db.Float)
+    cantidad_umbrales = db.Column(db.Integer)
+    numero_peaks = db.Column(db.Integer)
+    tiempo_peaks_segundos = db.Column(db.Integer)
+    tipo_peaks = db.Column(db.Integer)
+    actualizacion_completa = db.Column(db.Boolean)

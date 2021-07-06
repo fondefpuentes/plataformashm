@@ -23,10 +23,9 @@ import time
 import atexit
 from apscheduler.schedulers.background import BackgroundScheduler
 from views import views_api
-from models import db, Usuario, AnomaliaPorHora, EstadoDanoSensor, SensorInstalado
-from ModeloAR.peaks import scpa, importado
-from ModeloAR.data import randomData
-from ModeloAR.modelo import propagation
+from models import db, Usuario, AnomaliaPorHora, EstadoDanoSensor, SensorInstalado, DescripcionSensor, Estructura, ConfiguracionModeloAR
+from ModeloAR.batch_job_last_hour import hourly_batch_job
+from ModeloAR.modelo import propagation, aplicar_modelo, deleteFirstReporteDano, addAnomallyAll
 
 
 app = Flask(__name__, template_folder='templates', static_folder='static', static_url_path='')
@@ -43,12 +42,25 @@ app.config.update(
 
 def actualizar_estados():
     print(time.strftime("%d. %B %Y %H:%M:%S"))
+    pathsensor = '/Users/angeloenrique/Dev/puentes/plataformashm/ModeloAR/Datos/Test'
+    ahora = dt.now()
     with app.app_context():
+        puentes = Estructura.query.filter_by(en_monitoreo = True)
+        for puente in puentes:
+            config = ConfiguracionModeloAR.query.filter_by(id_estructura = puente.id).first()
+            sensores = db.session.query(SensorInstalado.id.label("si"), DescripcionSensor.descripcion.label("nombre_sensor")).filter(SensorInstalado.id_estructura == puente.id, DescripcionSensor.id_sensor_instalado == SensorInstalado.id).order_by(SensorInstalado.id.asc())
+            if(config.actualizacion_completa):
+                print('Se actualiza todo')
+            else:
+                hourly_batch_job(pathsensor, sensores)
+                aplicar_modelo(ahora, ahora.hour, puente.id, sensores, False)
+                addAnomallyAll(puente.id, sensores)
+                deleteFirstReporteDano()
         propagation()
 
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true': # Se ejecuta cuando la app no esta en modo debug o en una rama principal (para evitar doble ejecucion)
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=actualizar_estados, trigger="interval", seconds=60)
+    scheduler.add_job(func=actualizar_estados, trigger="interval", seconds=60*60)
     scheduler.start()
     # Shut down the scheduler when exiting the app
     atexit.register(lambda: scheduler.shutdown())

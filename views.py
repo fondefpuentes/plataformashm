@@ -18,6 +18,7 @@ import requests
 from ModeloAR.modelo import *
 from ModeloAR.data import *
 from ModeloAR.visualization import *
+from ModeloAR.batch_job_last_hour import *
 
 views_api = Blueprint('views_api',__name__)
 
@@ -1774,7 +1775,7 @@ def deteccion_temprana(id_puente):
             esta_monitoreada = estructura.en_monitoreo
             #Se guarda momentaneamente el id del puente en la sesión actual
             session['id_puente'] = id_puente
-            lineplot = create_plot("AC05")
+            lineplot = create_plot(sensores[0].nombre_sensor)
             # estados = EstadoEstructura.query.filter_by(id_estructura=id_puente).order_by(EstadoEstructura.fecha_estado.desc()).all()
             context = {
                 'id_puente' : id_puente,
@@ -1788,6 +1789,7 @@ def deteccion_temprana(id_puente):
             return render_template('deteccion_temprana.html',**context)
         elif(request.method == "POST"):
             print("Reiniciando Anomalias")
+            # sensores = db.session.query(SensorInstalado.id.label("si"), DescripcionSensor.descripcion.label("nombre_sensor")).filter(SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id).order_by(SensorInstalado.id.asc())
             # aplicar_modelo_total()
             # dano = getDamage(id_puente, 'AC05', 0)
             # print(dano)
@@ -1795,8 +1797,10 @@ def deteccion_temprana(id_puente):
             # resetAllAnomally(id_puente)
             # addAnomallyAll(id_puente)
             # deleteFirstReporteDano()
-            # aplicar_modelo(17)
-            propagation() 
+            # aplicar_modelo(17, id_puente, sensores)
+            # propagation() 
+            # pathsensor = '/Users/angeloenrique/Dev/puentes/plataformashm/ModeloAR/Datos/Test'
+            # hourly_batch_job(pathsensor, ['AC05','AC06'])
             # try:
             #     num_rows_deleted = db.session.query(AnomaliaPorHora).delete()
             #     db.session.commit()

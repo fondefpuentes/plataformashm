@@ -28,24 +28,22 @@ def getDataDay(hora):
     directorio = "ModeloAR/Datos/"
     return pd.read_csv(directorio + "dia1_" + str(hora) + ".csv")
 
-def getParquetDay(sensor, date, hora):
+def getParquetDay(sensor, day, hora):
     path = '/Users/angeloenrique/Dev/puentes/plataformashm/ModeloAR/Datos/'
-    df = pd.read_parquet(path + sensor + '-' + date + '_dataset.parquet')
-    df = df.reset_index()
-    return (df[df['timestamp'].dt.hour == hora]).reset_index(drop=True)
-
-def traductor_nombre(sensor):
+    date = str(day.day).zfill(2) + '_' + str(day.month).zfill(2) + '_' + str(day.year)
     try:
-        conexion = psycopg2.connect(user="postgres",
-                                      password="puentes123",
-                                      host="54.207.253.104",
-                                      port="5432",
-                                      database="thingsboard")
-        print("Base de datos conectada")
-    except (Exception, psycopg2.DatabaseError) as err:
-        print("No se pudo conectar a la base de datos")
-        print(err)   
-    print('query traductor_nombre')
-    return pd.read_sql_query("SELECT name FROM public.device WHERE id = '"+str(sensor)+"'",conexion)['name'][0]
+        df = pd.read_parquet(path + sensor + '-' + date + '_dataset.parquet')
+        df = df.reset_index()
+        return (df[df['timestamp'].dt.hour == hora]).reset_index(drop=True)
+    except:
+        return pd.DataFrame()
 
-
+def getParquetHourly(sensor, day, hora):
+    path = '/Users/angeloenrique/Dev/puentes/plataformashm/ModeloAR/Datos/Test'
+    date = str(day.day).zfill(2) + '_' + str(day.month).zfill(2) + '_' + str(day.year) + '-' + str(hora) + '_00_00'
+    try:
+        df = pd.read_parquet(path + sensor + '-' + date + '-hour_data.parquet')
+        df = df.reset_index()
+        return df
+    except:
+        return pd.DataFrame()
