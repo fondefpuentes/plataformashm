@@ -1789,6 +1789,20 @@ def deteccion_temprana(id_puente):
             return render_template('deteccion_temprana.html',**context)
         elif(request.method == "POST"):
             print("Reiniciando Anomalias")
+            pathsensor = '/Users/angeloenrique/Dev/puentes/plataformashm/ModeloAR/Datos/Test'
+            ahora = dt.now()
+            puentes = Estructura.query.filter_by(en_monitoreo = True)
+            for puente in puentes:
+                config = ConfiguracionModeloAR.query.filter_by(id_estructura = puente.id).first()
+                sensores = db.session.query(SensorInstalado.id.label("si"), DescripcionSensor.descripcion.label("nombre_sensor")).filter(SensorInstalado.id_estructura == puente.id, DescripcionSensor.id_sensor_instalado == SensorInstalado.id).order_by(SensorInstalado.id.asc())
+                if(config.actualizacion_completa):
+                    print('Se actualiza todo')
+                else:
+                    hourly_batch_job(pathsensor, sensores)
+                    aplicar_modelo(ahora, ahora.hour, puente.id, sensores, False)
+                    addAnomallyAll(puente.id, sensores)
+                    deleteFirstReporteDano()
+            propagation()
             # sensores = db.session.query(SensorInstalado.id.label("si"), DescripcionSensor.descripcion.label("nombre_sensor")).filter(SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id).order_by(SensorInstalado.id.asc())
             # aplicar_modelo_total()
             # dano = getDamage(id_puente, 'AC05', 0)

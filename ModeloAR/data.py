@@ -41,8 +41,10 @@ def getParquetDay(sensor, day, hora):
 def getParquetHourly(sensor, day, hora):
     path = '/Users/angeloenrique/Dev/puentes/plataformashm/ModeloAR/Datos/Test'
     date = str(day.day).zfill(2) + '_' + str(day.month).zfill(2) + '_' + str(day.year) + '-' + str(hora) + '_00_00'
+    parquet_path = path + sensor + '-' + date + '-hour_data.parquet'
+    # print(parquet_path)
     try:
-        df = pd.read_parquet(path + sensor + '-' + date + '-hour_data.parquet')
+        df = pd.read_parquet(parquet_path)
         df = df.reset_index()
         return df
     except:

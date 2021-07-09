@@ -163,14 +163,19 @@ def hourly_batch_job(data_dir, sensors):
     print("hora final: ",tiempo_final)
 
     sensors_ids = get_sensor_names()
+    print(sensors_ids)
 
     #LOOP SENSORES
-    for sensor in sensors:  #Loop externo itera sobre cada sensor, para crear un archivo por sensor
+    for sensor_completo in sensors:  #Loop externo itera sobre cada sensor, para crear un archivo por sensor
         # filepath = data_dir+sensor+"_dataset.parquet"
         init = True #Crear archivo nuevo por cada sensor en la misma hora
         pqwriter = None
+        sensor = sensor_completo.nombre_sensor
         print("\nITERACIÓN DE SENSOR: ",sensor)
-        uuid = sensors_ids.loc[sensors_ids["nombre_sensor"]==sensor]["id"].values[0] #cruza de nombre sensor actual con tabla de uuid's
+        try:
+            uuid = sensors_ids.loc[sensors_ids["nombre_sensor"]==sensor]["id"].values[0] #cruza de nombre sensor actual con tabla de uuid's
+        except:
+            continue
         print("UUID de sensor: ",uuid)
 
         filepath = data_dir+"/"+sensor+"-"+tiempo_inicial.strftime("%d_%m_%Y-%H_%M_%S")+"-hour_data.parquet".replace("/", os.path.sep)

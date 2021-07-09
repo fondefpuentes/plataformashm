@@ -86,6 +86,7 @@ def aplicar_modelo(day, hora, id_puente, sensores, total):
             data = getParquetDay(sensor, day, hora)
         else:
             data = getParquetHourly(sensor, day, hora)
+            # print(data)
         if(data.empty):
             print("Sensor", sensor, "no existe")
             continue
