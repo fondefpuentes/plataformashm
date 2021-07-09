@@ -163,7 +163,6 @@ def hourly_batch_job(data_dir, sensors):
     print("hora final: ",tiempo_final)
 
     sensors_ids = get_sensor_names()
-    print(sensors_ids)
 
     #LOOP SENSORES
     for sensor_completo in sensors:  #Loop externo itera sobre cada sensor, para crear un archivo por sensor

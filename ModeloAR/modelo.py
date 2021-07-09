@@ -138,7 +138,21 @@ def aplicar_modelo(day, hora, id_puente, sensores, total):
         if x.any(): saveCoef(time[0], sensor, x_coef, axis = 0)
         if y.any(): saveCoef(time[0], sensor, y_coef, axis = 1)
         if z.any(): saveCoef(time[0], sensor, z_coef, axis = 2)
+        peaks_reales = getRealPeakNumber(id_puente, sensor)
+        peaks_objetivos = 24*config.numero_peaks
+        # print(peaks_reales, peaks_objetivos)
+        if(peaks_reales > peaks_objetivos):
+            deleteFirstReporteDano(sensor)
 
+
+def getRealPeakNumber(id_puente, nombre):
+    axis = 0
+    df = getCoef(id_puente, nombre, axis)
+    gb = df.groupby('reporte_dano_id')
+    dfs = [gb.get_group(x) for x in gb.groups]
+    column = dfs[0]["numero_modelo"]
+    max_value = column.max()
+    return (len(dfs)*(max_value + 1))
 
 def saveCoef(hora, sensor, data, axis = 0):  # Guarda los coeficientes en la base de datos
     try:
@@ -165,16 +179,18 @@ def getCoef(puente_id, nombre_sensor, eje):
     # print(df_coef.head())
     return df_coef
 
-def deleteFirstReporteDano():
+def deleteFirstReporteDano(nombre_sensor):
     try:
-        subquery = db.session.query(func.min(ReporteDanoAR.hora)).subquery()
-        query = db.session.query(ReporteDanoAR).filter(ReporteDanoAR.hora == subquery)
+        subquery = db.session.query(func.min(ReporteDanoAR.hora).label("min_hora")).filter(ReporteDanoAR.id_sensor_instalado == DescripcionSensor.id_sensor_instalado, DescripcionSensor.descripcion == nombre_sensor).first()
+        query = db.session.query(ReporteDanoAR).filter(ReporteDanoAR.hora == subquery.min_hora,\
+                                                       ReporteDanoAR.id_sensor_instalado == DescripcionSensor.id_sensor_instalado,\
+                                                       DescripcionSensor.descripcion == nombre_sensor)
         count_del = 0
         for col in query:
             count_del += 1
             delete_col = db.session.query(ReporteDanoAR).filter(ReporteDanoAR.id == col.id).delete()
             db.session.commit()
-        print("columnas eliminadas", count_del)
+        print("columnas eliminadas", count_del, "del sensor", nombre_sensor)
     except:
         print("Fallo consulta")
         db.session.rollback()

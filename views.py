@@ -1801,7 +1801,6 @@ def deteccion_temprana(id_puente):
                     hourly_batch_job(pathsensor, sensores)
                     aplicar_modelo(ahora, ahora.hour, puente.id, sensores, False)
                     addAnomallyAll(puente.id, sensores)
-                    deleteFirstReporteDano()
             propagation()
             # sensores = db.session.query(SensorInstalado.id.label("si"), DescripcionSensor.descripcion.label("nombre_sensor")).filter(SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id).order_by(SensorInstalado.id.asc())
             # aplicar_modelo_total()
