@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+{% block sidebar%}
+{% endblock %}
+
+{% include 'sidebar.html'%}
+<section class="my-container active-cont px-3 py-1">
+   <div class="d-flex py-2">
+     <button type="button" class="btn btn-primary me-3" id="menu-btn"><i class="bi bi-layout-sidebar"></i></button>
+     <h1 >Panel de Gestión</h1>
+   </div>
+   <div class="row row-cols-1 row-cols-md-3 g-4">
+     <div class="col">
+       <div class="card h-100">
+         <div class="card-body text-center">
+           <span class="display-2 fw-bold d-block"><i class="bi bi-people-fill text-primary"></i></span>
+           <a href="{{ url_for('views_api.administrar_usuarios') }}" class="fs-5 lead text-decoration-none stretched-link mt-2">Gestión de Usuarios</a>
+         </div>
+         <div class="card-body">
+           <ul class="list-group list-group-flush">
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">A</span>Modificar Permisos</li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">B</span>Eliminar Usuarios</li>
+           </ul>
+         </div>
+       </div>
+     </div>
+     <div class="col">
+       <div class="card h-100">
+         <div class="card-body text-center">
+           <span class="display-2 fw-bold d-block"><i class="bi bi-building text-primary"></i></span>
+           <a href="{{ url_for('views_api.administrar_estructura') }}" class="fs-5 lead text-decoration-none stretched-link mt-2">Gestión de Estructuras</a>
+         </div>
+         <div class="card-body">
+           <ul class="list-group list-group-flush">
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">A</span>Añadir Estructuras</li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">B</span>Ver, Editar y Eliminar Estructuras</li>
+           </ul>
+         </div>
+       </div>
+     </div>
+     <div class="col">
+       <div class="card h-100">
+         <div class="card-body text-center">
+           <span class="display-2 fw-bold d-block"><i class="bi bi-bricks text-primary"></i></span>
+           <a href="{{ url_for('views_api.administrar_elementos') }}" class="fs-5 lead text-decoration-none stretched-link mt-2">Gestión de Elementos Estructurales</a>
+         </div>
+         <div class="card-body">
+           <ul class="list-group list-group-flush">
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">A</span>Añadir Tipos de Elemento Estructural</li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">B</span>Añadir Elementos Estructurales</li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">C</span>Editar y Eliminar Elementos Estructurales</li>
+           </ul>
+         </div>
+       </div>
+     </div>
+     <div class="col">
+       <div class="card h-100">
+         <div class="card-body text-center">
+           <span class="display-2 fw-bold d-block"><i class="bi bi-cpu-fill text-primary"></i></span>
+           <a href="{{ url_for('views_api.administrar_dispositivos') }}" class="fs-5 lead text-decoration-none stretched-link mt-2">Gestión de Dispositivos</a>
+         </div>
+         <div class="card-body">
+           <ul class="list-group list-group-flush">
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">A</span>Añadir Dispositivos</li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">B</span>Editar Dispositivos</li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">C</span>Verificar información desde Thingsboard</li>
+           </ul>
+         </div>
+       </div>
+     </div>
+     <div class="col">
+       <div class="card h-100">
+         <div class="card-body text-center">
+           <span class="display-2 fw-bold d-block"><i class="bi bi-gear-wide text-primary"></i></span>
+           <a href="{{ url_for('views_api.administrar_thingsboard') }}" class="fs-5 lead text-decoration-none stretched-link mt-2">Gestión de Thingsboard</a>
+         </div>
+         <div class="card-body">
+           <ul class="list-group list-group-flush">
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">A</span>Acceder Panel Thingsboard</li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">B</span>Editar Alarmas</li>
+           </ul>
+         </div>
+       </div>
+     </div>
+     <div class="col">
+       <div class="card h-100">
+         <div class="card-body text-center">
+           <span class="display-2 fw-bold d-block"><i class="bi bi-binoculars-fill text-primary"></i></span>
+           <a href="#" class="fs-5 lead text-decoration-none stretched-link mt-2">Gestión de Monitoreos</a>
+         </div>
+         <div class="card-body">
+           <ul class="list-group list-group-flush">
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">A</span>Iniciar Nuevo Monitoreo</li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">B</span>Actualizar Parámetros de Monitoreo Vigente</li>
+           </ul>
+         </div>
+       </div>
+     </div>
+     <div class="col">
+       <div class="card h-100">
+         <div class="card-body text-center">
+           <span class="display-2 fw-bold d-block"><i class="bi bi-sliders text-primary"></i></span>
+           <a href="{{ url_for('views_api.administrar_parametros') }}" class="fs-5 lead text-decoration-none stretched-link mt-2">Gestión de Parámetros AR</a>
+         </div>
+         <div class="card-body">
+           <ul class="list-group list-group-flush">
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">A</span>Definición de distancia máxima </li>
+             <li class="list-group-item"><span class="badge bg-primary rounded-pill me-2">B</span>Edición Umbrales de Alerta por Estructura</li>
+           </ul>
+         </div>
+       </div>
+     </div>
+   </div>
+</section>
+
+
+{% endblock %}
+
+{% block customjs %}
+  {{ super() }}
+<script>
+  $(document).ready(function(){
+    
+    function load_data(id_estructura)
+    {
+      $.ajax(
+      {
+        url:"/gestion/dispositivos/retrieve/" + id_estructura,
+        method:"POST",
+        success:function(data)
+          {
+            $('#result').html(data);
+            $('#result').append(data.htmlresponse);
+          }
+      });
+    }
+    
+    $('#search-btn').click(function(e)
+    {
+      e.preventDefault();
+      var id_puente = $('#select_puente').val();
+      var data = id_puente.split(" ",1);
+      load_data(data);
+    }); 
+    
+
+    if($('#modal-msg').length){
+        $('#modal-msg').modal('show');
+    }else{
+        ;
+    }
+    
+    $('#menu-btn').click(function(e)
+    {
+      $('#sidebar').toggleClass("active-nav");
+      $('#sidebar').toggleClass("position-fixed")
+      $('.my-container').toggleClass("active-cont");
+    }); 
+    
+  });
+</script>
+{% endblock %}

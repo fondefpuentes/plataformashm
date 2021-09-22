@@ -2,120 +2,151 @@
 
 {% block customcss %}
 	{{ super() }}
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+ <!--
+ <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
+ <link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
+ -->
+ <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap5.min.css"/>
 {% endblock %}
 
 {% block content %}
-<div>
-	<div class="bg">
-	<h1 class="title">Listado de Puentes</h1>
-		<div class="container py-5">
-			{% include	'botones_profile.html' %}
-<!--			<form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
-				<div class="row no-gutters">
-					<div class="col-9 col-md-10">
-						<input id="autocomplete" type="text" name="autocomplete" placeholder="Buscar estructura" required list="estructuras"/>
-						<datalist id="estructuras">
-							{% for i in puentes %}
-							<option data-value="{{i.id}}">{{i.id}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
-							{% endfor %}    
-						</datalist>
-					</div>
-					<div class="col-3 col-md-2">
-						<button id="searchBtn" onclick="getValue()" type="submit" class="btn btn-primary btn-sm">
-							Buscar
-						</button>
-					</div>
-				</div>
-			</form>
--->
-<input type="text" id="myInput" onkeyup="filtrotabla()" placeholder="Filtrar estructuras por nombre">
-<button id="botontodas" type="button" class="btn btn-secondary">Todas</button>
-<button id="botonmonitoreadas" type="button" class="btn btn-secondary">Monitoreadas</button>
-<button type="button" class="btn btn-secondary">Alertas</button>
-
-<form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
-
-<table class="table table-hover" id="myTable">
-  <thead class="thead-dark">
-    <tr>
-      <th scope="col">Id</th>
-      <th scope="col">Nombre</th>
-      <th scope="col">Región</th>
-      <th scope="col">Estado de Alerta</th>
-      <th scope="col">Fecha Estado Alerta</th>
-      <th scope="col">Estado Global</th>
-      <th scope="col">Estado de Seguridad</th>
-      <th scope="col">Fecha Estado Global y Seguridad</th>
-      <th style="display: none;" scope="col">True</th>
-
-    </tr>
-  </thead>
-  <tbody>
-  		{%for i in puentes %}
-    <tr class='clickable-row' data-href="{{url_for('views_api.informacion_estructura', id=i.id)}}">
-      <th>{{i.id}}</th>
-      <td>{{ i.nombre }}</td>
-      <td>{{ i.region }}</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td style="display: none;">{{ i.en_monitoreo }}</td>
-    </tr>
-    	{% endfor %}
-  </tbody>
-</table>
-
-</form>
-
-<script>
-function filtrotabla() {
-  // Declare variables
-  var input, filter, table, tr, td, i, txtValue;
-  input = document.getElementById("myInput");
-  filter = input.value.toUpperCase();
-  table = document.getElementById("myTable");
-  tr = table.getElementsByTagName("tr");
-
-  // Loop through all table rows, and hide those who don't match the search query
-  for (i = 0; i < tr.length; i++) {
-    td = tr[i].getElementsByTagName("td")[0];
-    if (td) {
-      txtValue = td.textContent || td.innerText;
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
-      }
-    }
-  }
-}
-</script>
-  <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
-<script>
-  $("#botonmonitoreadas").click(function(){
-    var rows = $("#myTable").find("tr").hide();
-    rows.filter(":contains('True')").show();
-  });
-</script>
-<script>
-  $("#botontodas").click(function(){
-    var rows = $("#myTable").find("tr").hide();
-    rows.show();
-  });
-</script>
-<script>
- 
- jQuery(document).ready(function($) {
-    $(".clickable-row").click(function() {
-        window.location = $(this).data("href");
-    });
-});
-
-</script>
-		</div>
+<div class="container-fluid px-4 py-4">
+	<h1 class="d-flex justify-content-center py-2">Plataforma de Monitoreo de Salud Estructural de Puentes</h1>
+  <nav class="px-3">
+    <div class="row border-bottom">
+        <div class="nav nav-pills mb-3 col-9" id="nav-tab" role="tablist">
+            <a class="nav-item nav-link active" id="nav-home-tab" data-bs-toggle="pill" href="#nav-all" role="tab" aria-controls="nav-all" aria-selected="true">Todas</a>
+            <a class="nav-item nav-link" id="nav-profile-tab" data-bs-toggle="pill" href="#nav-monitoreada" role="tab" aria-controls="nav-monitoreada" aria-selected="false">En Monitoreo</a>
+            <a class="nav-item nav-link" id="nav-contact-tab" data-bs-toggle="pill" href="#nav-alerta" role="tab" aria-controls="nav-alerta" aria-selected="false">Bajo Alerta</a>
+        </div>
+        <div class="col-3">
+            <form class="d-grid gap-2" action="{{url_for('views_api.mapa')}}">
+                <button class="btn btn-outline-primary btn-lg text-wrap h-75">
+                    <p class="text-center lead"><i class="bi bi-map me-3"></i> Busqueda en Mapa</p>
+                </button>
+            </form>
+        </div>
+    </div>
+  </nav>
+  
+  <div class="tab-content my-2" id="nav-tabContent">
+    <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab">
+        <table class="table table-hover w-100 row-border" 
+        id="myTableGeneral"> 
+          <thead class="table-dark">
+            <tr>
+              <th class="col-1" data-field="Rol" data-sortable="true">Rol</th>
+              <th class="col-4" data-field="Nombre" data-sortable="true">Nombre</th>
+              <th class="col-4" data-field="Region" data-sortable="true">Región</th>
+              <th class="col-3" data-field="Provincia" data-sortable="true">Provincia</th>
+            </tr>
+          </thead>
+        </table>
+    </div>
+    <div class="tab-pane fade" id="nav-monitoreada" role="tabpanel" aria-labelledby="nav-monitoreada-tab">
+        <table class="table table-hover w-100 row-border" 
+        id="myTableMonitoreo"> 
+          <thead class="table-dark">
+            <tr>
+              <th data-field="Nombre" data-sortable="true">Nombre</th>
+              <th data-field="Region" data-sortable="true">Región</th>
+              <th data-field="Alerta" data-sortable="true">Estado de Alerta</th>
+              <th data-field="Fecha_alerta" data-sortable="true">Fecha Estado Alerta</th>
+              <th data-field="Global" data-sortable="true">Estado Global</th>
+              <th data-field="Seg" data-sortable="true">Estado de Seguridad</th>
+              <th data-field="Fecha_globseg" data-sortable="true">Fecha Estado Global y Seguridad</th>
+            </tr>
+          </thead>
+          <tbody>
+  		      {%for i in puentes %}
+            {%if i.en_monitoreo%}
+            <tr class='clickable-row' data-href="{{url_for('views_api.informacion_estructura', id=i.id)}}">
+              <td><a href="{{url_for('views_api.informacion_estructura', id=i.id)}}">{{i.nombre}}</a></td>
+              <td>{{ i.region }}</td>
+	      <td>{{ i.estado_dano }}</td>
+	      <td>{{ i.diahora_calculo | datetimefilter }}</td>
+              <td>{{i.estado}}</td>
+              <td>{{i.seguridad}}</td>
+              <td>{{i.fecha_estado |datetimefilter}}</td>
+            </tr>
+            {%endif%}
+    	      {% endfor %}
+          </tbody>
+        </table>
+    </div>
+    <div class="tab-pane fade" id="nav-alerta" role="tabpanel" aria-labelledby="nav-alerta-tab">
+        <table class="table table-hover w-100 row-border" 
+        id="myTableEstados"> 
+          <thead class="table-dark">
+            <tr>
+              <th data-field="Nombre" data-sortable="true">Nombre</th>
+              <th data-field="Region" data-sortable="true">Región</th>
+              <th data-field="Alerta" data-sortable="true">Estado de Alerta</th>
+              <th data-field="Fecha_alerta" data-sortable="true">Fecha Estado Alerta</th>
+              <th data-field="Global" data-sortable="true">Estado Global</th>
+              <th data-field="Seg" data-sortable="true">Estado de Seguridad</th>
+              <th data-field="Fecha_globseg" data-sortable="true">Fecha Estado Global y Seguridad</th>
+            </tr>
+          </thead>
+          <tbody>
+  		      {%for i in puentes %}
+            <tr class='clickable-row' data-href="{{url_for('views_api.informacion_estructura', id=i.id)}}">
+              <td><a href="{{url_for('views_api.informacion_estructura', id=i.id)}}">{{i.nombre}}</a></td>
+              <td>{{ i.region }}</td>
+              <td>---</td>
+              <td>---</td>
+              <td>{{i.estado}}</td>
+              <td>{{i.seguridad}}</td>
+              <td>{{i.fecha_estado |datetimefilter }}</td>
+            </tr>
+    	      {% endfor %}
+          </tbody>
+        </table>
+    </div>
+  </div>
 	</div>
 </div>
+{% endblock %}
+
+{% block customjs%}
+ 	<!--
+	<script src="{{ url_for('static', filename='js/tableExport.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
+   -->
+ <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+ <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap5.min.js"></script>
+ <script>
+ $('#myTableGeneral').DataTable( {
+    ajax: "cargar_estructuras",
+    columns: [
+        { data: 'Rol',
+          render: function(data) {
+            return '<span class="fs-6 badge bg-dark me-3">' + data + '</span>';
+          } 
+        },
+        { data: 'Nombre', 
+          render: function ( data, row ) {
+            return '<a href="' + data.ruta + '">' + data.nombre +'</a>';
+          }
+        },
+        { data: 'Region' },
+        { data: 'Provincia'}
+    ],
+    language: {
+        url: "{{ url_for('static', filename='i18n/es_es.json') }}"
+    }
+} );
+  $('#myTableMonitoreo').DataTable({
+    language: {
+        url: "{{ url_for('static', filename='i18n/es_es.json') }}"
+    }
+  });
+  $('#myTableEstados').DataTable({
+    language: {
+        url: "{{ url_for('static', filename='i18n/es_es.json') }}"
+    }
+  });
+ </script>
 {% endblock %}

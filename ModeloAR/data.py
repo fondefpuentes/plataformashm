@@ -29,7 +29,7 @@ def getDataDay(hora):
     return pd.read_csv(directorio + "dia1_" + str(hora) + ".csv")
 
 def getParquetDay(sensor, day, hora):
-    path = '/Users/angeloenrique/Dev/puentes/plataformashm/ModeloAR/Datos/'
+    path = '/home/ubuntu/serverflask/DatosRecientes/DB_DATAFRAMES'
     date = str(day.day).zfill(2) + '_' + str(day.month).zfill(2) + '_' + str(day.year)
     try:
         df = pd.read_parquet(path + sensor + '-' + date + '_dataset.parquet')
@@ -39,12 +39,14 @@ def getParquetDay(sensor, day, hora):
         return pd.DataFrame()
 
 def getParquetHourly(sensor, day, hora):
-    path = '/Users/angeloenrique/Dev/puentes/plataformashm/ModeloAR/Datos/Test'
-    date = str(day.day).zfill(2) + '_' + str(day.month).zfill(2) + '_' + str(day.year) + '-' + str(hora) + '_00_00'
+    path = '/home/ubuntu/serverflask/plataformashm/ModeloAR/Datos/'
+    date = str(day.day).zfill(2) + '_' + str(day.month).zfill(2) + '_' + str(day.year) + '-' + str(hora).zfill(2) + '_00_00'
     parquet_path = path + sensor + '-' + date + '-hour_data.parquet'
     # print(parquet_path)
     try:
         df = pd.read_parquet(parquet_path)
+        df = df.replace(-9999, np.nan)
+        df = df.dropna()
         df = df.reset_index()
         return df
     except:

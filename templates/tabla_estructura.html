@@ -1,17 +1,15 @@
 {% extends "base.html" %}
+
 {% block customcss %}
-{{ super() }}
 <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
 <link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/jquery.resizableColumns.css') }}" rel="stylesheet">
 {% endblock %}
-{% block content %}
-<div class="bg">
 
-   <div class="container-fluid px-5 py-2">
-      <div class="row">{% include 'breadcrumb.html' %}</div>
-      <h1 class="title text-capitalize">
-         {{datos_puente.tipo_activo}} {{ datos_puente.nombre.capitalize() }}
-      </h1>
+{% block content %}
+   {% include 'breadcrumb.html' %}
+   <div class="container-fluid px-4 py-2">
+      <h1><span class="badge bg-dark">{{datos_puente.rol}}</span> {{ datos_puente.nombre| title }}</h1>
       <div class="row py-3 d-flex flex-sm-row-reverse">
          <div class="col-sm-3 mb-2">{% include 'botones_tabla_estructura.html' %}</div>
          <div class="col-sm-9">
@@ -20,29 +18,25 @@
                <div class="col-sm-6">{% include 'tabla_detalles_estructura.html'%}</div>
                <div class="col-sm-6">{% include 'imagenes_estructura.html' %}</div>
                <div class="col-sm-6">
-                  <div class="border border-secondary"id="map"></div>
+                  <div class="border border-secondary" id="map"></div>
                </div>
             </div>
          </div>
       </div>
       
-      <div class="row py-3">
-         <h1 class="subtitle fs-3">Estado de Diagnóstico</h1>
+      <div class="py-3">
+         <h3>Estado de Diagnóstico</h3>
          <div>{% include 'tabla_estados_estructura.html' %}</div>
-         <br>
       </div>
       {% if esta_monitoreada%}
-      <div class="row py-3">
-         <h1 class="subtitle fs-3">Infraestructura de Monitoreo</h1>
+      <div class="py-3">
+         <h4>Infraestructura de Monitoreo</h4>
          <div>
             <ul class="nav nav-tabs mb-3">
                <li class="active nav-item"><a class ="nav-link active" data-bs-toggle="tab" href="#sensores">Sensores</a></li>
                <li class="nav-item"><a class = "nav-link" data-bs-toggle="tab" href="#daqs">DAQs</a></li>
             </ul>
-            <div class="form-floating mb-3">
-               <input type="text" class="form-control" id="filterInput" placeholder="device">
-               <label for="filterInput"><i class="bi bi-search px-3 "></i>Buscar Dispositivos</label>
-            </div>
+            <input type="text" class="form-control" id="filterInput" placeholder="Buscar Dispositivos">
             <div class="tab-content">
                <div id="sensores" class="tab-pane fade show active">
                   {%include 'tabla_sensores.html' %}
@@ -54,14 +48,16 @@
          </div>
       </div>
       {% endif %}
-   </div>
 </div>
 {% endblock %}
 {% block customjs %}
+{{ super() }}
 <script src="{{ url_for('static', filename='js/tabla_estructura.js')}}"></script>
 <script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
 <script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
 <script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-table-resizable.min.js')}}"></script>   
+<script src="{{ url_for('static', filename='js/jquery.resizableColumns.min.js')}}"></script>   
 <script>
    showBridgeOnMap({{datos_puente.coord_x}},{{datos_puente.coord_y}});
 </script>
@@ -80,13 +76,22 @@
   }
   
    $(document).ready(function(){
-   
+        
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
+        var $table = $('#table_sens');
+        $table.bootstrapTable('hideColumn', 'Zona');
+        $table.bootstrapTable('hideColumn', 'DAQ');
+
        {%if estado%}
        var globString = "{{estado.estado}}";
        var segString = "{{estado.seguridad}}";
 
-       $('#global-circle').css("color","var(--bs-" + asignar_color(globString) + ")");
-       $('#seg-circle').css("color","var(--bs-" + asignar_color(segString) + ")");
+       $('#global-circle').css("color", asignar_color(globString));
+       $('#seg-circle').css("color",asignar_color(segString));
        {%endif%}
    
        $("#filterInput").on("keyup", function() {

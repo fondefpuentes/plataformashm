@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+<!-- Modal for flask msgs -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="modal fade" id="modal-msg" aria-hidden="true" aria-labelledby="modal-title" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    {% for category, message in messages %}
+    <div class="modal-content {% if category == 'error' %} border-danger {% else %} border-success {% endif %}">
+      <div class="modal-header ">
+        <h5 class="modal-title" id="modal-title">{% if category == 'error' %}Error en la operación{% else %} Operación realizada exitosamente{%endif%}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body justify-content-center">
+        <div class="col-md-12 text-center">
+        <span class="display-1 fw-bold d-block">{% if category == 'error' %}<i class="bi bi-exclamation-circle-fill text-danger"></i>{% else %}<i class="bi bi-check-circle-fill text-success"></i>{%endif%}</span>
+        <div class="my-2 lead">
+        {% if category == 'error' %}
+          Se ha generado un error al realizar la operación en la Base de Datos. Por favor intentelo nuevamente. <p class="mt-3 fs-6">Si desea conocer los detalles del error, <a data-bs-toggle="collapse" href="#collapseMsg" role="button" aria-expanded="false" aria-controls="collapseExample">
+          presione este enlace.</a> </p>
+          <div class="collapse" id="collapseMsg">
+            <div class="card card-body">
+              <p class="font-monospace fs-6">{{message}}</p>
+            </div>
+          </div>
+        {% else %}{{message}}
+        {%endif%}
+        </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>  
+{% endif %}
+{% endwith %}
+
+
+{% block sidebar%}
+{% endblock %}
+
+{% include 'sidebar.html'%}
+<section class="my-container active-cont px-3">
+
+   <div class="d-flex py-2">
+     <button type="button" class="btn btn-primary me-3" id="menu-btn"><i class="bi bi-layout-sidebar"></i></button>
+     <h1 >Gestión de Elementos Estructurales</h1>
+   </div>
+   <div class="p-2 my-3 card">
+     <h4><span class="fs-6 badge bg-dark me-3">A</span>Crear Tipo de Elemento Estructural</h4>
+     <form class="row"method="POST" action="{{url_for('views_api.crear_tipo_elemento')}}">
+       <div class="input-group my-2 py-1">
+          <span class="input-group-text">Tipo de Elemento Estructural</span>
+          <input type="text" class="form-control" name="nombre_zona" placeholder="Losa de Acceso, Asiento, ... "required aria-label="Example text with button addon" aria-describedby="button-create-type">
+          <button type="submit" class="btn btn-outline-primary" id="button-create-type">Crear Tipo de Elemento</button>
+      </div>
+     </form>
+     <p class="lead my-1 py-1">Tipos de Elementos Estructurales registrados:</p>
+     <div>{%for tipo in tipos_elem%}
+     <span class="fs-6 badge bg-light text-dark border border-dark rounded-pill me-3">{{tipo.nombre_zona}}</span>
+     {%endfor%}</div>
+   </div>
+   
+   <div class="p-2 my-3 card">
+     <h4><span class="fs-6 badge bg-dark me-3">B</span>Crear Elemento Estructural</h4>
+     <form id="create-form" class="row" method="POST" action="{{url_for('views_api.crear_elemento')}}">
+       <div class="mb-3">
+         <label for="estructura_select" class="form-label">Estructura</label>
+         <input id="estructura_select" class="form-control" name="id_estructura" required placeholder="Buscar estructura" list="estructuras_create" aria-label="Estructura Select" />
+         <datalist id="estructuras_create">
+            {% for i in puentes %}
+            <option data-value="{{i.id}}">{{i.id}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
+            {% endfor %}    
+         </datalist>
+       </div>
+       <div class="mb-3">
+         <label for="tipo_elem" class="form-label">Tipo de Elemento</label>
+         <select id="tipo_elem" class="form-select" name="tipo_zona" aria-label="tipo de elemento " required>
+           {% for tipo in tipos_elem %}
+             <option value="{{tipo.id}}">{{tipo.nombre_zona}}</option>
+           {% endfor %}
+         </select>  
+       </div>
+       <div class="mb-3">
+         <label for="nombre" class="form-label">Nombre</label>
+         <input type="text" class="form-control" id="nombre" name="descripcion" placeholder="Tablero-test" required>
+       </div>
+       <div class="mb-3">
+         <label for="material" class="form-label">Material</label>
+         <input type="text" class="form-control" id="material" name="material" placeholder="Madera" required>
+       </div>
+       <div class="mb-3">
+         <button id="create-btn" class="btn btn-outline-primary">Crear Elemento Estructural</button>
+       </div>
+     </form>
+   </div>
+   
+   <div class="p-2 my-3 card">
+     <h4><span class="fs-6 badge bg-dark me-3">C</span>Buscar Elementos Estructurales desde Estructuras</h4>
+     <div class="input-group">
+        <input id="select_puente" class="form-control" name="autocomplete" placeholder="Buscar estructura" required list="estructuras" aria-label="Seleccion Puente"/>
+         <datalist id="estructuras">
+            {% for i in puentes %}
+            <option data-value="{{i.id}}">{{i.id}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
+            {% endfor %}    
+         </datalist>
+        <button id="search-btn" class="btn btn-primary btn-md">
+         Buscar
+        </button>
+      </div>
+      <div class="py-3" id="result"></div>
+   </div>
+</section>
+
+
+{% endblock %}
+
+{% block customjs %}
+  {{ super() }}
+<script>
+  $(document).ready(function(){
+    
+    function load_data(id_estructura)
+    {
+      $.ajax(
+      {
+        url:"/gestion/elementos/retrieve/" + id_estructura,
+        method:"POST",
+        success:function(data)
+          {
+            $('#result').html(data);
+            $('#result').append(data.htmlresponse);
+          }
+      });
+    }
+    
+    $('#search-btn').click(function(e)
+    {
+      e.preventDefault();
+      var id_puente = $('#select_puente').val();
+      var data = id_puente.split(" ",1);
+      load_data(data);
+    }); 
+    
+    $('#create-btn').click(function(e)
+    {
+      e.preventDefault();
+      var id_estructura = $('#estructura_select').val();
+      var data_id = id_estructura.split(" ",1);
+      $('#estructura_select').val(data_id);
+      $('#create-form').submit();
+    }); 
+    
+
+    if($('#modal-msg').length){
+        $('#modal-msg').modal('show');
+    }else{
+        ;
+    }
+    
+    $('#menu-btn').click(function(e)
+    {
+      $('#sidebar').toggleClass("active-nav");
+      $('#sidebar').toggleClass("position-fixed")
+      $('.my-container').toggleClass("active-cont");
+    }); 
+    
+  });
+</script>
+{% endblock %}

@@ -1,11 +1,11 @@
-<table class="table table-bordered table-responsive-md border-1 sortable"
+<table class="table table-bordered border-1 sortable"
 id="table_daq"
 data-toggle="table"
 data-sortable="true"
 data-height="400"
 data-show-columns="true"
 data-locale="es-CL">
-    <thead class="thead-dark">
+    <thead class="table-dark">
         <tr>
             <th data-sortable="true">Nombre</th>
             <th data-sortable="true">Modelo</th>
@@ -24,7 +24,7 @@ data-locale="es-CL">
             <td>{{ daq.descripcion}}</td>
             <td>{{ daq.operatividad}}</td>
             <td>{{ daq.mantenimiento}}</td>
-            <td>{{ daq.fecha_estado.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+            <td>{{ daq.fecha_estado | datetimefilter}}</td>
         </tr>
         {%endfor%}
     {%else%}

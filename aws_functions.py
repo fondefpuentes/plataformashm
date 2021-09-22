@@ -127,9 +127,9 @@ def build_sql_query(values):
 
     ########## WHERE ##########
 
-    if values['rango_consulta'] == 'todo_entre_las_fechas':
+    if values['rango_consulta'] == 'rango_completo':
         query = query + "WHERE dt >= '" + values['fecha_inicial'] + "' AND dt <= '" + values['fecha_final'] +"' AND ts >= CAST(to_unixtime(CAST('" + values['fecha_inicial'] + " " + values['hora_inicial'] + "' AS timestamp))*1000 AS BIGINT) AND ts <= CAST(to_unixtime(CAST('" + values['fecha_final'] + " " + values['hora_final'] +"' AS timestamp))*1000 AS BIGINT)"
-    elif values['rango_consulta'] == 'horas_por_dia':
+    elif values['rango_consulta'] == 'rango_por_dia':
         query = query + "WHERE dt >= '" + values['fecha_inicial'] + "' AND dt <= '" + values['fecha_final'] +"' AND ts >= CAST(to_unixtime(CAST('" + values['fecha_inicial'] + " " + values['hora_inicial'] + "' AS timestamp)) AS BIGINT) AND ts <= CAST(to_unixtime(CAST('" + values['fecha_final'] + " " + values['hora_final'] +"' AS timestamp)) AS BIGINT) AND date_format(from_unixtime(ts/1000) , '%H:%i:%s')  >= '" + values['hora_inicial'] +"'AND date_format(from_unixtime(ts/1000), '%H:%i:%s')  <= '" + values['hora_final'] +"'"
     ##### sensores #####    
     query = query + " AND ("
@@ -163,7 +163,6 @@ def query_athena(params,values):
     time_start = time.time()
     ## Creating the Client for Athena
     client = boto3.client('athena')
-    
     ## This function executes the query and returns the query execution ID
     response_query_execution_id = client.start_query_execution(
         QueryString = build_sql_query(values),
@@ -263,9 +262,9 @@ def build_download_sql_query(params,values,now_time):
         query = query + " FROM " + "test_eventos_inesperados " 
 
     ##### WHERE #####   
-    if values['rango_consulta'] == 'todo_entre_las_fechas':
+    if values['rango_consulta'] == 'rango_completo':
         query = query + "WHERE dt >= '" + values['fecha_inicial'] + "' AND dt <= '" + values['fecha_final'] +"' AND ts >= CAST(to_unixtime(CAST('" + values['fecha_inicial'] + " " + values['hora_inicial'] + "' AS timestamp))*1000 AS BIGINT) AND ts <= CAST(to_unixtime(CAST('" + values['fecha_final'] + " " + values['hora_final'] +"' AS timestamp))*1000 AS BIGINT)"
-    elif values['rango_consulta'] == 'horas_por_dia':
+    elif values['rango_consulta'] == 'rango_por_dia':
         query = query + "WHERE dt >= '" + values['fecha_inicial'] + "' AND dt <= '" + values['fecha_final'] +"' AND ts >= CAST(to_unixtime(CAST('" + values['fecha_inicial'] + " " + values['hora_inicial'] + "' AS timestamp))*1000 AS BIGINT) AND ts <= CAST(to_unixtime(CAST('" + values['fecha_final'] + " " + values['hora_final'] +"' AS timestamp))*1000 AS BIGINT) AND date_format(from_unixtime(ts/1000) , '%H:%i:%s')  >= '" + values['hora_inicial'] +"'AND date_format(from_unixtime(ts/1000), '%H:%i:%s')  <= '" + values['hora_final'] +"'"
     ##### sensores #####    
     query = query + " AND ("

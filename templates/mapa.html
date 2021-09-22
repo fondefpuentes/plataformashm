@@ -2,37 +2,41 @@
 
 {% block customcss %}
 	{{ super() }}
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
 {% endblock %}
 
-{% block content %}
-	<div class="bg">  
-		<div class="container px-5 py-2">
-       <div class="row">{% include	'botones_profile.html' %}</div>
-       <div class="row">
+{% block content %}  
+		<div class="container-fluid px-4 py-4">
+       <h1 class="d-flex justify-content-center py-2">Busqueda en Mapa</h1>
+       <div class="row mb-1">
+         <div class="col-9">
 			    <form method="POST" action="{{url_for('views_api.buscar_estructura')}}" autocomplete="off">
-			      <div class="row no-gutters">
-					    <div class="col-9 col-md-10">
-			          <input id="autocomplete" type="text" name="autocomplete" placeholder="Buscar estructura" required list="estructuras"/>
+			      <div class="row">
+					    <div class="input-group input-group-lg">
+			          <input id="autocomplete" type="text" class="form-select" name="autocomplete" placeholder="Buscar estructura" required list="estructuras" aria-label="Seleccion Puente"/>
 						    <datalist id="estructuras">
 							    {% for i in puentes %}
 							    <option data-value="{{i.id}}">{{i.id}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
 							    {% endfor %}    
 						    </datalist>
-					    </div>
-					    <div class="col-3 col-md-2">
-						    <button id="searchBtn" onclick="getValue()" type="submit" class="btn btn-primary btn-sm">
+						    <button id="searchBtn" onclick="getValue()" type="submit" class="btn btn-primary btn-md">
 						    Buscar
 						    </button>
-					    </div>
+  			  		</div>
 				    </div>
 			    </form>
-      </div>
-      <div id=" row py-3 mt-4 h-100 w-100 d-inline-block">
-          <div id="map"></div>
+        </div>
+        <div class="col-3">
+          <form class="d-grid gap-2" action="{{url_for('views_api.profile')}}">
+            <button class="btn btn-outline-primary btn-lg text-wrap h-75">
+                <p class="text-center lead"><i class="bi bi-card-list"></i> Listado de Puentes</p>
+            </button>
+          </form>
+        </div>
+      </div>  
+      <div class="mt-2 h-75 w-100 d-inline-block">
+          <div id="map" class="ratio ratio-21x9"></div>
       </div>
 		</div>
-	</div>
 {% endblock %}
 
 {% block customjs %}

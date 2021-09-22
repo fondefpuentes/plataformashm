@@ -8,6 +8,7 @@ import numpy as np
 # import os
 # sys.path.append(os.path.realpath('.'))
 import pandas as pd
+import pytz
 from scipy.spatial import distance
 import scipy as stats
 from matplotlib import pyplot
@@ -126,18 +127,27 @@ def aplicar_modelo(day, hora, id_puente, sensores, total):
         sens_y = []
         sens_z = []
         for i in range(0,3):
-            if x.any(): sens_x.append(np.array(x[series_x[i][0]:series_x[i][-1]]))
-            if y.any(): sens_y.append(np.array(y[series_y[i][0]:series_y[i][-1]]))
-            if z.any(): sens_z.append(np.array(z[series_z[i][0]:series_z[i][-1]]))
-        if x.any(): x_coef = applyCoef(sens_x, config.numero_peaks, config.cantidad_coeficientes_ar)
-        if y.any(): y_coef = applyCoef(sens_y, config.numero_peaks, config.cantidad_coeficientes_ar)
-        if z.any(): z_coef = applyCoef(sens_z, config.numero_peaks, config.cantidad_coeficientes_ar)
+            if len(series_x[i]) > 0: sens_x.append(np.array(x[series_x[i][0]:series_x[i][-1]]))
+            if len(series_y[i]) > 0: sens_y.append(np.array(y[series_y[i][0]:series_y[i][-1]]))
+            if len(series_z[i]) > 0: sens_z.append(np.array(z[series_z[i][0]:series_z[i][-1]]))
+        if sens_x[0].any():
+            x_coef = applyCoef(sens_x, config.numero_peaks, config.cantidad_coeficientes_ar)
+        else:
+            continue
+        if sens_y[0].any():
+            y_coef = applyCoef(sens_y, config.numero_peaks, config.cantidad_coeficientes_ar)
+        else:
+            continue
+        if sens_z[0].any():
+            z_coef = applyCoef(sens_z, config.numero_peaks, config.cantidad_coeficientes_ar)
+        else:
+            continue
         # print("x coef = ", x_coef)
         # print("y coef = ", y_coef)
         # print("z coef = ", z_coef)
-        if x.any(): saveCoef(time[0], sensor, x_coef, axis = 0)
-        if y.any(): saveCoef(time[0], sensor, y_coef, axis = 1)
-        if z.any(): saveCoef(time[0], sensor, z_coef, axis = 2)
+        if len(x_coef) > 0: saveCoef(time[0], sensor, x_coef, axis = 0)
+        if len(y_coef) > 0: saveCoef(time[0], sensor, y_coef, axis = 1)
+        if len(z_coef) > 0: saveCoef(time[0], sensor, z_coef, axis = 2)
         peaks_reales = getRealPeakNumber(id_puente, sensor)
         peaks_objetivos = 24*config.numero_peaks
         # print(peaks_reales, peaks_objetivos)
@@ -230,19 +240,24 @@ def addAnomallyAll(id_puente, sensores):
     try:
         for sensor in sensores:
             damage = getDamage(id_puente, sensor.nombre_sensor)
-            anomalia = AnomaliaPorHora.query.filter_by(id_sensor_instalado = sensor.si).first()
-            if(anomalia != damage):
-                anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = damage)
+            anomalia = db.session.query(AnomaliaPorHora).filter(AnomaliaPorHora.id_sensor_instalado == sensor.si).order_by(AnomaliaPorHora.hora_calculo.desc()).first()
+            CLT = pytz.timezone('America/Santiago')
+            ahora = datetime.now(CLT)
+            print("timestamp", ahora, "Anomalia", anomalia.anomalia, "Damage", damage, '\n')
+            if(anomalia.anomalia != damage):
+                anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = ahora, anomalia = damage)
                 db.session.add(anomalia)
                 db.session.commit()
     except:
         db.session.rollback()
 
-def addAnomally(id_puente, name):
+def addAnomally(id_puente, name): # NO SE USA
     try:
         sensores_de_puente = db.session.query(SensorInstalado.id.label("si"), DescripcionSensor.descripcion.label("nombre_sensor")).filter(SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, DescripcionSensor.descripcion == name).order_by(SensorInstalado.id.desc())
+        CLT = pytz.timezone('America/Santiago')
+        ahora = datetime.now(CLT)
         for sensor in sensores_de_puente:
-            anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = getDamage(id_puente, sensor.nombre_sensor))
+            anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = ahora, anomalia = getDamage(id_puente, sensor.nombre_sensor))
             db.session.add(anomalia)
             db.session.commit()
     except:
@@ -252,10 +267,12 @@ def resetAllAnomally(id_puente):
     try:
         num_rows_deleted = db.session.query(AnomaliaPorHora).delete()
         db.session.commit()
+        CLT = pytz.timezone('America/Santiago')
+        ahora = datetime.now(CLT)
         print("Filas Eliminadas = " + str(num_rows_deleted))
         sensores_de_puente = db.session.query(SensorInstalado.id.label("si")).filter(SensorInstalado.id_estructura == id_puente).order_by(SensorInstalado.id.desc())
         for sensor in sensores_de_puente:
-            anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = False)
+            anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = ahora, anomalia = False)
             db.session.add(anomalia)
             db.session.commit()
     except:
@@ -265,7 +282,9 @@ def propagation():
     _estados_sensor = ['Sin daño', 'Anomalía detectada', 'Anomalía intermitente', 'Daño detectado']
     _estados_elemento = ['Sin daño', 'Alerta puntual instantánea', 'Alerta puntual intermitente', 'Daño puntual', 'Alerta local instantánea', 'Alerta local intermitente', 'Daño local']
     _estados_estructura = ['Alerta general instantánea', 'Alerta general intermitente', 'Daño general']
-    tiempo_ahora = datetime.now()
+    CLT = pytz.timezone('America/Santiago')
+    tiempo_ahora = datetime.now(CLT)
+    tiempo_ahora = tiempo_ahora.replace(tzinfo=None)
     flag_estado_sensor = 0           # 0 = Anomalia detectad, 1 = Anomalia intermitente, 2 = Daño detectado
     flag_estado_elemento = 0
     try:
@@ -282,15 +301,17 @@ def propagation():
                 for sensor in sensores:     # Se analiza cada sensor
                     # print(sensor.id_puente, sensor.nombre_puente, sensor.id_elemento, sensor.nombre_elemento, sensor.si, sensor.nombre)
                     dano_sensor = EstadoDanoSensor.query.filter_by(id_sensor_instalado = sensor.si).first()
-                    anomalia = AnomaliaPorHora.query.filter_by(id_sensor_instalado = sensor.si).order_by(AnomaliaPorHora.hora_calculo.desc()).first()
+                    anomalia = db.session.query(AnomaliaPorHora).filter(AnomaliaPorHora.id_sensor_instalado == sensor.si).order_by(AnomaliaPorHora.hora_calculo.desc()).first()
                     if(not anomalia):
                         continue
                     tiempo_estado = tiempo_ahora - dano_sensor.diahora_calculo
                     tiempo_anomalia = tiempo_ahora - anomalia.hora_calculo
                     # print("TIEMPO ANOMALIA", tiempo_anomalia.days)
                     # print(anomalia.anomalia, dano_sensor.estado, dano_sensor_count)
+
+                    #print("tiempo estado", tiempo_estado.days)
                     # Anomalia Detectada
-                    if(anomalia.anomalia and (dano_sensor.estado != _estados_sensor[1] or dano_sensor.estado != _estados_sensor[3]) and tiempo_estado.days <= 2):
+                    if(anomalia.anomalia and dano_sensor.estado != _estados_sensor[1] and dano_sensor.estado != _estados_sensor[3] and tiempo_estado.days <= 2):
                         dano_sensor.estado = _estados_sensor[1]
                         dano_sensor.diahora_calculo = tiempo_ahora
                         db.session.commit()
@@ -321,6 +342,7 @@ def propagation():
                                 flag_estado_sensor = 2
                                 dano_sensor_count = 0
                             dano_sensor_count += 1
+                print("EXTRAE ESTADO ELEMENTO")
                 estado_elemento = EstadoDanoElemento.query.filter_by(id_elemento = elemento.id).first()
                 if(not estado_elemento):
                     estado_elemento = EstadoDanoElemento(id_estructura = puente.id, id_elemento = elemento.id, diahora_calculo = tiempo_ahora, estado = _estados_elemento[0])
@@ -382,7 +404,7 @@ def propagation():
 
             estado_estructura = EstadoDanoEstructura.query.filter_by(id_estructura = puente.id).first()
             if(not estado_estructura):
-                estado_estructura = EstadoDanoEstructura(id_estructura = puente.id, diahora_calculo = datetime.now(), estado = _estados_estructura[0])
+                estado_estructura = EstadoDanoEstructura(id_estructura = puente.id, diahora_calculo = tiempo_ahora, estado = _estados_estructura[0])
                 db.session.add(estado_estructura)
                 db.session.commit()
                 estado_estructura = EstadoDanoEstructura.query.filter_by(id_estructura = puente.id).first()
@@ -401,6 +423,6 @@ def propagation():
                 estado_estructura.estado = _estados_estructura[0]
                 db.session.commit()
 
-    except:
-        print('Fallo consulta')
+    except Exception as e:
+        print('Fallo consulta Error: ' + str(e))
         db.session.rollback()

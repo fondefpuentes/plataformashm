@@ -53,17 +53,6 @@ body, html{
     height: 100%;
 }
 
-h1{
-    text-align: center;
-}
-
 .box{
     margin-bottom: 100px;
-}
-
-.table{
-    display: inline-block;
-    height: 600px;
-    width: 100%;
-    overflow-y: scroll;
 }

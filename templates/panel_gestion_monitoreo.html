@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block customcss %}
+    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap5.min.css"/>
+{% endblock %}
+
+{% block content %}
+
+<!-- Modal for flask msgs -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="modal fade" id="modal-msg" aria-hidden="true" aria-labelledby="modal-title" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    {% for category, message in messages %}
+    <div class="modal-content {% if category == 'error' %} border-danger {% else %} border-success {% endif %}">
+      <div class="modal-header ">
+        <h5 class="modal-title" id="modal-title">{% if category == 'error' %}Error en la operación{% else %} Operación realizada exitosamente{%endif%}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body justify-content-center">
+        <div class="col-md-12 text-center">
+        <span class="display-1 fw-bold d-block">{% if category == 'error' %}<i class="bi bi-exclamation-circle-fill text-danger"></i>{% else %}<i class="bi bi-check-circle-fill text-success"></i>{%endif%}</span>
+        <div class="my-2 lead">
+        {% if category == 'error' %}
+          Se ha generado un error al realizar la operación en la Base de Datos. Por favor intentelo nuevamente. <p class="mt-3 fs-6">Si desea conocer los detalles del error, <a data-bs-toggle="collapse" href="#collapseMsg" role="button" aria-expanded="false" aria-controls="collapseExample">
+          presione este enlace.</a> </p>
+          <div class="collapse" id="collapseMsg">
+            <div class="card card-body">
+              <p class="font-monospace fs-6">{{message}}</p>
+            </div>
+          </div>
+        {% else %}{{message}}
+        {%endif%}
+        </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>  
+{% endif %}
+{% endwith %}
+
+
+{% block sidebar%}
+{% endblock %}
+
+{% include 'sidebar.html'%}
+<section class="my-container active-cont px-3">
+
+   <div class="d-flex py-2">
+     <button type="button" class="btn btn-primary me-3" id="menu-btn"><i class="bi bi-layout-sidebar"></i></button>
+     <h1 >Gestión de Monitoreos</h1>
+   </div>
+   <div class="p-2 my-3 card">
+     <h4><span class="fs-6 badge bg-dark me-3 mb-3">A</span>Iniciar Nuevo Monitoreo</h4>
+     <table class="table table-hover w-100 row-border" 
+        id="myTableGeneral"> 
+          <thead class="table-dark">
+            <tr>
+              <th class="col-1" data-field="Rol" data-sortable="true">Rol</th>
+              <th class="col-3" data-field="Nombre" data-sortable="true">Nombre</th>
+              <th class="col-3" data-field="Region" data-sortable="true">Región</th>
+              <th class="col-3" data-field="Provincia" data-sortable="true">Provincia</th>
+              <th class="col-2" data-field="Monitoreo" data-sortable="true">Monitoreo</th>
+            </tr>
+          </thead>
+     </table>
+   </div>
+   
+   <div class="p-2 my-3 card">
+     <h4><span class="fs-6 badge bg-dark me-3">B</span>Actualizar Parámetros de Monitoreo Vigente</h4>
+   </div>
+</section>
+
+
+{% endblock %}
+
+{% block customjs %}
+  {{ super() }}
+  <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  
+  $(document).ready(function(){
+    $('#myTableGeneral').DataTable( {
+    ajax: "{{url_for('views_api.cargar_estructuras_ajax')}}",
+    columns: [
+        { data: 'Rol',
+          render: function(data) {
+            return '<span class="fs-6 badge bg-dark me-3">' + data + '</span>';
+          } 
+        },
+        { data: 'Nombre', render: function(data){ return data.nombre;} },
+        { data: 'Region' },
+        { data: 'Provincia'},
+        { data: 'Monitoreo',
+          render: function ( data, row ) {
+            if(!data.monitoreo){
+              return  '<div class="d-grid gap-2"><a class="btn btn-outline-primary" href="' + data.ruta + '" role="button">Iniciar Monitoreo</a>';
+            }
+            else{
+              return '<div class="d-grid gap-2"><button type="button" class="btn btn-primary " disabled> En Monitoreo</button></div>';
+            }
+          }
+        }  
+    ],
+    language: {
+        url: "{{ url_for('static', filename='i18n/es_es.json') }}"
+    }
+  } );
+    
+
+    if($('#modal-msg').length){
+        $('#modal-msg').modal('show');
+    }else{
+        ;
+    }
+    
+    $('#menu-btn').click(function(e)
+    {
+      $('#sidebar').toggleClass("active-nav");
+      $('#sidebar').toggleClass("position-fixed")
+      $('.my-container').toggleClass("active-cont");
+    }); 
+    
+  });
+</script>
+{% endblock %}
