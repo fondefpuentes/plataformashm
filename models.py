@@ -377,6 +377,9 @@ class AnomaliaPorHora(db.Model):
     id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'))
     hora_calculo = db.Column(db.DateTime)
     anomalia = db.Column(db.Boolean)
+    umbralx = db.Column(db.Integer)
+    umbraly = db.Column(db.Integer)
+    umbralz = db.Column(db.Integer)
     
 class ReporteDanoAR(db.Model):
     __tablename__ = 'reporte_dano_ar'
@@ -384,14 +387,32 @@ class ReporteDanoAR(db.Model):
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     id_sensor_instalado = db.Column(db.Integer, db.ForeignKey('inventario_puentes.sensores_instalados.id'))
     hora = db.Column(db.DateTime)
+    axis = db.Column(db.Integer)
 
 class ModeloAR(db.Model):
     __tablename__ = 'modelo_ar'
     __table_args__ = {'schema':'inventario_puentes'}
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    id_reporte_dano_ar = db.Column(db.Integer, db.ForeignKey('inventario_puentes.reporte_dano_ar.id'))
+    numero_modelo = db.Column(db.Integer)
     
 class CoeficienteAR(db.Model):
     __tablename__ = 'coeficiente_ar'
     __table_args__ = {'schema':'inventario_puentes'}
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     valor = db.Column(db.Float)
+    id_modelo_ar = db.Column(db.Integer, db.ForeignKey('inventario_puentes.modelo_ar.id'))
+    numero = db.Column(db.Integer)
+    
+class ConfiguracionModeloAR(db.Model):
+    __tablename__ = 'configuracion_modelo_ar'
+    __table_args__ = {'schema':'inventario_puentes'}
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    id_estructura = db.Column(db.Integer, db.ForeignKey('inventario_puentes.estructuras.id'))
+    cantidad_coeficientes_ar = db.Column(db.Integer)
+    umbral_distancia = db.Column(db.Float)
+    cantidad_umbrales = db.Column(db.Integer)
+    numero_peaks = db.Column(db.Integer)
+    tiempo_peaks_segundos = db.Column(db.Integer)
+    tipo_peaks = db.Column(db.Integer)
+    actualizacion_completa = db.Column(db.Boolean)

@@ -45,22 +45,22 @@
 {% endwith %}
 
 <div class="container-fluid px-3 py-1">
+
    <div class="d-flex py-2">
-     <h2 >Gestión de Dispositivos :: Dispositivos de Estructuras en Monitoreo</h2>
+     <h2 >Gestión de Elementos Estructurales :: Crear Tipo de Elemento Estructural</h2>
    </div>
-   <div class="py-3 card text-dark bg-light">
-      <div class="input-group">
-        <span class="input-group-text">Estructura</span>
-        <select id="select_puente" class="form-select" name="autocomplete" placeholder="Buscar estructura" required aria-label="Seleccion Puente">
-          {% for i in puentes %}
-            <option value="{{i.id}}">{{i.rol}} - {{ i.nombre }} - {{ i.provincia }}, {{ i.region }}</option>
-          {% endfor %}  
-        </select>
-        <button id="search-btn" class="btn btn-primary btn-md">
-         Buscar
-        </button>
+   <div class="p-2 my-3 card text-dark bg-light">
+     <form class="row"method="POST" action="{{url_for('views_api.crear_tipo_elemento')}}">
+       <div class="input-group my-2 py-1">
+          <span class="input-group-text">Tipo de Elemento Estructural</span>
+          <input type="text" class="form-control" name="nombre_zona" placeholder="Losa de Acceso, Asiento, ... "required aria-label="Example text with button addon" aria-describedby="button-create-type">
+          <button type="submit" class="btn btn-outline-primary" id="button-create-type">Crear Tipo de Elemento</button>
       </div>
-      <div class="py-3" id="result"></div>
+     </form>
+     <p class="lead my-1 py-1">Tipos de Elementos Estructurales registrados:</p>
+     <div>{%for tipo in tipos_elem%}
+     <span class="fs-6 badge bg-light text-dark border border-dark rounded-pill me-3">{{tipo.nombre_zona}}</span>
+     {%endfor%}</div>
    </div>
 </div>
 
@@ -76,7 +76,7 @@
     {
       $.ajax(
       {
-        url:"/gestion/dispositivos/retrieve/" + id_estructura,
+        url:"/gestion/elementos/retrieve/" + id_estructura,
         method:"POST",
         success:function(data)
           {
@@ -92,6 +92,15 @@
       var id_puente = $('#select_puente').val();
       var data = id_puente.split(" ",1);
       load_data(data);
+    }); 
+    
+    $('#create-btn').click(function(e)
+    {
+      e.preventDefault();
+      var id_estructura = $('#estructura_select').val();
+      var data_id = id_estructura.split(" ",1);
+      $('#estructura_select').val(data_id);
+      $('#create-form').submit();
     }); 
     
 

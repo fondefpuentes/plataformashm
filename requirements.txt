@@ -5,6 +5,7 @@ flask-migrate
 Flask-Table
 flask-blueprint
 flask-login
+Flask-APScheduler
 Unidecode
 flask-script
 psycopg2
@@ -35,3 +36,6 @@ Werkzeug==1.0.1
 requests
 apscheduler
 pyarrow
+statsmodels
+scikit-learn
+matplotlib

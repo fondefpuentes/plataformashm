@@ -1,10 +1,11 @@
 
 {% extends "base.html" %}
-
 {% block content %}
 <div class="bg">
    {% include 'modal_glosario_estados.html'%}
    
+   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
    <div class="container-fluid px-5 py-2">
       {% include 'breadcrumb.html' %}
       <h1 class="title text-capitalize">
@@ -13,16 +14,93 @@
       <div class="row py-3 d-flex flex-sm-row-reverse">
          <div class="col-sm-3 mb-2">{% include 'botones_tabla_estructura.html' %}</div>
 		 <div class="col-sm-9">
-			 <div class="subtitle fs-3 py-1">Estado General de Sensores</div>
-		   <div class ="box">
-			 <h1></h1>
-			 <form method="post">
-				 <input type="submit" value="Reiniciar Anomalías" /> 
-			 </form>
-		   </div>
-			<div class="subtitle fs-3 py-1">Estados de Sensores</div>
+			 <div class="subtitle fs-3 py-1">Estado General de Estructura</div>
+			 <!-- <div class ="box">
+	    <h1></h1>
+	    <form method="post">
+	    <input type="submit" value="Botón que hace de todo que no debería estar aquí" /> 
+	    </form>
+	    </div> -->
+	    <div class="row row-cols-2 row-cols-md-2 g-5">
+		    <div class="col">
+			    <div class="card h-100">
+				    <div class="card-body">
+					    <h4 class="card-title">Estado de Daño</h4>
+					    <p class="card-text">{{ estado_dano.estado }}</p>
+				    </div>
+				    <div class="card-footer">
+					    <small class="text-muted">Ultima Actualización: {{ estado_dano.diahora_calculo | datetimefilter}}</small>
+				    </div>
+			    </div>
+		    </div>
+		    <div class="col">
+			    <div class="card h-100">
+				<div class="card-body">
+					<h4 class="card-title">Estado por zonas</h4>
+					 <table class="table table-bordered table-responsive border-1 sortable"
+								   id="table_sens"
+								   data-toggle="table"
+								   data-sortable="true"
+								   data-show-columns="true"
+								   data-locale="es-CL"
+								   data-pagination="true"
+								   data-page-size="10">
+					   <thead class="table-dark">
+						 <tr>
+						   <th data-sortable="true">Zona</th>
+						   <th data-sortable="true">Estado</th>
+						   <th data-sortable="true">Fecha</th>
+						 </tr>
+					   </thead>
+					   <tbody id="sensor_data">
+						 {%if zonas_dano %}
+						 {% for element in zonas_dano %}
+						 <tr>
+						   <td>{{ element.descripcion}}</td>
+						   <td>{{ element.estado }}</td>
+						   <td>{{ element.diahora_calculo | datetimefilter }}</td>
+
+						 </tr>
+						 {%endfor%}
+						 {%endif%}
+					   </tbody>
+					 </table>
+				</div>
+			    </div>
+		    </div>
+	    </div>
+		<div class="subtitle fs-3 py-1">Vista Modelo</div>
+		<div class="container">
+		<div class="row">
+			<div class="col-md-10">
+				<div class="col-xs-3">
+					<label>Seleccione el Sensor a analizar</label>
+					<select class="form-control" id ='first_cat'>
+						{%if sensores %}
+						{% for element in sensores %}
+						<option value="{{element.nombre_sensor}}">{{element.nombre_sensor}}</option>
+						{% endfor %}
+						{% endif %}
+					</select>
+				</div>
+				<div class="chart" id="lineplot">
+					<script>
+						var graphs = {{plot | safe}};
+						Plotly.newPlot('lineplot',graphs);
+					</script>
+				</div>
+				<div class="chart" id="barplot">
+					<script>
+						var graphs2 = {{mah | safe}};
+						Plotly.newPlot('barplot',graphs2);
+					</script>
+				</div>
+			</div>
+		</div>
+		</div>
 		   <div class="tab-content">
-               <div id="sensores" class="tab-pane fade show active">
+		<div class="subtitle fs-3 py-1">Estados de Sensores</div>
+		<div id="sensores" class="tab-pane fade show active">
 				 <table class="table table-bordered table-responsive border-1 sortable"
 							   id="table_sens"
 							   data-toggle="table"
@@ -31,7 +109,7 @@
 							   data-locale="es-CL"
 							   data-pagination="true"
 							   data-page-size="10">
-				   <thead class="thead-dark">
+				   <thead class="table-dark">
 					 <tr>
 					   <th data-sortable="true">Nombre</th>
 					   <th data-sortable="true">Tipo</th>
@@ -39,7 +117,6 @@
 					   <th data-sortable="true">DAQ</th>
 					   <th data-sortable="true">Estado Daño</th>
 					   <th data-sortable="true">Fecha Estado Daño</th>
-					   <th data-sortable="true">Agregar Anomalía</th>
 					 </tr>
 				   </thead>
 				   <tbody id="sensor_data">
@@ -52,11 +129,7 @@
 					   <td><a href="{{url_for('views_api.detalle_daq',id_daq=element.id_daq)}}">{{ element.caracteristicas}}</td>
 					   <td>{{ element.estado_dano_sensor }}</td>
 					   <td>{{ element.fecha_dano_sensor }}</td>
-					   <td>
-						   <form action="{{ url_for('views_api.agregar_anomalia', id_puente=id_puente, id_sensor=element.si) }}">
-						   <button class="btn btn-secondary btn-sm" type="submit">Añadir anomalia</button>
-						   </form>
-					   </td>
+
 					 </tr>
 					 {%endfor%}
 					 {%endif%}
@@ -65,39 +138,71 @@
                </div>
 		   </div>
 		   <div class="subtitle fs-3 py-1"> Historial de Anomalías </div>
-		   <div class="box">
-
-			   <table class="table table-bordered table-responsive border-1 sortable"
-					  id="table_sens"
-					  data-toggle="table"
-					  data-sortable="true"
-					  data-show-columns="true"
-					  data-locale="es-CL"
-					  data-pagination="true"
-					  data-page-size="10">
-				   <thead class="thead-dark">
-					 <tr>
-					   <th data-sortable="true">Nombre</th>
-					   <th data-sortable="true">Fecha Anomalía</th>
-					   <th data-sortable="true">Estado Anomalía</th>
-					 </tr>
-				   </thead>
-				   <tbody id="sensor_data">
-					 {%if anomalias_sensores %}
-					 {% for element in anomalias_sensores %}
-					 <tr>
-					   <td>{{ element.nombre_sensor }}</td>
-					   <td>{{ element.hora_calculo }}</td>
-					   <td>{{ element.anomalia }}</td>
-					 </tr>
-					 {%endfor%}
-					 {%endif%}
-				   </tbody>
-				 </table>
-		   </div>
+				 <div class="box" id="nav-alerta" role="tabpanel" aria-labelledby="nav-alerta-tab">
+					 <table class="table table-hover w-100 row-border" id="myTableAnomalias">
+						 <thead class="table-dark">
+							 <tr>
+								 <th data-field="Nombre" data-sortable="true">Nombre</th>
+								 <th data-field="Fecha" data-sortable="true">Fecha</th>
+								 <th data-field="Estado" data-sortable="true">Estado</th>
+								 <th data-field="UmbralX" data-sortable="true">Umbral X</th>
+								 <th data-field="UmbralY" data-sortable="true">Umbral Y</th>
+								 <th data-field="UmbralZ" data-sortable="true">Umbral Z</th>
+							 </tr>
+						 </thead>
+						 <tbody id="sensor_data">
+							 {%if anomalias_sensores %}
+							 {% for element in anomalias_sensores %}
+							 <tr>
+								 <td>{{ element.nombre_sensor }}</td>
+								 <td>{{ element.hora_calculo }}</td>
+								 <td>{{ element.anomalia }}</td>
+								 {% if element.umbralx %}
+								 <td>{{ element.umbralx }}</td>
+								 {% else %}
+								 <td>Sin Datos</td>
+								 {%endif%}
+								 {% if element.umbraly %}
+								 <td>{{ element.umbraly }}</td>
+								 {% else %}
+								 <td>Sin Datos</td>
+								 {%endif%}
+								 {% if element.umbralz %}
+								 <td>{{ element.umbralz }}</td>
+								 {% else %}
+								 <td>Sin Datos</td>
+								 {%endif%}
+							 </tr>
+							 {%endfor%}
+							 {%endif%}
+						 </tbody>
+					 </table>
+				 </div>
 		 </div>
 	  </div>
    </div>
 </div>
+{% endblock %}
+{% block customjs%}
+<script src="{{ url_for('static', filename='js/jquery-3.5.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plots.js') }}"></script>
+<!--
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
+-->
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.min.js"></script>
+<!--
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap5.min.js"></script>
+-->
+<script>
+	$(document).ready( function () {
+		$('#myTableAnomalias').DataTable({
+		    language: {
+			url: "{{ url_for('static', filename='i18n/es_es.json') }}"
+		    }
+		});
+	} );
+</script>
 {% endblock %}
 

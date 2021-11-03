@@ -3,47 +3,21 @@
 {% block customcss %}
     {{ super() }}
     <link href="{{ url_for('static', filename='css/tabla_estructura.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block sidebar%}
+  {% include 'navbar_admin.html'%}
 {% endblock %}
 
 {% block content %}
-<!--<div class="row px-1 ">
-<div class="text-light bg-dark">
-  <ul class="nav nav-pills py-2 flex-column">
-    <li class="nav-item border-bottom">
-      <a href="#" class="nav-link active">
-        <p><i class="bi bi-people-fill"></i> Usuarios</p>
-      </a>
-    </li>
-    <li class="nav-item border-bottom">
-      <a href="#" class="nav-link">
-        <p><i class="bi bi-people-fill"></i> Estructuras</p>
-      </a>
-    </li>
-    <li class="nav-item border-bottom">
-      <a href="#" class="nav-link">
-        <p><i class="bi bi-people-fill"></i> Elementos Estructurales</p>
-      </a>
-    </li>
-    <li class="nav-item border-bottom">
-      <a href="#" class="nav-link">
-        <p><i class="bi bi-people-fill"></i> Dispositivos</p>
-      </a>
-    </li>
-  </ul>
-</div>-->
-{% block sidebar%}
-{% endblock %}
 
-{% include 'sidebar.html'%}
-<section class="my-container active-cont px-3">
+<div class="container-fluid px-3 py-1">
     <div class="d-flex py-2">
-     <button type="button" class="btn btn-primary me-3" id="menu-btn"><i class="bi bi-layout-sidebar"></i></button>
-     <h1 >Gestión de usuarios</h1>
+     <h2>Gestión de usuarios :: Administrar usuarios existentes</h2>
    </div>
         
         <div class="py-3 ">
-            <table class="table table-bordered table-hover clickable-row">
+            <table class="table table-hover clickable-row">
                 <thead class="table-dark">
                     <tr>
                         <th>Nombre</th>
@@ -87,21 +61,6 @@
             </table>
         </div>
     </div>
-    </section>
+    </div>
 {% endblock %}
 
-{% block customjs %}
-
-<script>
-  $(document).ready(function(){
-    
-    $('#menu-btn').click(function(e)
-    {
-      $('#sidebar').toggleClass("active-nav");
-      $('#sidebar').toggleClass("position-fixed")
-      $('.my-container').toggleClass("active-cont");
-    }); 
-    
-  });
-</script>
-{% endblock %}

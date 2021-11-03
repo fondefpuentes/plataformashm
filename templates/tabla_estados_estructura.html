@@ -4,12 +4,12 @@
     <div class="card h-100">
       <div class="card-body">
         <h4 class="card-title">Estado de Daño</h4>
-        <p class="card-text">Estado ...</p>
+	<p class="card-text">{{ estado_dano.estado }}</p>
       </div>
       <div class="card-footer">
-        <small class="text-muted">Ultima Actualización: [dd/mm/aa hh:mm:ss]</small>
+	      <small class="text-muted">Ultima Actualización: {{ estado_dano.diahora_calculo | datetimefilter}}</small>
       </div>
-      <a href="#" class="btn btn-outline-primary">Detalles</a>
+      <a href="{{url_for('views_api.deteccion_temprana',id_puente=datos_puente.id)}}" class="btn btn-outline-primary">Detalles</a>
     </div>
   </div>
   {%endif%}

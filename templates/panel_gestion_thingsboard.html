@@ -1,21 +1,18 @@
 {% extends "base.html" %}
 
-{% block customcss %}
-    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+{% block sidebar%}
+  {% include 'navbar_admin.html'%}
 {% endblock %}
 
 {% block content %}
 
-{% include 'sidebar.html'%}
-<section class="my-container active-cont px-3">
+<div class="container-fluid px-3 py-1">
   <div class="d-flex py-2">
-     <button type="button" class="btn btn-primary me-3" id="menu-btn"><i class="bi bi-layout-sidebar"></i></button>
-     <h1 >Gestión de Thingsboard</h1>
+     <h2 >Gestión de Thingsboard :: Acceder a Panel Thingsboard</h2>
    </div>
-  <div class="p-2 my-3 card">
-    <h4><span class="fs-6 badge bg-dark me-3">A</span>Acceder a Panel de Thingsboard desde Estructura en Monitoreo</h4>
+  <div class="p-2 my-3 card text-dark bg-light">
     <form class="py-1" method="POST" action="#">
-        <table class="table table-hover table-bordered border-1 px-3" > 
+        <table class="table table-hover table-bordered border-1" > 
           <thead class="table-dark">
             <tr>
               <th data-field="Rol" data-sortable="true">Rol</th>
@@ -38,7 +35,7 @@
     </form>
   </div>
 </div>
-</section>
+</div>
 
 
 {% endblock %}
@@ -49,17 +46,4 @@
   <script src="{{ url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
   <script src="{{ url_for('static', filename='js/bootstrap-table-locale-all.min.js')}}"></script>
   <script src="{{ url_for('static', filename='js/bootstrap-table-export.min.js')}}"></script>
-  <script>
-  $(document).ready(function(){
-    
-    $('#menu-btn').click(function(e)
-    {
-      $('#sidebar').toggleClass("active-nav");
-      $('#sidebar').toggleClass("position-fixed")
-      $('.my-container').toggleClass("active-cont");
-    }); 
-    
-  });
-</script>
-  <script>
 {% endblock %}

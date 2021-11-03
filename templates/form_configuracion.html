@@ -1,0 +1,84 @@
+{% if configuracion%}
+<form  method="POST" action="{{url_for('views_api.editar_configuracion_ar',id_configuracion=configuracion.id)}}" class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="col">
+      <div class="card h-100">
+      <div class="card-header">
+        <h5 class="lead">Configuración de Coeficientes</h5>
+      </div>
+      <div class="card-body">
+        <label for="coef" class="form-label">Cantidad de Coeficientes</label>
+        <input name="cant_coef_ar" type="number" class="form-control col-sm-8" value="{{configuracion.cantidad_coeficientes_ar}}" id="coef"  required/>
+      </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100">
+      <div class="card-header">
+        <h5 class="lead">Configuración de Umbrales</h5>
+      </div>
+      <div class="card-body">
+        <label for="dist_umbrales" class="form-label">Distancia de Umbrales</label>
+        <input name="dist_umbrales" type="number" step="any" min="0" class="form-control col-sm-8 mb-1" value="{{configuracion.umbral_distancia}}" id="dist_umbrales"  required/>
+        <label for="cant_umbrales" class="form-label">Cantidad de Umbrales</label>
+        <input name="cant_umbrales" type="number" class="form-control col-sm-8" value="{{configuracion.cantidad_umbrales}}" id="cant_umbrales"  required/>
+      </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100">
+      <div class="card-header">
+        <h5 class="lead">Configuración de Peaks</h5>
+      </div>
+      <div class="card-body">
+        <label for="nro_peaks" class="form-label">Número de Peaks</label>
+        <input name="nro_peaks" type="number" min="0" max="10" class="form-control col-sm-8 mb-1" value="{{configuracion.numero_peaks}}" id="nro_peaks" required/>
+        <label for="tiempo_peaks" class="form-label">Tiempo de Peaks (segundos)</label>
+        <input name="tiempo_peaks" type="number" class="form-control col-sm-8 mb-1" id="tiempo_peaks" value="{{configuracion.tiempo_peaks_segundos}}" required/>
+        <label for="tipo_peaks" class="form-label">Tipo de Peaks </label><span class="px-2"><i class="bi bi-info-circle" data-bs-toggle="modal" data-bs-target="#ModalTiposPeaks"></i><span>
+        <select name="tipo_peaks" class="form-select" aria-label="Select Peak" id="tipo_peaks" required>
+          <option value="1" {% if configuracion.tipo_peaks == 1 %} selected {%endif%}>SCPA</option>
+          <option value="2" {% if configuracion.tipo_peaks == 2 %} selected {%endif%}>SDPA</option>
+          <option value="3" {% if configuracion.tipo_peaks == 3 %} selected {%endif%}>SMAXE</option>
+          <option value="4" {% if configuracion.tipo_peaks == 4 %} selected {%endif%}>SMINE</option>
+        </select>
+      </div>
+      </div>
+    </div>
+    <div class="modal" id="ModalTiposPeaks" tabindex="-1" aria-labelledby="ModalPeaks" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="ModalPeaks">Tipos de Peaks</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="container-fluid">
+               <div class="row py-1">
+                  <div class="col-sm-4"><strong>Selección Central de Peaks de Aceleraciones (SCPA):</strong></div>
+                  <div class="col-sm-8">Método que privilegia la respuesta dinámica del sistema y logra registrar más modos fundamentales de vibración de la estructura.</div>
+               </div>
+               <div class="row py-1">
+                  <div class="col-sm-4"><strong>Selección Decremental de Peaks de Aceleraciones (SDPA):</strong></div>
+                  <div class="col-sm-8">Método que privilegia la respuesta del sistema después de  que la fuerza excitante deja de actuar. </div>
+               </div>
+               <div class="row py-1">
+                  <div class="col-sm-4"><strong>Selección de Máxima Energía (SMAXE):</strong></div>
+                  <div class="col-sm-8">Método para mayor evidencia del comportamiento dinámico de la estructura. </div>
+               </div>
+               <div class="row py-1">
+                  <div class="col-sm-4"><strong>Selección de Mínima Energía (SMINE):</strong></div>
+                  <div class="col-sm-8">Método con menores aceleraciones, pero con frecuencias de vibración más altas del sistema, para una mayor sensibilidad a los daños leves del puente. </div>
+               </div>
+            </div>
+         </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-outline-success mt-3 ">Actualizar</button>
+    </div>
+</form>
+{%endif%}

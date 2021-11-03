@@ -15,6 +15,9 @@ import aws_functions
 import swagger
 import pytz
 import requests
+from ModeloAR.modelo import *
+from ModeloAR.data import *
+from ModeloAR.visualization import *
 
 views_api = Blueprint('views_api',__name__)
 
@@ -66,7 +69,7 @@ def profile():
     #Estructura: id, region, provincia, nombre, en_monitoreo
     #EstadoDano: fecha y estado,
     #Estado: fecha_estado,estado,seguridad
-    puentes = db.session.query(Estructura.id, Estructura.nombre, Estructura.region, Estructura.en_monitoreo, EstadoEstructura.fecha_estado, EstadoEstructura.estado, EstadoEstructura.seguridad).filter(EstadoEstructura.id_estructura == Estructura.id).order_by(Estructura.id,EstadoEstructura.fecha_estado.desc()).distinct(Estructura.id).all()
+    puentes = db.session.query(Estructura.id, Estructura.nombre, Estructura.region, Estructura.en_monitoreo, EstadoEstructura.fecha_estado, EstadoEstructura.estado, EstadoEstructura.seguridad, EstadoDanoEstructura.estado.label('estado_dano') , EstadoDanoEstructura.diahora_calculo).filter(EstadoEstructura.id_estructura == Estructura.id, EstadoDanoEstructura.id_estructura == Estructura.id).order_by(Estructura.id,EstadoEstructura.fecha_estado.desc()).distinct(Estructura.id).all()
 
     #Variables para el template
     context = {
@@ -274,6 +277,7 @@ def informacion_estructura(id):
     
     daqs = db.session.query(DAQPorZona.id_daq, DAQPorZona.id_zona, DescripcionDAQ.caracteristicas, EstadoDAQ.fecha_estado, EstadoDAQ.operatividad, EstadoDAQ.mantenimiento, ElementoEstructural.descripcion).filter(DAQPorZona.id_estructura == id, DAQPorZona.id_daq == EstadoDAQ.id_daq, DAQPorZona.id_daq == DescripcionDAQ.id_daq,DAQPorZona.id_zona == ElementoEstructural.id).order_by(DAQPorZona.id_daq, EstadoDAQ.fecha_estado.desc()).distinct(DAQPorZona.id_daq).all()
     ultimo_estado = EstadoEstructura.query.filter_by(id_estructura=id).order_by(EstadoEstructura.fecha_estado.desc()).first()
+    estado_dano = EstadoDanoEstructura.query.filter_by(id_estructura=id).first()
     
     session['id_puente'] = id
     context = {
@@ -285,6 +289,7 @@ def informacion_estructura(id):
         'sensores':sensores,
         'daqs' : daqs,
         'estado': ultimo_estado,
+        'estado_dano': estado_dano,
         'title' : "Perfil " + estructura.nombre.capitalize()
     }
     return render_template('tabla_estructura.html', **context)
@@ -1554,13 +1559,23 @@ def eliminar_usuario():
 
 #PERMISOS = ADMINISTRADOR
 #Cargar Estructuras
-@views_api.route('/gestion/estructura', methods=['GET'])
+@views_api.route('/gestion/estructura_crear', methods=['GET'])
 @login_required
-def administrar_estructura():
-  if(current_user.permisos == "Administrador"):  
+def administrar_estructura_creacion():
+  if(current_user.permisos == "Administrador"):
     puentes = Estructura.query.all()
     context = {'puentes': puentes}
-    return render_template('panel_gestion_estructura.html',**context)
+    return render_template('panel_gestion_estructura_crear.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+@views_api.route('/gestion/estructura_modificar', methods=['GET'])
+@login_required
+def administrar_estructura_modificacion():
+  if(current_user.permisos == "Administrador"):
+    puentes = Estructura.query.all()
+    context = {'puentes': puentes}
+    return render_template('panel_gestion_estructura_modificar.html',**context)
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
     
@@ -1592,10 +1607,10 @@ def crear_estructura():
     except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
       db.session.rollback()
       flash(str(error.orig) + " for parameters" + str(error.params),'error')
-      return redirect(url_for('views_api.administrar_estructura'))
+      return redirect(url_for('views_api.administrar_estructura_creacion'))
       
     flash("Puente " + request.form.get("nombre") +" registrado.", 'info')
-    return redirect(url_for('views_api.administrar_estructura'))
+    return redirect(url_for('views_api.administrar_estructura_creacion'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
 
@@ -1639,7 +1654,7 @@ def editar_estructura(id_estructura):
       return redirect(url_for('views_api.administrar_estructura'))
             
     flash("Puente " + estructura.nombre + " Actualizado.", 'info')
-    return redirect(url_for('views_api.administrar_estructura'))
+    return redirect(url_for('views_api.administrar_estructura_modificacion'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
 
@@ -1658,23 +1673,49 @@ def eliminar_estructura(id_estructura):
       return redirect(url_for('views_api.administrar_estructura'))
       
     flash("Puente eliminado del registro.", 'info')  
-    return redirect(url_for('views_api.administrar_estructura'))
+    return redirect(url_for('views_api.administrar_estructura_modificacion'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
     
 ### ELEMENTOS ESTRUCTURALES ###
 
 #PERMISOS = ADMINISTRADOR
-#Cargar de estructuras a filtar y Tipos de Elementos Estructurales
-@views_api.route('/gestion/elementos', methods=['GET'])
+#Carga de Tipos de Elementos Estructurales
+@views_api.route('/gestion/elementos/tipo', methods=['GET'])
 @login_required
-def administrar_elementos():
+def administrar_tipos_elementos():
   if(current_user.permisos == "Administrador"):  
+    tipos = TipoElemento.query.all()
+    context = {'tipos_elem': tipos}
+    return render_template('panel_gestion_elementos_tipo.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+#PERMISOS = ADMINISTRADOR
+#Carga de estructuras a filtar y Tipos de Elementos Estructurales para creacion de elemento.
+@views_api.route('/gestion/elementos/crear', methods=['GET'])
+@login_required
+def administrar_elementos_creacion():
+  if(current_user.permisos == "Administrador"):
     puentes = Estructura.query.all()
     tipos = TipoElemento.query.all()
     context = {'puentes': puentes,
                'tipos_elem': tipos}
-    return render_template('panel_gestion_elementos.html',**context)
+    return render_template('panel_gestion_elementos_crear.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+#PERMISOS = ADMINISTRADOR
+#Carga de estructuras a filtar y Tipos de Elementos Estructurales para modificacion de elemento.
+@views_api.route('/gestion/elementos/modificar', methods=['GET'])
+@login_required
+def administrar_elementos_modificacion():
+  if(current_user.permisos == "Administrador"):
+    puentes = Estructura.query.all()
+    tipos = TipoElemento.query.all()
+    context = {'puentes': puentes,
+               'tipos_elem': tipos}
+    return render_template('panel_gestion_elementos_modificar.html',**context)
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
 
@@ -1691,10 +1732,10 @@ def crear_tipo_elemento():
     except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
       db.session.rollback()
       flash(str(error.orig) + " for parameters" + str(error.params),'error')
-      return redirect(url_for('views_api.administrar_elementos'))
+      return redirect(url_for('views_api.administrar_tipos_elementos'))
       
     flash("Tipo de Elemento <" + nuevo_tipo.nombre_zona +"> registrado.", 'info')
-    return redirect(url_for('views_api.administrar_elementos'))
+    return redirect(url_for('views_api.administrar_tipos_elementos'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
         
@@ -1714,10 +1755,10 @@ def crear_elemento():
     except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
       db.session.rollback()
       flash(str(error.orig) + " for parameters" + str(error.params),'error')
-      return redirect(url_for('views_api.administrar_elementos'))
+      return redirect(url_for('views_api.administrar_elementos_creacion'))
       
     flash("Elemento Estructural <" + nuevo_elemento.descripcion +"> registrado.", 'info')
-    return redirect(url_for('views_api.administrar_elementos'))
+    return redirect(url_for('views_api.administrar_elementos_creacion'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
 
@@ -1749,10 +1790,10 @@ def editar_elemento(id_elemento):
     except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
       db.session.rollback()
       flash(str(error.orig) + " for parameters" + str(error.params),'error')
-      return redirect(url_for('views_api.administrar_elementos'))
+      return redirect(url_for('views_api.administrar_elementos_modificacion'))
             
     flash("Elemento Estructural <" + elemento.descripcion + "> actualizado.", 'info')
-    return redirect(url_for('views_api.administrar_elementos'))
+    return redirect(url_for('views_api.administrar_elementos_modificacion'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
 
@@ -1768,10 +1809,10 @@ def eliminar_elemento(id_elemento):
     except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
       db.session.rollback()
       flash(str(error.orig) + " for parameters" + str(error.params),'error')
-      return redirect(url_for('views_api.administrar_elementos'))
+      return redirect(url_for('views_api.administrar_elementos_modificacion'))
       
     flash("Elemento Estructural eliminado del registro.", 'info')  
-    return redirect(url_for('views_api.administrar_elementos'))
+    return redirect(url_for('views_api.administrar_elementos_modificacion'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
     
@@ -2085,6 +2126,64 @@ def check_thingsboard_instance():
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
 
+
+### PARAMETROS AR ###
+
+#PERMISOS = ADMINISTRADOR
+#Cargar Puentes para Configuración de parámetros
+@views_api.route('/gestion/parametros', methods=['GET'])
+@login_required
+def administrar_parametros():
+  if(current_user.permisos == "Administrador"):  
+    puentes = Estructura.query.filter_by(en_monitoreo = True).all()
+    context = {'puentes': puentes}
+    return render_template('panel_gestion_parametros_ar.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+
+#PERMISOS = ADMINISTRADOR
+#Buscar Configuraciones de Estructura AJAX
+@views_api.route('/gestion/parametros/retrieve/<int:id_estructura>', methods=['POST'])
+@login_required
+def buscar_configuracion_ajax(id_estructura):
+  if(current_user.permisos == "Administrador"):
+    if request.method == "POST":
+      configuracion = ConfiguracionModeloAR.query.filter_by(id_estructura=id_estructura).first()
+      
+      context = {
+        'configuracion': configuracion
+      }
+      return jsonify({'htmlresponse': render_template('form_configuracion.html',**context,id_estructura = id_estructura)})
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))    
+
+#PERMISOS = ADMINISTRADOR
+#Editar Configuración de parámetros
+@views_api.route('/gestion/parametros/edit/<int:id_configuracion>', methods=['POST'])
+@login_required
+def editar_configuracion_ar(id_configuracion):
+  if(current_user.permisos == "Administrador"):  
+    try:
+      configuracion = ConfiguracionModeloAR.query.filter_by(id=id_configuracion).first()
+      configuracion.cantidad_coeficientes_ar=request.form.get("cant_coef_ar")
+      configuracion.umbral_distancia=request.form.get("dist_umbrales")
+      configuracion.cantidad_umbrales = request.form.get("cant_umbrales")
+      configuracion.numero_peaks = request.form.get("nro_peaks")
+      configuracion.tiempo_peaks_segundos = request.form.get("tiempo_peaks")
+      configuracion.tipo_peaks=request.form.get("tipo_peaks")
+      configuracion.actualizacion_completa=True
+      db.session.add(configuracion)
+      db.session.commit()
+    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
+      db.session.rollback()
+      flash(str(error.orig) + " for parameters" + str(error.params),'error')
+      return redirect(url_for('views_api.administrar_parametros'))
+            
+    flash("Configuración actualizada.", 'info')
+    return redirect(url_for('views_api.administrar_parametros'))
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
 ############################## Prueba JSON DataTable #########################################
 @views_api.route('/cargar_estructuras', methods=['GET'])
 @login_required
@@ -2151,18 +2250,21 @@ def hconsulta(id):
         numero_canal = canal.numero_canal
         daq = DescripcionDAQ.query.filter_by(id_daq = canal.id_daq).first().caracteristicas        
         i.update({"frecuencia": frecuencia,"modelo": modelo, "tipo_sensor":tipo_sensor, "estado_sensor": estado_sensor, "zona_sensor": zona_sensor, "numero_canal": numero_canal, "daq":daq,"id_sensor_instalado":id_sensor_instalado,"id_daq":canal.id_daq})
-
+    
     if request.method == "POST":
         destino_consulta = request.form["destino_consulta"]
-        rango_consulta = request.form["rango_consulta"]
+        rango_consulta = "rango_completo"
+        #rango_consulta = request.form["rango_consulta"]
         fecha_inicial = request.form["fecha_inicial"]
-        hora_inicial = request.form["hora_inicial"]
+        hora_inicial = "00:00"
+        #hora_inicial = request.form["hora_inicial"]
         fecha_final = request.form["fecha_final"]
-        hora_final = request.form["hora_final"]
+        hora_final = "00:00"
+        #hora_final = request.form["hora_final"]
         lista_sensores = request.form.getlist("sensor_selected")
         consultas_ejes = request.form.getlist("consultas_ejes")
         consultas_sensor = request.form.getlist("consultas_sensor")
-
+        
         id_sensores = []
 
         for i in lista_sensores:
@@ -2280,13 +2382,17 @@ def hdescarga(id):
 
     if request.method == "POST":
         destino_consulta = request.form["destino_consulta"]
-        rango_consulta = request.form["rango_consulta"]
+        rango_consulta = "rango_completo"
+        #rango_consulta = request.form["rango_consulta"]
         fecha_inicial = request.form["fecha_inicial"]
-        hora_inicial = request.form["hora_inicial"]
+        hora_inicial = "00:00"
+        #hora_inicial = request.form["hora_inicial"]
         fecha_final = request.form["fecha_final"]
-        hora_final = request.form["hora_final"]
+        hora_final = "00:00"
+        #hora_final = request.form["hora_final"]
         lista_sensores = request.form.getlist("sensor_selected")
         consultas_ejes = request.form.getlist("consultas_ejes")
+        consultas_sensor = request.form.getlist("consultas_sensor")
 
         id_sensores = []
 
@@ -2440,11 +2546,16 @@ def deteccion_temprana(id_puente):
         if(request.method == "GET"):
             estructura = Estructura.query.filter_by(id=id_puente).first()
             sensores = db.session.query(Sensor.id, SensorInstalado.id.label("si"), Sensor.frecuencia, TipoSensor.nombre, ElementoEstructural.descripcion, InstalacionSensor.fecha_instalacion, SensorInstalado.es_activo, DescripcionSensor.descripcion.label("nombre_sensor"),EstadoSensor.fecha_estado.label("fecha123"),EstadoSensor.confiabilidad, EstadoSensor.operatividad, EstadoSensor.mantenimiento,DescripcionDAQ.caracteristicas, DAQPorZona.id_daq, EstadoDanoSensor.estado.label("estado_dano_sensor"), EstadoDanoSensor.diahora_calculo.label("fecha_dano_sensor")).filter(TipoSensor.id == Sensor.tipo_sensor, SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_instalacion == InstalacionSensor.id, ElementoEstructural.id == SensorInstalado.id_zona, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, EstadoSensor.id_sensor_instalado == SensorInstalado.id,SensorInstalado.conexion_actual == Canal.id, Canal.id_daq == DAQPorZona.id_daq, DescripcionDAQ.id_daq == DAQPorZona.id_daq, EstadoDanoSensor.id_sensor_instalado == SensorInstalado.id).distinct(Sensor.id).order_by(Sensor.id, InstalacionSensor.fecha_instalacion.desc(),EstadoSensor.fecha_estado.desc()).all()
-            anomalias = db.session.query(DescripcionSensor.descripcion.label("nombre_sensor"), SensorInstalado.id.label("si"), AnomaliaPorHora.hora_calculo, AnomaliaPorHora.anomalia).filter(SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, AnomaliaPorHora.id_sensor_instalado == SensorInstalado.id_sensor, DescripcionSensor.id_sensor_instalado == SensorInstalado.id,).order_by(AnomaliaPorHora.hora_calculo.desc()).all() 
+            anomalias = db.session.query(DescripcionSensor.descripcion.label("nombre_sensor"), SensorInstalado.id.label("si"), AnomaliaPorHora.hora_calculo, AnomaliaPorHora.anomalia, AnomaliaPorHora.umbralx, AnomaliaPorHora.umbraly, AnomaliaPorHora.umbralz).filter(SensorInstalado.id_sensor == Sensor.id, SensorInstalado.id_estructura == id_puente, DescripcionSensor.id_sensor_instalado == SensorInstalado.id, AnomaliaPorHora.id_sensor_instalado == SensorInstalado.id_sensor, DescripcionSensor.id_sensor_instalado == SensorInstalado.id,).order_by(AnomaliaPorHora.hora_calculo.desc()).all() 
             esta_monitoreada = estructura.en_monitoreo
             #Se guarda momentaneamente el id del puente en la sesión actual
             session['id_puente'] = id_puente
+            lineplot = create_plot(sensores[0].nombre_sensor)
+            barplot = create_mah(sensores[0].nombre_sensor)
             # estados = EstadoEstructura.query.filter_by(id_estructura=id_puente).order_by(EstadoEstructura.fecha_estado.desc()).all()
+            estado_dano = EstadoDanoEstructura.query.filter_by(id_estructura=id_puente).first()
+            zonas_dano = EstadoDanoElemento.query.filter_by(id_estructura=id_puente)
+            zonas_dano = db.session.query(EstadoDanoElemento.diahora_calculo, EstadoDanoElemento.estado, ElementoEstructural.descripcion).filter(EstadoDanoElemento.id_estructura==id_puente, EstadoDanoElemento.id_elemento == ElementoEstructural.id)
             context = {
                 'id_puente' : id_puente,
                 'nombre_y_tipo_activo' : obtener_nombre_y_activo(id_puente),
@@ -2452,22 +2563,12 @@ def deteccion_temprana(id_puente):
                 'esta_monitoreada':esta_monitoreada,
                 'sensores': sensores,
                 'anomalias_sensores': anomalias,
+                'plot' : lineplot,
+                'mah' : barplot,
+                'estado_dano' : estado_dano,
+                'zonas_dano' : zonas_dano,
             }
             return render_template('deteccion_temprana.html',**context)
-        elif(request.method == "POST"):
-            print("Reiniciando Anomalias")
-            try:
-                num_rows_deleted = db.session.query(AnomaliaPorHora).delete()
-                db.session.commit()
-                print("Filas Eliminadas = " + str(num_rows_deleted))
-                sensores_de_puente = db.session.query(SensorInstalado.id.label("si")).filter(SensorInstalado.id_estructura == id_puente).order_by(SensorInstalado.id.desc())
-                for sensor in sensores_de_puente:
-                    anomalia = AnomaliaPorHora(id_sensor_instalado = sensor.si, hora_calculo = datetime.now(), anomalia = False)
-                    db.session.add(anomalia)
-                db.session.commit()
-            except:
-                db.session.rollback()
-            return redirect(url_for('views_api.deteccion_temprana',id_puente=session['id_puente']))
     else:
         return redirect(url_for('views_api.usuario_no_autorizado'))
 
@@ -2478,4 +2579,20 @@ def agregar_anomalia(id_puente,id_sensor):
     db.session.commit()
     print("Se agrega anomalia al sensor " + str(id_sensor))
     return redirect(url_for('views_api.deteccion_temprana', id_puente=session['id_puente']))
+
+@views_api.route('/bar', methods=['GET', 'POST'])
+def change_features():
+
+    feature = request.args['selected']
+    graphJSON= create_plot(feature)
+
+    return graphJSON
+
+@views_api.route('/bar2', methods=['GET', 'POST'])
+def change_features2():
+
+    feature = request.args['selected']
+    graphJSON= create_mah(feature)
+
+    return graphJSON
 

@@ -46,9 +46,10 @@
 
 <div class="container-fluid px-3 py-1">
    <div class="d-flex py-2">
-     <h2 >Gestión de Dispositivos :: Dispositivos de Estructuras en Monitoreo</h2>
+     <h2>Gestión de Parámetros AR :: Editar Parámetros de Detección Temprana por Estructura</h2>
    </div>
-   <div class="py-3 card text-dark bg-light">
+   <div class="p-2 my-3 card text-dark bg-light">
+   <div class="py-3">
       <div class="input-group">
         <span class="input-group-text">Estructura</span>
         <select id="select_puente" class="form-select" name="autocomplete" placeholder="Buscar estructura" required aria-label="Seleccion Puente">
@@ -60,8 +61,9 @@
          Buscar
         </button>
       </div>
-      <div class="py-3" id="result"></div>
    </div>
+   </div>
+   <div id="result"></div>
 </div>
 
 
@@ -76,7 +78,7 @@
     {
       $.ajax(
       {
-        url:"/gestion/dispositivos/retrieve/" + id_estructura,
+        url:"/gestion/parametros/retrieve/" + id_estructura,
         method:"POST",
         success:function(data)
           {
@@ -100,6 +102,13 @@
     }else{
         ;
     }
+    
+    $('#menu-btn').click(function(e)
+    {
+      $('#sidebar').toggleClass("active-nav");
+      $('#sidebar').toggleClass("position-fixed")
+      $('.my-container').toggleClass("active-cont");
+    }); 
     
   });
 </script>

@@ -23,18 +23,18 @@
       <dt class="col-sm-3">Ancho total</dt>
       <dd class="col-sm-9"><input name="ancho_total" type="number" step="any" class="form-control" value="{{ estructura.ancho_total }}" required/></dd>
       <dt class="col-sm-3">Estribo</dt>
-      <dd class="col-sm-9"><input name="mat_estrib" type="text" class="form-control" value="{{ estructura.mat_estrib }}" /></dd>
+      <dd class="col-sm-9"><input name="mat_estrib" type="text" class="form-control" value="{{ estructura.mat_estrib }}" required /></dd>
       <dt class="col-sm-3">Piso</dt>
-      <dd class="col-sm-9"><input name="piso" type="text" class="form-control" value="{{ estructura.piso }}" /></dd>
+      <dd class="col-sm-9"><input name="piso" type="text" class="form-control" value="{{ estructura.piso }}" required /></dd>
       <dt class="col-sm-3">Vigas</dt>
-      <dd class="col-sm-9"><input name="mat_vigas" type="text" class="form-control" value="{{ estructura.mat_vigas }}" /></dd>
+      <dd class="col-sm-9"><input name="mat_vigas" type="text" class="form-control" value="{{ estructura.mat_vigas }}" required /></dd>
       <dt class="col-sm-3 border-top">Cepas</dt>
       <dd class="col-sm-9">
         <dl class="row border-top">
           <dt class="col-sm-3">Cantidad</dt>
-          <dd class="col-sm-9"><input name="num_cepas" type="number" class="form-control col-6 px-2" value="{{estructura.num_cepas}}"/></dd>
+          <dd class="col-sm-9"><input name="num_cepas" type="number" class="form-control col-6 px-2" value="{{estructura.num_cepas}}" required /></dd>
           <dt class="col-sm-3">Material</dt>
-          <dd class="col-sm-9"><input name="mat_cepas" type="text" class="form-control col-6 px-2" value="{{estructura.mat_cepas}}"/></dd>
+          <dd class="col-sm-9"><input name="mat_cepas" type="text" class="form-control col-6 px-2" value="{{estructura.mat_cepas}}" required /></dd>
           </dl>
       </dd>
     </dl>

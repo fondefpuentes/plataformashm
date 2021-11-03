@@ -7,7 +7,8 @@
 
 {% block content %}
     <div class="loginbox">
-        <div class="box">
+        <div class="card w-75">
+			    <div class="card-header">
             <h3 class="title">
                 Reestablecer contraseña
             </h3>
@@ -18,16 +19,19 @@
                     </div>
                 {% endif %}
             {% endwith %}
+         </div>
+         <div class="card-body">
             <p>
-                Pror favor ingrese su nueva contraseña.
+                Por favor ingrese su nueva contraseña.
             </p>
             <form method="post">
                 <input type="password" name="password" id="password" required class="form-control">
                 <br>
-                <button type="submit" class="btn btn-primary w-50">
+                <button type="submit" class="btn btn-primary">
                     Guardar contraseña
                 </button>
             </form>
         </div>
+      </div>
     </div>
 {% endblock %}
