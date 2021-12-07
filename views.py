@@ -91,11 +91,14 @@ def usuario_no_autorizado():
 @login_required
 def crear_monitoreo(id_puente):
     if(current_user.permisos == 'Administrador'):
-        puente_a_monitorear = Estructura.query.get(id_puente)
-        ip_request = puente_a_monitorear.ip_instancia
         
-        if(ip_request == None or puente_a_monitorear.en_monitoreo):
-          return redirect(url_for('views_api.informacion_estructura', id=id_puente))
+        estructura = Estructura.query.filter_by(id=id_puente).first()
+        ip_request = request.form.get('ip')
+        user = request.form.get('user')
+        password = request.form.get('pass')
+        if(ip_request == None or user == None or password == None):
+          flash("Error al conectar con Thingsboard",'error')
+          return redirect(url_for('views_api.administrar_monitoreos'))
   
         #obtencion API KEY de TB    
         api_key_url = requests.post(
@@ -118,9 +121,6 @@ def crear_monitoreo(id_puente):
         for i in t_zona:
           t_z_dict[i.nombre_zona] = i.id
   
-        #Peticion a Swagger de ASSETS 
-        response = requests.get ( ip_request + '/api/tenant/assets?pageSize=40&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth})
-        json_assets = response.json()
         zonas_dict = {}
         #Peticion a Swagger de DEVICES
         response = requests.get( ip_request + '/api/tenant/deviceInfos?pageSize=20&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth},)
@@ -129,15 +129,9 @@ def crear_monitoreo(id_puente):
         daq_dict = {}
         #insercion de nuevas zonas a BD
         try:
-          for i in json_assets['data']:
-            if(i['type'] == "Zona"):
-              nueva_zona = ElementoEstructural(id_estructura=id_puente,tipo_zona=t_z_dict[i['label']],descripcion=i['name'])
-              db.session.add(nueva_zona)
-              db.session.flush()
-              zonas_dict[i['name']] = nueva_zona.id
   
           #insercion DAQs 
-
+          canales_bd = {}
           for i in json_devices['data']:
             if(i['type'] == "daq"):
               #obtencion atributos del DAQ
@@ -149,9 +143,13 @@ def crear_monitoreo(id_puente):
               for attr in attr_response:
                 if(attr['key'] == "Canales"):
                   chns = attr['value']
-                if(attr['key'] == "Zona"):
+                if(attr['key'] == "Elemento Estructural"):
                   zona = attr['value']
-                  
+                  if not zona in zonas_dict:
+                    nueva_zona = ElementoEstructural(id_estructura=id_puente,tipo_zona=t_z_dict['Tablero'],descripcion=zona)
+                    db.session.add(nueva_zona)
+                    db.session.flush()
+                    zonas_dict[zona] = nueva_zona.id
               
               nuevo_daq = DAQ(nro_canales=chns)
               db.session.add(nuevo_daq)
@@ -163,11 +161,13 @@ def crear_monitoreo(id_puente):
               estado_nuevo_daq = EstadoDAQ(id_daq=nuevo_daq.id, fecha_estado=datetime.now(), detalles='Conectado')
               db.session.add(estado_nuevo_daq)
               canales = []
-              for i in range(1,int(nuevo_daq.nro_canales)+1):
+              for i in range(1,int(chns)+1):
                 x = Canal(id_daq=nuevo_daq.id, numero_canal=i)
-                canales.append(x)
-              db.session.bulk_save_objects(canales) 
-                             
+                db.session.add(x)
+                db.session.flush()
+                canales_bd[x.numero_canal] = x.id
+
+
           #insercion sensores 
           for i in json_devices['data']:
             if(i['type'] != "daq"):
@@ -175,33 +175,47 @@ def crear_monitoreo(id_puente):
               attr_request = requests.get(ip_request + '/api/plugins/telemetry/DEVICE/' + str(i['id']['id'])+'/values/attributes',headers={'Accept' : 'application/json','X-Authorization': x_auth})
               attr_response = attr_request.json()
               zona = ""
+              canal = 0
+              frecuencia = 0
 
               for attr in attr_response:
-                if(attr['key'] == "Zona"):
+                if(attr['key'] == "Elemento Estructural"):
                   zona = attr['value']
+                  if not zona in zonas_dict:
+                    nueva_zona = ElementoEstructural(id_estructura=id_puente,tipo_zona=t_z_dict['Tablero'],descripcion=zona)
+                    db.session.add(nueva_zona)
+                    db.session.flush()
+                    zonas_dict[zona] = nueva_zona.id
+                if(attr['key'] == "Canal"):
+                  canal = attr['value']
+                if(attr['key'] == "Frecuencia"):
+                  frecuencia = attr['value']
+
                   
-              nuevo_sensor = Sensor(tipo_sensor = t_s_dict[i['type']],frecuencia = 120,uuid_device = i['id']['id'])
+              nuevo_sensor = Sensor(tipo_sensor = t_s_dict[i['type']],frecuencia = frecuencia, uuid_device = i['id']['id'])
               nueva_instalacion_sensor = InstalacionSensor(fecha_instalacion=datetime.now())
               db.session.add(nueva_instalacion_sensor)
               db.session.add(nuevo_sensor)
               db.session.flush()
-              nuevo_sensor_instalado = SensorInstalado(id_instalacion=nueva_instalacion_sensor.id, id_sensor=nuevo_sensor.id, id_zona=zonas_dict[zona], id_estructura=id_puente, es_activo=True)
+              nuevo_sensor_instalado = SensorInstalado(id_instalacion=nueva_instalacion_sensor.id,conexion_actual = canales_bd.get(canal),id_sensor=nuevo_sensor.id, id_zona=zonas_dict[zona], id_estructura=id_puente, es_activo=True)
               db.session.add(nuevo_sensor_instalado)
               db.session.flush()
               nueva_descripcion = DescripcionSensor(id_sensor_instalado = nuevo_sensor_instalado.id,descripcion = i['name'])
               db.session.add(nueva_descripcion)
               db.session.flush()   
 
-          puente_a_monitorear.en_monitoreo = True
-          db.session.add(puente_a_monitorear)
+          estructura.en_monitoreo = True
+          estructura.ip_instancia = ip_request
+          db.session.add(estructura)
           db.session.commit()
-          
-        except:
+           
+        except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
           db.session.rollback()
-          raise
-        finally:
-            #De no haber errores, redirige a la vista resumen del puente
-            return redirect(url_for('views_api.informacion_estructura', id=id_puente))
+          flash(str(error.orig) + " for parameters" + str(error.params),'error')
+          return redirect(url_for('views_api.administrar_monitoreos'))
+
+        flash("Monitoreo iniciado exitosamente", 'info')
+        return redirect(url_for('views_api.administrar_monitoreos'))
     else:
         #Si el usuario no está autorizado, redirige a la vista de error
         return redirect(url_for('views_api.usuario_no_autorizado'))
@@ -1836,31 +1850,7 @@ def administrar_dispositivos():
 @login_required
 def crear_dispositivos():
   if(current_user.permisos == "Administrador"):
-    try:
-      nuevo_puente = Estructura(nombre=request.form.get("nombre"), 
-                                rol=request.form.get("rol"), 
-                                nombre_camino=request.form.get("nombre_camino"),
-                                cauce_queb = request.form.get("cauce_queb"),
-                                provincia = request.form.get("provincia"),
-                                tipo_activo = "puente",
-                                region = request.form.get("region"),
-                                coord_x = request.form.get("coord_x"),
-                                coord_y = request.form.get("coord_y"),
-                                largo = request.form.get("largo"),
-                                ancho_total = request.form.get("ancho_total"),
-                                mat_estrib = request.form.get("mat_estrib"),
-                                piso = request.form.get("piso"),
-                                mat_vigas = request.form.get("mat_vigas"),
-                                num_cepas = request.form.get("num_cepas"),
-                                mat_cepas = request.form.get("mat_cepas"))
-      db.session.add(nuevo_puente)
-      db.session.commit()
-    except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as error:
-      db.session.rollback()
-      flash(str(error.orig) + " for parameters" + str(error.params),'error')
-      return redirect(url_for('views_api.administrar_dispositivos'))
-      
-    flash("Puente " + request.form.get("nombre") +" registrado.", 'info')
+
     return redirect(url_for('views_api.administrar_dispositivos'))
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
@@ -2050,7 +2040,7 @@ def administrar_thingsboard():
 ### MONITOREOS ###
 
 #PERMISOS = ADMINISTRADOR
-#Acceso a Monitoreos
+#Acceso a Creación de Monitoreos
 @views_api.route('/gestion/monitoreos', methods=['GET'])
 @login_required
 def administrar_monitoreos():
@@ -2061,6 +2051,18 @@ def administrar_monitoreos():
   else:
     return redirect(url_for('views_api.usuario_no_autorizado'))
 
+#PERMISOS = ADMINISTRADOR
+#Acceso a Monitoreos Configurados
+@views_api.route('/gestion/monitoreos/configurar', methods=['GET'])
+@login_required
+def administrar_monitoreos_configurados():
+  if(current_user.permisos == "Administrador"):  
+    puentes = Estructura.query.filter_by(en_monitoreo=True).all()
+    context = {'puentes': puentes}
+    return render_template('panel_gestion_monitoreo_modificar.html',**context)
+  else:
+    return redirect(url_for('views_api.usuario_no_autorizado'))
+    
 #PERMISOS = ADMINISTRADOR
 #Inicio de Monitoreo en una Estructura
 @views_api.route('/gestion/iniciar_monitoreo/<int:id_estructura>', methods=['GET'])
@@ -2075,16 +2077,23 @@ def iniciar_monitoreo_gestion(id_estructura):
 
 #PERMISOS = ADMINISTRADOR
 #Verificar conexión con Thingsboard
-@views_api.route('/check_thingsboard_instance', methods=['POST'])
+@views_api.route('/check_thingsboard_instance/<int:id_estructura>', methods=['POST'])
 @login_required
-def check_thingsboard_instance():
+def check_thingsboard_instance(id_estructura):
   if(current_user.permisos == "Administrador"):  
     ip_instancia = request.form.get('ip_instancia')
     username = request.form.get('user')
     password = request.form.get('passw')
+
+    user_data= {}
+    user_data['user'] = username
+    user_data['pass'] = password
+    user_data['ip'] = ip_instancia
+
     if not ip_instancia:
       return jsonify({'error':render_template('error.html',message = "Por Favor Ingrese una Dirección. ")})
     try:
+
       api_key_url = requests.post(ip_instancia + '/api/auth/login',data='{"username":"' + username +  '" , "password": "'+ password +'" }', headers={'Content-Type': 'application/json','Accept': 'application/json'})
       json_response = api_key_url.json()
       
@@ -2096,20 +2105,41 @@ def check_thingsboard_instance():
         response = requests.get( ip_instancia + '/api/tenant/deviceInfos?pageSize=20&page=0',headers={'Accept' : 'application/json','X-Authorization': x_auth},)
         json_devices = response.json()
         
+        element_list = []
         devices = {}
         devices['data'] = []
         for device in json_devices['data']:
+
+          attr_request = requests.get(ip_instancia + '/api/plugins/telemetry/DEVICE/' + str(device['id']['id'])+'/values/attributes',headers={'Accept' : 'application/json','X-Authorization': x_auth})
+          attr_response = attr_request.json()
+
+          attr_device = {}
+          for attribute in attr_response:
+            if(attribute['key'] == "Canales"):
+              attr_device['canales'] = attribute['value']
+            if(attribute['key'] == "Elemento Estructural"):
+              attr_device['elemento-estructural'] = attribute['value']
+              element_list.append(attribute['value'])
+            if(attribute['key'] == "Canal"):
+              attr_device['canal'] = attribute['value']
+            if(attribute['key'] == "Frecuencia"):
+              attr_device['frecuencia'] = attribute['value']
+
           device = {'uuid' : device['id']['id'],
                     'name' : device['name'],
-                    'type' : device['type']
+                    'type' : device['type'],
+                    'attrs': attr_device
           }
           devices['data'].append(device)
         
+        elementos_estructurales = list(dict.fromkeys(element_list))
         tipos_de_elementos = TipoElemento.query.all()
         tipos_de_sensor = TipoSensor.query.all()
         context = {'response': devices,
-                   'tipo_elemento': tipos_de_elementos,
-                   'tipo_sensor': tipos_de_sensor}
+                   'elementos_estructurales': elementos_estructurales,
+                   'tipo_sensor': tipos_de_sensor,
+                   'puente': id_estructura,
+                   'tb_data': user_data}
         return jsonify({'htmlresponse':render_template('form_inicio_monitoreo.html',**context)})
       else:
         return jsonify({'error':render_template('error.html',message = "Fallo en la Autentificación.")})
@@ -2187,8 +2217,7 @@ def editar_configuracion_ar(id_configuracion):
 ############################## Prueba JSON DataTable #########################################
 @views_api.route('/cargar_estructuras', methods=['GET'])
 @login_required
-def cargar_estructuras_ajax():
-  if(current_user.permisos == "Administrador"):  
+def cargar_estructuras_ajax(): 
     puentes = Estructura.query.all()
     data = []
     for element in puentes:
@@ -2196,12 +2225,10 @@ def cargar_estructuras_ajax():
                 'Nombre': {'nombre': element.nombre, 'ruta': "estructura/" + str(element.id)},
                 'Region': element.region,
                 'Provincia': element.provincia,
-                'Monitoreo': {'monitoreo': element.en_monitoreo, 'ruta': url_for('views_api.iniciar_monitoreo_gestion',id_estructura = element.id)}
+                'Monitoreo': {'monitoreo': element.en_monitoreo, 'ruta': url_for('views_api.iniciar_monitoreo_gestion',id_estructura = element.id), 'nombre': element.nombre}
                 }
       data.append(puente)
     return jsonify({'data': data})
-  else:
-    return redirect(url_for('views_api.usuario_no_autorizado'))
 
 ###################### INTEGRACIÓN ALMACENAMIENTO HISTÓRICO ########################
 @views_api.route('/hconsulta/<int:id>', methods=["POST","GET"])

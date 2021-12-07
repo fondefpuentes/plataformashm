@@ -7,7 +7,7 @@
 	<p class="card-text">{{ estado_dano.estado }}</p>
       </div>
       <div class="card-footer">
-	      <small class="text-muted">Ultima Actualización: {{ estado_dano.diahora_calculo | datetimefilter}}</small>
+	      <small class="text-muted">Ultima Actualización: {%if estado_dano.diahora_calculo%} {{ estado_dano.diahora_calculo | datetimefilter}} {%else%} -- -- -- {%endif%}</small>
       </div>
       <a href="{{url_for('views_api.deteccion_temprana',id_puente=datos_puente.id)}}" class="btn btn-outline-primary">Detalles</a>
     </div>
@@ -27,7 +27,7 @@
         </div>
       </div>
       <div class="card-footer">
-        <small class="text-muted">Ultima Actualización: {{estado.fecha_estado | datetimefilter}}</small>
+        <small class="text-muted">Ultima Actualización: {%if estado_dano.fecha_estado%}{{estado.fecha_estado | datetimefilter}}{%else%} -- -- -- {%endif%}</small>
       </div>
       <a href="{{url_for('views_api.gestion_estado',id=datos_puente.id)}}" class="btn btn-outline-primary">Actualizar</a>
     </div>

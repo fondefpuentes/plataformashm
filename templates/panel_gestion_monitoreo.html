@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 
 {% block customcss %}
-    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap5.min.css"/>
+{% endblock %}
+
+{% block sidebar%}
+  {% include 'navbar_admin.html'%}
 {% endblock %}
 
 {% block content %}
@@ -45,19 +48,61 @@
 {% endif %}
 {% endwith %}
 
+<div class="modal fade" id="before_init" tabindex="-1" aria-labelledby="before_init_abel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="before_init_abel">Antes de comenzar </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+          Al iniciar el monitoreo de la estructura, se configurará el sistema basado en la información presente en THINGSBOARD. Por ello se recomienda  revisar los siguientes aspectos:
+          <div class="row py-1 mt-5">
+            <div class="col-sm-3"><strong>Instancia Thingsboard:</strong></div>
+            <div class="col-sm-9">
+              <p><i class="bi bi-asterisk"></i> La instancia debe estar en funcionamiento y se debe poder acceder a ella mediante dirección URL/IP.</p>
+            </div>
+          </div>
+          <div class="row py-1">
+            <div class="col-sm-3"><strong>Elementos Estructurales:</strong></div>
+            <div class="col-sm-9">
+              <p><i class="bi bi-asterisk"></i> Los Elemento Estructurales deben estar declarados en cada uno de los dispositivos.<br>
+               Para declararlos, acceda en Thingsboard a <strong>Dispositivos</strong> -> <strong>Seleccione un elemento</strong> -> <strong>Atributos</strong> -> <strong>Atributos de Servidor</strong> y cree un nuevo Atributo.<br>
+              La Clave debe ser <strong>"Elemento Estructural"</strong> y su tipo debe ser <strong>"Cadena de Texto"</strong>. En Valor ingrese el nombre del elemento estructural.
+            </div>
+          </div>
+          <div class="row py-1">
+            <div class="col-sm-3"><strong>Sensores:</strong></div>
+            <div class="col-sm-9">
+              <p><i class="bi bi-asterisk"></i> Los sensores deben poseer un <strong>Nombre</strong> y <strong>Perfil de Dispositivo</strong> bien definido. Dentro de sus atributos deben estar <strong>Canal</strong>, <strong>Frecuencia</strong> y <strong>Elemento Estructural</strong>.<br>
+             Para ingresar estos atributos, se sigue lo mencionado anteriormente en "Elemento Estructural", considerando como claves adicionales <strong>"Canal"</strong> y <strong>"Frecuencia"</strong> respectivamente, con un tipo de dato <strong>"Nro Entero"</strong>.</p>
+            </div>
+          </div>
+          <div class="row py-1">
+            <div class="col-sm-3"><strong>DAQs:</strong></div>
+            <div class="col-sm-9">
+              <p><i class="bi bi-asterisk"></i> Los DAQs deben definir su Perfil de Dispositivo como <strong>"daq"</strong> y contar con la información del <strong>"Número de Canales"</strong> como atributo. <br>
+              Para ello, debe considerar como Clave, en adición a "Elemento Estructural", <strong>"Canales"</strong> con un tipo de dato <strong>"Nro Entero"</strong>.</p>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <a href="#" class="btn btn-primary">Continuar con la operación</a>
+      </div>
+    </div>
+  </div>
+</div>
 
-{% block sidebar%}
-{% endblock %}
-
-{% include 'sidebar.html'%}
-<section class="my-container active-cont px-3">
+<div class="container-fluid px-3 py-1">
 
    <div class="d-flex py-2">
-     <button type="button" class="btn btn-primary me-3" id="menu-btn"><i class="bi bi-layout-sidebar"></i></button>
-     <h1 >Gestión de Monitoreos</h1>
+     <h2>Gestión de Monitoreos :: Iniciar Nuevo Monitoreo</h2>
    </div>
    <div class="p-2 my-3 card">
-     <h4><span class="fs-6 badge bg-dark me-3 mb-3">A</span>Iniciar Nuevo Monitoreo</h4>
      <table class="table table-hover w-100 row-border" 
         id="myTableGeneral"> 
           <thead class="table-dark">
@@ -71,11 +116,7 @@
           </thead>
      </table>
    </div>
-   
-   <div class="p-2 my-3 card">
-     <h4><span class="fs-6 badge bg-dark me-3">B</span>Actualizar Parámetros de Monitoreo Vigente</h4>
-   </div>
-</section>
+</div>
 
 
 {% endblock %}
@@ -95,13 +136,13 @@
             return '<span class="fs-6 badge bg-dark me-3">' + data + '</span>';
           } 
         },
-        { data: 'Nombre', render: function(data){ return data.nombre;} },
+        { data: 'Nombre', render: function ( data){ return data.nombre;} },
         { data: 'Region' },
         { data: 'Provincia'},
         { data: 'Monitoreo',
           render: function ( data, row ) {
             if(!data.monitoreo){
-              return  '<div class="d-grid gap-2"><a class="btn btn-outline-primary" href="' + data.ruta + '" role="button">Iniciar Monitoreo</a>';
+              return  '<div class="d-grid gap-2"><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#before_init" data-bs-structurename="'+ data.nombre +'" data-bs-structureroute="' + data.ruta + '">Iniciar Monitoreo</button>';
             }
             else{
               return '<div class="d-grid gap-2"><button type="button" class="btn btn-primary " disabled> En Monitoreo</button></div>';
@@ -127,6 +168,21 @@
       $('#sidebar').toggleClass("position-fixed")
       $('.my-container').toggleClass("active-cont");
     }); 
+    
+    var before_init_modal = document.getElementById('before_init');
+    before_init_modal.addEventListener('show.bs.modal', function (event) {
+  
+      var button = event.relatedTarget;
+  
+      var name = button.getAttribute('data-bs-structurename');
+      var route = button.getAttribute('data-bs-structureroute');
+  
+      var modalTitle = before_init_modal.querySelector('.modal-title');
+      var modalBodybutton = before_init_modal.querySelector('.modal-footer a');
+
+      modalTitle.textContent = 'Antes de comenzar: Puente ' + name;
+      modalBodybutton.href = route;
+    });
     
   });
 </script>

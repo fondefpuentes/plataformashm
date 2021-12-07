@@ -1,25 +1,22 @@
 {% extends "base.html" %}
 
 {% block customcss %}
-    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap5.min.css"/>
 {% endblock %}
 
-{% block content %}
-
 {% block sidebar%}
-{% endblock %}
+  {% include 'navbar_admin.html' %}
+{%endblock%}
 
-{% include 'sidebar.html'%}
-<section class="my-container active-cont px-3">
+{% block content %}
+<div class="container-fluid px-3 py-1">
 
    <div class="d-flex py-2">
-     <button type="button" class="btn btn-primary me-3" id="menu-btn"><i class="bi bi-layout-sidebar"></i></button>
-     <h1 >Iniciar Monitoreo :: Puente {{puente.nombre|title}}</h1>
+     <h2>Iniciar Monitoreo :: Puente {{puente.nombre|title}}</h1>
    </div>
-   <div class="row px-2 mt-2 py-2">
-     <div class="card h-100 col-6">
-       <h4><span class="fs-6 badge bg-dark me-3 mb-3">A</span>Cargar Datos Desde Thingsboard</h4>
+   <div class="row px-2 mt-2">
+     <div class="card h-100 col-8 py-3">
+       <h3>Ingrese Credenciales de Thingsboard</h3>
        <div class="input-group my-1">
          <span class="input-group-text col-3">IP Instancia Thingsboard</span>
          <input id="ip_instance" type="text" class="form-control" name="ip_instance" placeholder="http://0.0.0.0:8080" required aria-label="Dirección IP Thingsboard"/>       
@@ -32,15 +29,17 @@
          <span class="input-group-text col-3 " >Contraseña</span>
          <input id="passw" type="password" class="form-control" name="passw" placeholder="" required aria-label="Password"/>       
        </div>
-       <button id="search-btn" class="btn btn-primary btn-md w-100 mt-2">Buscar</button>
+       <div class="float-end">
+         <button id="search-btn" class="btn btn-primary w-25 mt-2 float-end">Consultar</button>
+       </div>
      </div>
-     <div id="response" class="col-6 px-2">
+     <div id="response" class="col-4 px-2">
      </div>
    </div>
    <div id="result">
    </div>   
   
-</section>
+</div>
 
 
 {% endblock %}
@@ -55,7 +54,7 @@
     {
       $.ajax(
       {
-        url:"/check_thingsboard_instance",
+        url:"/check_thingsboard_instance/{{puente.id}}",
         method:"POST",
         data: {'ip_instancia' : ip_instance, 'user': user, 'passw':passw},
         success:function(data)
@@ -100,14 +99,7 @@
       var passw = $('#passw').val();
       load_tb_data(ip_instance,user,passw);
     }); 
-    
-    
-    $('#menu-btn').click(function(e)
-    {
-      $('#sidebar').toggleClass("active-nav");
-      $('#sidebar').toggleClass("position-fixed")
-      $('.my-container').toggleClass("active-cont");
-    }); 
+
     
   });
 </script>
