@@ -30,7 +30,7 @@ $ python3 app.py
 
 ## Manual de Uso y Administración 📖
 
-Disponible [aquí] () (PDF)
+Disponible [aquí] (https://github.com/fondefpuentes/plataformashm/blob/master/Ejecuci%C3%B3n%20y%20Gesti%C3%B3n%20Plataforma%20de%20Monitoreo%20Estructural.pdf) (PDF, 4.42MB)
 
 
 ## Construido con 🛠️
