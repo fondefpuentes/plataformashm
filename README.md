@@ -28,6 +28,9 @@ Cumplidos los pre-requisitos, se debe ejecutar el siguiente comando
 
 $ python3 app.py
 
+## Manual de Uso y Administración 📖
+
+Disponible [aquí] () (PDF)
 
 
 ## Construido con 🛠️
@@ -42,13 +45,13 @@ Las herramientas que se utilizaron para el desarrollo y la ejecución de este pr
 
 ## Autores ✒️
 
-_Menciona a todos aquellos que ayudaron a levantar el proyecto desde sus inicios_
 
-* **Gonzalo Rojas** - *Jefe de Proyecto de Desarrollo. Análisis, Diseño, Testing y Documentación* 
+* **Fernando Cerda** - *Director del Proyecto Proyecto FONDEF IT18I0112*
+* **Gonzalo Rojas** - *Director Alterno Proyecto Proyecto FONDEF IT18I0112. Jefe de Proyecto de Desarrollo. Análisis, Diseño, Testing y Documentación* 
 * **Johann Llanos** - *Líder de Equipo de Desarrollo, Arquitectura del sistema*
 * **Carlos Landero** - *Modelo de Datos, Desarrollo Web*
 * **Carlos von Plessing** - *Arquitectura de subsistema de transmisión y gestión de datos en tiempo real*
-* **Sergio Saavedra** - *Modelado 3D, gestión de modelos BIM, panel de administración"
+* **Sergio Saavedra** - *Modelado 3D, gestión de modelos BIM, panel de administración*
 * **Diego Varas** - *Dashboard de datos recientes*
 * **Sergio Navarrete** - *Consulta y descarga de datos históricos*
 * **Angelo Zapata** - *Implementación de modelos autorregresivos para detección de anomalías*
@@ -59,4 +62,4 @@ _Menciona a todos aquellos que ayudaron a levantar el proyecto desde sus inicios
 Este proyecto está bajo licencia GNU GPL - mira el archivo [LICENSE.md](LICENSE.md) para detalles
 
 ---
-⌨️ Gonzalo Rojas Durán, gonzalorojas@udec.cl
+⌨️ Gonzalo Rojas Durán, [gonzalorojas@udec.cl] (mailto:gonzalorojas@udec.cl)
