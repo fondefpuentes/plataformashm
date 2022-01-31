@@ -55,6 +55,7 @@ Las herramientas que se utilizaron para el desarrollo y la ejecución de este pr
 * **Diego Varas** - *Dashboard de datos recientes*
 * **Sergio Navarrete** - *Consulta y descarga de datos históricos*
 * **Angelo Zapata** - *Implementación de modelos autorregresivos para detección de anomalías*
+* **Nicolás Ortega** - *Gestión del equipo. Testing*
 
 
 ## Licencia 📄
