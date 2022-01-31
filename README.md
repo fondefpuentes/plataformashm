@@ -30,7 +30,7 @@ $ python3 app.py
 
 ## Manual de Uso y Administración 📖
 
-Disponible [aquí] (https://github.com/fondefpuentes/plataformashm/blob/master/Ejecuci%C3%B3n%20y%20Gesti%C3%B3n%20Plataforma%20de%20Monitoreo%20Estructural.pdf) (PDF, 4.42MB)
+Disponible [aquí](https://github.com/fondefpuentes/plataformashm/blob/master/Ejecuci%C3%B3n%20y%20Gesti%C3%B3n%20Plataforma%20de%20Monitoreo%20Estructural.pdf) (PDF, 4.42MB)
 
 
 ## Construido con 🛠️
@@ -62,4 +62,4 @@ Las herramientas que se utilizaron para el desarrollo y la ejecución de este pr
 Este proyecto está bajo licencia GNU GPL - mira el archivo [LICENSE.md](LICENSE.md) para detalles
 
 ---
-⌨️ Gonzalo Rojas Durán, [gonzalorojas@udec.cl] (mailto:gonzalorojas@udec.cl)
+⌨️ Gonzalo Rojas Durán, [gonzalorojas@udec.cl](mailto:gonzalorojas@udec.cl)
