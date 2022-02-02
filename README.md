@@ -28,9 +28,10 @@ Cumplidos los pre-requisitos, se debe ejecutar el siguiente comando
 
 $ python3 app.py
 
-## Manual de Uso y Administración 📖
+## Documentación 📖
 
-Disponible [aquí](https://github.com/fondefpuentes/plataformashm/blob/master/Ejecuci%C3%B3n%20y%20Gesti%C3%B3n%20Plataforma%20de%20Monitoreo%20Estructural.pdf) (PDF, 4.42MB)
+* [Manual de Uso y Administración](https://github.com/fondefpuentes/plataformashm/blob/master/Ejecuci%C3%B3n%20y%20Gesti%C3%B3n%20Plataforma%20de%20Monitoreo%20Estructural.pdf) (PDF, 4.42MB)
+* [Lista de vídeos tutoriales para Usuarios](https://bit.ly/3dLQyN6) (8 vídeos)
 
 
 ## Construido con 🛠️
