@@ -61,7 +61,7 @@ Las herramientas que se utilizaron para el desarrollo y la ejecución de este pr
 
 ## Licencia 📄
 
-Este proyecto está bajo licencia GNU GPL - mira el archivo [LICENSE.md](LICENSE.md) para detalles
+Este proyecto está bajo licencia GNU General Purpose License - mira el archivo [LICENSE](LICENSE) para detalles
 
 ---
 ⌨️ Gonzalo Rojas Durán, [gonzalorojas@udec.cl](mailto:gonzalorojas@udec.cl)
