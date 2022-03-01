@@ -41,7 +41,7 @@ Las herramientas que se utilizaron para el desarrollo y la ejecución de este pr
 * [Flask](https://flask.palletsprojects.com/) - El framework web usado
 * [Thingsboard](https://thingsboard.io/) - Servidor y cliente de transmisión de datos y visualizador de mediciones en tiempo real
 * [Plotly](https://dash.plotly.com/) - Framework para desarrollo y despliegue de dashboards
-* [Unity](https://store.unity.com/es/products/unity-pro) - Entorno de desarrollo y ejecución de visualizador 3D 
+* [Unity Personal](https://store.unity.com/es/products/unity-personal) - Entorno de desarrollo y ejecución de visualizador 3D 
 
 
 ## Autores ✒️
