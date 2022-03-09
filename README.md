@@ -47,8 +47,8 @@ Las herramientas que se utilizaron para el desarrollo y la ejecución de este pr
 ## Autores ✒️
 
 
-* **Fernando Cerda** - *Director del Proyecto Proyecto FONDEF IT18I0112*
 * **Gonzalo Rojas** - *Director Alterno Proyecto Proyecto FONDEF IT18I0112. Jefe de Proyecto de Desarrollo. Análisis, Diseño, Testing y Documentación* 
+* **Fernando Cerda** - *Director del Proyecto Proyecto FONDEF IT18I0112*
 * **Johann Llanos** - *Líder de Equipo de Desarrollo, Arquitectura del sistema*
 * **Carlos Landero** - *Modelo de Datos, Desarrollo Web*
 * **Carlos von Plessing** - *Arquitectura de subsistema de transmisión y gestión de datos en tiempo real*
